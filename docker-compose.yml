@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: nest_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: backlogdb
+    volumes:
+      - ./docker/mongo_data:/data/db
+    networks:
+      - nest_network
+
+  mongo-express:
+    image: mongo-express
+    container_name: nest_mongo_express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: rootpassword
+      ME_CONFIG_MONGODB_SERVER: mongo
+    networks:
+      - nest_network
+
+  backend:
+    build: .
+    container_name: nest_backend
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    networks:
+      - nest_network
+
+networks:
+  nest_network:
+    driver: bridge

@@ -1,0 +1,192 @@
+project/
+    ├── .env
+    ├── .gitignore
+    ├── .prettierrc
+    ├── Dockerfile
+    ├── README.md
+    ├── atp-engine-postman.json
+    ├── dist/
+    │   ├── app/
+    │   │   ├── app.controller.d.ts
+    │   │   ├── app.controller.js
+    │   │   ├── app.controller.js.map
+    │   │   ├── app.module.d.ts
+    │   │   ├── app.module.js
+    │   │   ├── app.module.js.map
+    │   │   ├── app.service.d.ts
+    │   │   ├── app.service.js
+    │   │   └── app.service.js.map
+    │   ├── auth/
+    │   │   ├── auth.controller.d.ts
+    │   │   ├── auth.controller.js
+    │   │   ├── auth.controller.js.map
+    │   │   ├── auth.module.d.ts
+    │   │   ├── auth.module.js
+    │   │   ├── auth.module.js.map
+    │   │   ├── auth.service.d.ts
+    │   │   ├── auth.service.js
+    │   │   ├── auth.service.js.map
+    │   │   ├── dto/
+    │   │   │   ├── login.dto.d.ts
+    │   │   │   ├── login.dto.js
+    │   │   │   ├── login.dto.js.map
+    │   │   │   ├── register.dto.d.ts
+    │   │   │   ├── register.dto.js
+    │   │   │   └── register.dto.js.map
+    │   │   ├── jwt.strategy.d.ts
+    │   │   ├── jwt.strategy.js
+    │   │   ├── jwt.strategy.js.map
+    │   │   ├── user.schema.d.ts
+    │   │   ├── user.schema.js
+    │   │   └── user.schema.js.map
+    │   ├── backlog/
+    │   │   ├── backlog.controller.d.ts
+    │   │   ├── backlog.controller.js
+    │   │   ├── backlog.controller.js.map
+    │   │   ├── backlog.module.d.ts
+    │   │   ├── backlog.module.js
+    │   │   ├── backlog.module.js.map
+    │   │   ├── backlog.schema.d.ts
+    │   │   ├── backlog.schema.js
+    │   │   ├── backlog.schema.js.map
+    │   │   ├── backlog.service.d.ts
+    │   │   ├── backlog.service.js
+    │   │   ├── backlog.service.js.map
+    │   │   └── dto/
+    │   │       ├── create-backlog.dto.d.ts
+    │   │       ├── create-backlog.dto.js
+    │   │       ├── create-backlog.dto.js.map
+    │   │       ├── update-backlog.dto.d.ts
+    │   │       ├── update-backlog.dto.js
+    │   │       └── update-backlog.dto.js.map
+    │   ├── categories/
+    │   │   ├── categories.controller.d.ts
+    │   │   ├── categories.controller.js
+    │   │   ├── categories.controller.js.map
+    │   │   ├── categories.module.d.ts
+    │   │   ├── categories.module.js
+    │   │   ├── categories.module.js.map
+    │   │   ├── categories.service.d.ts
+    │   │   ├── categories.service.js
+    │   │   ├── categories.service.js.map
+    │   │   ├── dto/
+    │   │   │   ├── create-category.dto.d.ts
+    │   │   │   ├── create-category.dto.js
+    │   │   │   └── create-category.dto.js.map
+    │   │   └── schemas/
+    │   │       ├── category.schema.d.ts
+    │   │       ├── category.schema.js
+    │   │       └── category.schema.js.map
+    │   ├── collections/
+    │   │   ├── collections.controller.d.ts
+    │   │   ├── collections.controller.js
+    │   │   ├── collections.controller.js.map
+    │   │   ├── collections.module.d.ts
+    │   │   ├── collections.module.js
+    │   │   ├── collections.module.js.map
+    │   │   ├── collections.service.d.ts
+    │   │   ├── collections.service.js
+    │   │   └── collections.service.js.map
+    │   ├── common/
+    │   │   ├── dto/
+    │   │   │   ├── pagination-query.dto.d.ts
+    │   │   │   ├── pagination-query.dto.js
+    │   │   │   └── pagination-query.dto.js.map
+    │   │   └── guards/
+    │   │       ├── jwt-auth.guard.d.ts
+    │   │       ├── jwt-auth.guard.js
+    │   │       └── jwt-auth.guard.js.map
+    │   ├── config/
+    │   │   ├── igdb.config.d.ts
+    │   │   ├── igdb.config.js
+    │   │   └── igdb.config.js.map
+    │   ├── games/
+    │   │   ├── dto/
+    │   │   │   ├── add-game.dto.d.ts
+    │   │   │   ├── add-game.dto.js
+    │   │   │   ├── add-game.dto.js.map
+    │   │   │   ├── games-query.dto.d.ts
+    │   │   │   ├── games-query.dto.js
+    │   │   │   └── games-query.dto.js.map
+    │   │   ├── games.controller.d.ts
+    │   │   ├── games.controller.js
+    │   │   ├── games.controller.js.map
+    │   │   ├── games.module.d.ts
+    │   │   ├── games.module.js
+    │   │   ├── games.module.js.map
+    │   │   ├── games.service.d.ts
+    │   │   ├── games.service.js
+    │   │   ├── games.service.js.map
+    │   │   └── schemas/
+    │   │       ├── game.schema.d.ts
+    │   │       ├── game.schema.js
+    │   │       └── game.schema.js.map
+    │   ├── main.d.ts
+    │   ├── main.js
+    │   ├── main.js.map
+    │   └── tsconfig.build.tsbuildinfo
+    ├── docker-compose.yml
+    ├── eslint.config.mjs
+    ├── generate-tree.js
+    ├── nest-cli.json
+    ├── package-lock.json
+    ├── package.json
+    ├── pnpm-lock.yaml
+    ├── src/
+    │   ├── app/
+    │   │   ├── app.controller.spec.ts
+    │   │   ├── app.controller.ts
+    │   │   ├── app.module.ts
+    │   │   └── app.service.ts
+    │   ├── auth/
+    │   │   ├── auth.controller.ts
+    │   │   ├── auth.module.ts
+    │   │   ├── auth.service.ts
+    │   │   ├── dto/
+    │   │   │   ├── login.dto.ts
+    │   │   │   └── register.dto.ts
+    │   │   ├── jwt.strategy.ts
+    │   │   └── user.schema.ts
+    │   ├── backlog/
+    │   │   ├── backlog.controller.ts
+    │   │   ├── backlog.module.ts
+    │   │   ├── backlog.schema.ts
+    │   │   ├── backlog.service.ts
+    │   │   └── dto/
+    │   │       ├── create-backlog.dto.ts
+    │   │       └── update-backlog.dto.ts
+    │   ├── categories/
+    │   │   ├── categories.controller.ts
+    │   │   ├── categories.module.ts
+    │   │   ├── categories.service.ts
+    │   │   ├── dto/
+    │   │   │   └── create-category.dto.ts
+    │   │   └── schemas/
+    │   │       └── category.schema.ts
+    │   ├── collections/
+    │   │   ├── collections.controller.ts
+    │   │   ├── collections.module.ts
+    │   │   └── collections.service.ts
+    │   ├── common/
+    │   │   ├── dto/
+    │   │   │   └── pagination-query.dto.ts
+    │   │   └── guards/
+    │   │       └── jwt-auth.guard.ts
+    │   ├── config/
+    │   │   └── igdb.config.ts
+    │   ├── games/
+    │   │   ├── dto/
+    │   │   │   ├── add-game.dto.ts
+    │   │   │   └── games-query.dto.ts
+    │   │   ├── games.controller.ts
+    │   │   ├── games.module.ts
+    │   │   ├── games.service.ts
+    │   │   └── schemas/
+    │   │       └── game.schema.ts
+    │   ├── main.ts
+    │   └── models/
+    ├── test/
+    │   ├── app.e2e-spec.ts
+    │   └── jest-e2e.json
+    ├── tsconfig.build.json
+    └── tsconfig.json
