@@ -1,18 +1,15 @@
-// src/categories/schemas/category.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { Game, GameSchema } from '@/games/schemas/game.schema';
+
+export type CategoryDocument = Category & Document;
 
 @Schema()
-export class Category extends Document {
-  @Prop({ required: true})
-  name: string; // Ex: Favoritos, Jogando, Dropados...
-  
+export class Category {
+  @Prop({ required: true })
+  name: string;
+
   @Prop({ required: true })
   userId: string;
-
-  @Prop({ type: [GameSchema], default: [] })
-  games: Game[];
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);

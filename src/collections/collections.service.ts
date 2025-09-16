@@ -15,10 +15,20 @@ export class CollectionsService {
     return res.data;
   }
 
-  platforms() {
-    // lista básica (paginável se quiser — adicione limit/offset depois)
-    return this.igdbPost('platforms', 'fields id,name,abbreviation,platform_logo.url; limit 200;');
-  }
+platforms() {
+  return this.igdbPost(
+    'platforms',
+    'fields id,name,abbreviation,platform_logo.url; limit 200;'
+  ).then(results => {
+    return results.map(p => ({
+      ...p,
+      logo: p.platform_logo
+        ? p.platform_logo.url.replace('t_thumb', 't_720p')
+        : null
+    }));
+  });
+}
+
 
   genres() {
     return this.igdbPost('genres', 'fields id,name; limit 200;');

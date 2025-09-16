@@ -1,26 +1,22 @@
-// create-backlog.dto.ts
-import { IsString, IsArray, ArrayNotEmpty, IsOptional } from 'class-validator';
+//src/backlog/create-backlog-dto.ts
+import {
+  IsString,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsArray,
+} from 'class-validator'
+
 
 export class CreateBacklogDto {
-  @IsString()
-  name: string;
-
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsString({ each: true })
-  categories: string[]; 
-}
-
-// update-backlog.dto.ts
-'class-validator';
-
-export class UpdateBacklogDto {
-  @IsOptional()
-  @IsString()
-  name?: string;
-
-  @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  categories?: string[];
+  @IsNotEmpty()
+  category_ids: string[]; 
+  @IsObject()
+  igdb_data: any;
+
+  @IsOptional()
+  @IsObject()
+  player_data?: any;
 }
