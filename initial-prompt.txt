@@ -1,0 +1,733 @@
+# ATP Engine — Initial Agent Prompt
+
+Você está trabalhando no desenvolvimento da **ATP Engine (Ash Twin Project Engine)**.
+
+Antes de escrever qualquer código, você deve compreender e respeitar integralmente a documentação existente no repositório.
+
+## 1. Primeira regra: não programe imediatamente
+
+Sua primeira tarefa é **reconhecer o projeto**, não implementar funcionalidades.
+
+Leia obrigatoriamente:
+
+```text
+AGENTS.md
+engineering-rules.md
+docs/stack.md
+docs/classification.md
+docs/identity-resolution.md
+docs/sources.md
+docs/persistence.md
+docs/ai.md
+docs/api.md
+docs/roadmap.md
+```
+
+Se algum desses arquivos não existir, **não invente seu conteúdo**.
+
+Verifique quais documentos realmente existem no repositório e informe quais estão ausentes.
+
+Depois, inspecione:
+
+```text
+package.json
+tsconfig.json
+docker-compose.yml
+.env.example
+src/
+tests/
+```
+
+ou os equivalentes existentes.
+
+---
+
+# 2. Não assuma que o repositório está vazio
+
+Antes de criar ou modificar arquivos:
+
+1. examine a estrutura atual;
+2. identifique código existente;
+3. identifique configurações existentes;
+4. identifique dependências já instaladas;
+5. identifique testes existentes;
+6. identifique decisões arquiteturais já implementadas;
+7. verifique o estado do Git.
+
+Não sobrescreva código existente sem entender sua finalidade.
+
+Se houver implementação parcialmente pronta, **evolua-a em vez de recriá-la**.
+
+---
+
+# 3. Fonte de verdade
+
+A hierarquia de decisão é:
+
+```text
+AGENTS.md
+    ↓
+engineering-rules.md
+    ↓
+docs/*
+    ↓
+código existente
+    ↓
+conveniência do agente
+```
+
+Preferências pessoais do agente nunca substituem as regras do projeto.
+
+Quando houver conflito entre documentos, **pare e reporte o conflito antes de implementar**.
+
+Não escolha silenciosamente uma das alternativas.
+
+---
+
+# 4. Stack obrigatória
+
+A stack oficial é:
+
+```text
+Runtime          Node.js
+Language         TypeScript
+API              Express
+Validation       Zod
+Database         MongoDB
+Database Access  Mongoose ou MongoDB Driver
+HTTP             native fetch / undici
+Tests            Vitest
+Lint             ESLint
+Formatting       Prettier
+Containers       Docker
+Local AI         Ollama
+Remote AI        Provider Adapter
+Architecture     Modular / Clean-ish Architecture
+```
+
+Não substitua essas tecnologias por preferência pessoal.
+
+Não introduza:
+
+```text
+Fastify
+NestJS
+Prisma
+PostgreSQL
+Jest
+Axios
+```
+
+ou equivalentes como substitutos sem uma decisão arquitetural explícita.
+
+---
+
+# 5. Arquitetura obrigatória
+
+O projeto deve preservar separação entre:
+
+```text
+Interfaces
+    ↓
+Application
+    ↓
+Domain
+
+Infrastructure
+    ↓
+implements contracts
+```
+
+O domínio não pode depender diretamente de:
+
+```text
+Express
+MongoDB
+Mongoose
+Ollama
+HTTP clients
+environment variables
+```
+
+Frameworks e ferramentas pertencem às bordas da aplicação.
+
+---
+
+# 6. ATP não é apenas um scraper
+
+Não trate a ATP como um scraper tradicional.
+
+O objetivo é construir uma:
+
+> **Canonical Game Knowledge Engine**
+
+O fluxo conceitual é:
+
+```text
+External Sources
+       ↓
+Discovery
+       ↓
+Normalization
+       ↓
+Classification
+       ↓
+Identity Resolution
+       ↓
+Canonical Catalog
+       ↓
+Enrichment
+       ↓
+AI-assisted Intelligence
+```
+
+A engine deve determinar:
+
+* o que é um jogo;
+* o que não é um jogo;
+* quando dois resultados representam o mesmo jogo;
+* quando dois resultados representam jogos diferentes;
+* quando existe uma relação entre jogos;
+* quais dados podem ser considerados canônicos;
+* quais dados precisam de confirmação.
+
+---
+
+# 7. AI não é obrigatória
+
+Esta é uma regra arquitetural fundamental.
+
+A ATP deve funcionar sem qualquer LLM.
+
+O fluxo preferencial é:
+
+```text
+Native Logic
+     ↓
+Confident?
+ ├── YES → result
+ └── NO
+       ↓
+      AI
+       ↓
+Valid?
+ ├── YES → assisted result
+ └── NO
+       ↓
+Native fallback
+```
+
+Nunca transforme uma dependência opcional em dependência obrigatória.
+
+Se:
+
+```text
+Ollama
+```
+
+estiver indisponível, a engine deve continuar funcionando.
+
+Se um provider remoto falhar, a engine deve continuar funcionando quando houver lógica nativa suficiente.
+
+---
+
+# 8. AI Provider
+
+Nunca acople o domínio diretamente ao Ollama.
+
+A arquitetura deve permitir:
+
+```text
+AIProvider
+├── OllamaProvider
+├── RemoteProvider
+└── FutureProvider
+```
+
+AI deve produzir **propostas**, não alterar diretamente o banco.
+
+Fluxo:
+
+```text
+AI
+ ↓
+Proposal
+ ↓
+Validation
+ ↓
+Application
+ ↓
+Domain rules
+ ↓
+Persistence
+```
+
+Nunca:
+
+```text
+AI
+ ↓
+MongoDB
+```
+
+---
+
+# 9. Database-first
+
+Quando a ATP precisar recuperar dados de um jogo individual:
+
+```text
+Database
+   ↓
+data complete?
+ ├── YES → return
+ └── NO
+       ↓
+External Sources
+       ↓
+Normalize
+       ↓
+Classify
+       ↓
+Resolve Identity
+       ↓
+Enrich
+       ↓
+Persist
+       ↓
+Return
+```
+
+Não consulte a web desnecessariamente.
+
+Não crie duplicatas quando o jogo já existir no catálogo.
+
+---
+
+# 10. External Sources
+
+As primeiras fontes são:
+
+```text
+Wikipedia
+SteamDB
+```
+
+Mas elas devem ser implementadas como adapters independentes.
+
+Nunca espalhe lógica específica da Wikipedia ou SteamDB pelo domínio.
+
+Preferir:
+
+```text
+SourceAdapter
+```
+
+com implementações específicas.
+
+A arquitetura deve permitir adicionar novas fontes posteriormente sem reescrever o pipeline.
+
+---
+
+# 11. Classification
+
+A engine precisa distinguir jogos de outras mídias e entidades.
+
+Exemplos:
+
+```text
+GAME
+DLC
+EXPANSION
+MOVIE
+TV_SHOW
+ANIME
+SOUNDTRACK
+BOOK
+HARDWARE
+PROMOTIONAL
+CHARACTER
+FRANCHISE
+PERSON
+EVENT
+UNKNOWN
+```
+
+A classificação nativa deve existir antes da classificação por IA.
+
+Resultados ambíguos devem permanecer ambíguos.
+
+Nunca invente certeza.
+
+---
+
+# 12. Identity Resolution
+
+Identity resolution é uma das partes mais importantes da ATP.
+
+O sistema precisa distinguir corretamente:
+
+```text
+Resident Evil 4 (2005)
+≠
+Resident Evil 4 (2023)
+```
+
+mas reconhecer:
+
+```text
+The Legend of Zelda:
+Breath of the Wild — Wii U
+=
+The Legend of Zelda:
+Breath of the Wild — Switch
+```
+
+Também deve ser capaz de representar relações complexas:
+
+```text
+Final Fantasy Tactics
+        ↕
+The War of the Lions
+```
+
+sem obrigatoriamente considerar os dois como entidades idênticas.
+
+Regiões diferentes, como:
+
+```text
+NTSC-USA
+PAL-EUR
+```
+
+não devem criar duplicatas quando representam o mesmo jogo.
+
+---
+
+# 13. Uncertainty
+
+A ATP deve preferir:
+
+```text
+UNRESOLVED
+```
+
+a uma associação incorreta.
+
+Um falso merge é potencialmente mais prejudicial do que manter dois candidatos separados até obter evidência suficiente.
+
+Não use IA para transformar incerteza em uma resposta arbitrária.
+
+---
+
+# 14. Persistence
+
+Somente dados validados podem entrar no catálogo canônico.
+
+External source data:
+
+```text
+Source Data
+    ↓
+Normalization
+    ↓
+Classification
+    ↓
+Identity Resolution
+    ↓
+Domain Validation
+    ↓
+Canonical Game
+    ↓
+Persistence
+```
+
+Não persista diretamente o payload bruto de uma fonte como se fosse um Game canônico.
+
+Quando necessário, preserve:
+
+* source;
+* external ID;
+* provenance;
+* evidence;
+* timestamps.
+
+---
+
+# 15. Tests First
+
+Toda regra importante deve ser testável sem depender de:
+
+```text
+Wikipedia
+SteamDB
+MongoDB real
+Ollama
+Remote LLM
+Internet
+```
+
+Priorize testes determinísticos para:
+
+```text
+normalization
+classification
+identity resolution
+deduplication
+filtering
+pagination
+domain invariants
+```
+
+Use mocks/stubs para integrações externas.
+
+---
+
+# 16. Não implemente tudo de uma vez
+
+Siga o roadmap.
+
+A ordem preferencial é:
+
+```text
+Foundation
+   ↓
+Domain
+   ↓
+Persistence
+   ↓
+Normalization
+   ↓
+Sources
+   ↓
+Classification
+   ↓
+Identity Resolution
+   ↓
+Discovery
+   ↓
+Enrichment
+   ↓
+API
+   ↓
+Covers
+   ↓
+AI
+   ↓
+Evaluation
+   ↓
+Reliability
+   ↓
+Performance
+```
+
+Não pule diretamente para features avançadas apenas porque elas parecem mais interessantes.
+
+---
+
+# 17. Primeira tarefa
+
+Depois de ler a documentação e inspecionar o repositório, **não comece a implementar automaticamente**.
+
+Primeiro produza um relatório curto contendo:
+
+## Repository State
+
+* estrutura encontrada;
+* stack encontrada;
+* código existente;
+* testes existentes;
+* configuração existente;
+* estado do Git.
+
+## Documentation State
+
+Liste:
+
+```text
+documento       status
+AGENTS.md       ...
+engineering-rules.md ...
+docs/stack.md   ...
+...
+```
+
+## Architectural Assessment
+
+Explique:
+
+* o que já está alinhado com a documentação;
+* o que está desalinhado;
+* o que está faltando;
+* quais decisões ainda estão abertas.
+
+## Recommended Next Step
+
+Indique **uma única próxima etapa**, baseada no roadmap.
+
+Não implemente essa etapa ainda.
+
+---
+
+# 18. Regra contra overengineering
+
+Não crie abstrações apenas porque a arquitetura permite.
+
+Uma interface deve existir porque há uma necessidade real de desacoplamento.
+
+Evite:
+
+```text
+factory
+factory factory
+generic repository
+generic service
+generic manager
+generic helper
+```
+
+sem necessidade concreta.
+
+Prefira código simples e explícito.
+
+---
+
+# 19. Regra contra código especulativo
+
+Não implemente funcionalidades futuras "para deixar preparado".
+
+Não crie:
+
+* endpoints não previstos;
+* providers não utilizados;
+* adapters vazios;
+* abstrações sem consumidor;
+* tabelas/modelos especulativos;
+* configurações que não possuem uso real.
+
+Implemente apenas o necessário para a etapa atual.
+
+---
+
+# 20. Regra de mudanças
+
+Cada alteração deve ter propósito claro.
+
+Antes de modificar um arquivo, entenda:
+
+```text
+quem depende dele
+quem ele depende
+qual contrato ele implementa
+```
+
+Evite mudanças abrangentes quando uma alteração localizada resolve o problema.
+
+---
+
+# 21. Regra de dependências
+
+Antes de adicionar uma biblioteca:
+
+1. verifique se Node.js já oferece a capacidade;
+2. verifique se alguma dependência existente resolve;
+3. determine se a biblioteca realmente reduz complexidade;
+4. avalie impacto na arquitetura.
+
+Não adicione dependências por conveniência momentânea.
+
+---
+
+# 22. Git
+
+Respeite o estado atual do Git.
+
+Não:
+
+```text
+reset --hard
+checkout -- .
+```
+
+nem descarte alterações existentes sem autorização explícita.
+
+Não reescreva histórico.
+
+Não faça commits automaticamente, a menos que isso seja solicitado.
+
+---
+
+# 23. Definition of Done
+
+Uma implementação só deve ser considerada concluída quando:
+
+```text
+Código implementado
+    +
+Testes relevantes
+    +
+TypeScript compilando
+    +
+Lint passando
+    +
+Formatter passando
+    +
+Arquitetura preservada
+    +
+Documentação atualizada quando necessário
+```
+
+Não declare uma etapa concluída apenas porque o código "parece funcionar".
+
+---
+
+# 24. Comunicação
+
+Durante o desenvolvimento:
+
+* seja objetivo;
+* reporte decisões arquiteturais;
+* reporte problemas reais;
+* não esconda trade-offs;
+* não invente resultados de testes;
+* não diga que algo foi validado se não foi executado;
+* diferencie claramente fato, inferência e recomendação.
+
+Se algo não estiver especificado, procure primeiro nos documentos existentes.
+
+Se continuar ambíguo e a decisão tiver impacto arquitetural, **pare e pergunte**.
+
+---
+
+# 25. Regra final
+
+Você não está construindo um scraper descartável.
+
+Você está construindo a base de um catálogo canônico de jogos.
+
+Priorize:
+
+```text
+Correctness
+    >
+Data Integrity
+    >
+Determinism
+    >
+Maintainability
+    >
+Extensibility
+    >
+Performance
+```
+
+A ATP deve ser capaz de dizer:
+
+> "Eu não sei"
+
+quando não houver evidência suficiente.
+
+Isso é preferível a armazenar informação incorreta.
+
+Comece agora pela etapa de **reconhecimento do repositório** descrita na seção 17.
+Não escreva código até concluir essa análise.

@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongo:27017/atp-engine
+      - AI_ENABLED=false
+      - LOG_LEVEL=debug
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+    depends_on:
+      mongo:
+        condition: service_started
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
