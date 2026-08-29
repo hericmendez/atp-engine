@@ -12,14 +12,14 @@ The API is implemented using Express.
 
 The API must:
 
-* expose domain capabilities;
-* validate all external input;
-* return predictable structures;
-* distinguish client errors from internal failures;
-* avoid leaking infrastructure details;
-* support pagination;
-* support filtering;
-* remain independent from source-specific response formats.
+- expose domain capabilities;
+- validate all external input;
+- return predictable structures;
+- distinguish client errors from internal failures;
+- avoid leaking infrastructure details;
+- support pagination;
+- support filtering;
+- remain independent from source-specific response formats.
 
 ---
 
@@ -100,12 +100,12 @@ GET /api/v1/games/search?q=zelda
 
 The endpoint may combine:
 
-* database results;
-* external discovery;
-* normalization;
-* classification;
-* identity resolution;
-* ranking.
+- database results;
+- external discovery;
+- normalization;
+- classification;
+- identity resolution;
+- ranking.
 
 ---
 
@@ -113,13 +113,13 @@ The endpoint may combine:
 
 Search should support:
 
-* partial title matching;
-* alternate titles;
-* source discovery;
-* classification;
-* deduplication;
-* ranking;
-* pagination.
+- partial title matching;
+- alternate titles;
+- source discovery;
+- classification;
+- deduplication;
+- ranking;
+- pagination.
 
 ---
 
@@ -178,14 +178,14 @@ Candidates should be ranked using deterministic relevance signals.
 
 Potential signals:
 
-* exact title match;
-* normalized title match;
-* partial match;
-* alternate title;
-* release metadata;
-* source quality;
-* classification confidence;
-* identity confidence.
+- exact title match;
+- normalized title match;
+- partial match;
+- alternate title;
+- release metadata;
+- source quality;
+- classification confidence;
+- identity confidence.
 
 AI may assist when native ranking is insufficient.
 
@@ -270,11 +270,11 @@ Cover retrieval is a dedicated capability.
 
 The engine may:
 
-* use a persisted cover;
-* retrieve external covers;
-* rank candidates;
-* filter unsuitable images;
-* persist the selected cover.
+- use a persisted cover;
+- retrieve external covers;
+- rank candidates;
+- filter unsuitable images;
+- persist the selected cover.
 
 ---
 
@@ -713,12 +713,12 @@ Business logic does not belong in controllers.
 
 Middleware may handle:
 
-* request IDs;
-* logging;
-* error translation;
-* authentication if later required;
-* request limits;
-* common HTTP concerns.
+- request IDs;
+- logging;
+- error translation;
+- authentication if later required;
+- request limits;
+- common HTTP concerns.
 
 Middleware must not become a hidden location for domain rules.
 
@@ -751,15 +751,15 @@ The OpenAPI specification should be generated or maintained alongside the implem
 
 API tests must cover:
 
-* validation;
-* successful requests;
-* pagination;
-* filtering;
-* not-found behavior;
-* source failure;
-* AI failure;
-* persistence failure;
-* response schemas.
+- validation;
+- successful requests;
+- pagination;
+- filtering;
+- not-found behavior;
+- source failure;
+- AI failure;
+- persistence failure;
+- response schemas.
 
 External sources and AI providers should be mocked in normal API tests.
 

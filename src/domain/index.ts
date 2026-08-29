@@ -44,7 +44,7 @@ export {
   sourceEvidenceToExternalIdentifier,
 } from './shared/source-evidence.js';
 
-export type { Platform, PlatformFamily } from './shared/platform.js';
+export type { Platform, PlatformFamily, PlatformType } from './shared/platform.js';
 export { createPlatform, platformEquals } from './shared/platform.js';
 
 export type { Region } from './shared/region.js';

@@ -64,7 +64,7 @@ Dependencies must point inward. The domain must not depend on Express, MongoDB, 
 │  Database        Sources              AI Providers    │
 │  ─────────       ─────────            ────────────    │
 │  Mongoose        WikipediaAdapter     OllamaProvider  │
-│  MongoGameRepo   SteamDBAdapter       RemoteProvider  │
+│  MongoGameRepo   SteamAdapter         RemoteProvider  │
 │                  (future adapters)    (future)        │
 │                                                      │
 │  HTTP Client (fetch/undici)                          │
@@ -134,12 +134,13 @@ Each external source is isolated behind a source adapter:
 ```text
 SourceAdapter
 ├── search()
-├── getGame()
-├── getCover()
+├── getById()
 └── capabilities
 ```
 
-Source-specific logic must not leak into domain services. The domain does not know whether data came from Wikipedia, SteamDB, or any other source.
+Adapters extend `BaseAdapter` which provides HTTP fetching, timeout handling, and error mapping.
+
+Source-specific logic must not leak into domain services. The domain does not know whether data came from Wikipedia, Steam, or any other source.
 
 See `docs/sources.md` for details.
 
@@ -174,8 +175,8 @@ See `docs/persistence.md` for details.
 
 These are separate domain capabilities:
 
-- **Classification** determines *what kind of entity* a candidate represents (GAME, DLC, MOVIE, etc.).
-- **Identity Resolution** determines *which canonical entity* a candidate corresponds to.
+- **Classification** determines _what kind of entity_ a candidate represents (GAME, DLC, MOVIE, etc.).
+- **Identity Resolution** determines _which canonical entity_ a candidate corresponds to.
 
 Both combine deterministic rules with optional AI assistance.
 
@@ -216,20 +217,20 @@ See `docs/roadmap.md` for phase-specific test criteria.
 
 # 12. Technology Stack
 
-| Layer         | Technology                    |
-|---------------|-------------------------------|
-| Runtime       | Node.js                       |
-| Language      | TypeScript (strict)           |
-| API           | Express                       |
-| Validation    | Zod                           |
-| Database      | MongoDB                       |
-| DB Access     | Mongoose                      |
-| HTTP Client   | fetch / undici                |
-| Tests         | Vitest                        |
-| Lint          | ESLint                        |
-| Format        | Prettier                      |
-| Containers    | Docker                        |
-| Local AI      | Ollama                        |
-| Remote AI     | Provider Adapter              |
+| Layer       | Technology          |
+| ----------- | ------------------- |
+| Runtime     | Node.js             |
+| Language    | TypeScript (strict) |
+| API         | Express             |
+| Validation  | Zod                 |
+| Database    | MongoDB             |
+| DB Access   | Mongoose            |
+| HTTP Client | fetch / undici      |
+| Tests       | Vitest              |
+| Lint        | ESLint              |
+| Format      | Prettier            |
+| Containers  | Docker              |
+| Local AI    | Ollama              |
+| Remote AI   | Provider Adapter    |
 
 See `docs/stack.md` for details.

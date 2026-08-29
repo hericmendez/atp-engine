@@ -2,7 +2,11 @@ import type { Game } from '../../../domain/game/game.js';
 import type { GameDocument } from './game-schema.js';
 import { createGameId } from '../../../domain/shared/ids.js';
 import { createGameTitle } from '../../../domain/shared/title.js';
-import { createPlatform, type PlatformFamily } from '../../../domain/shared/platform.js';
+import {
+  createPlatform,
+  type PlatformFamily,
+  type PlatformType,
+} from '../../../domain/shared/platform.js';
 import { createRegion } from '../../../domain/shared/region.js';
 import { createReleaseDate } from '../../../domain/shared/release-date.js';
 import { createExternalIdentifier } from '../../../domain/shared/external-identifier.js';
@@ -22,7 +26,11 @@ export function toDomain(doc: GameDocument): Game {
     releases: doc.releases.map((r) => ({
       id: createReleaseId(r.domainId),
       gameId: createGameId(doc.domainId),
-      platform: createPlatform(r.platform.name, (r.platform.family as PlatformFamily) ?? undefined),
+      platform: createPlatform(
+        r.platform.name,
+        (r.platform.family as PlatformFamily) ?? undefined,
+        (r.platform.type as PlatformType) ?? undefined,
+      ),
       region: r.region ? createRegion(r.region.name) : null,
       releaseDate: r.releaseDate
         ? createReleaseDate(
@@ -73,7 +81,7 @@ export function toPersistence(game: Game): Record<string, unknown> {
     titles: game.titles.map((t) => ({ value: t.value, type: t.type })),
     releases: game.releases.map((r) => ({
       domainId: r.id,
-      platform: { name: r.platform.name, family: r.platform.family ?? null },
+      platform: { name: r.platform.name, family: r.platform.family ?? null, type: r.platform.type },
       region: r.region ? { name: r.region.name } : null,
       releaseDate: r.releaseDate
         ? {

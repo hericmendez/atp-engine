@@ -243,80 +243,204 @@ describe('normalizeReleaseDate', () => {
 });
 
 describe('normalizePlatform', () => {
-  it('normalizes "ps4" to PlayStation 4 with family', () => {
-    expect(normalizePlatform('ps4')).toEqual({ name: 'PlayStation 4', family: 'PlayStation' });
+  it('normalizes "ps4" to PlayStation 4 with family and type', () => {
+    expect(normalizePlatform('ps4')).toEqual({
+      name: 'PlayStation 4',
+      family: 'PlayStation',
+      type: 'console',
+    });
   });
 
-  it('normalizes "PS4" to PlayStation 4 with family', () => {
-    expect(normalizePlatform('PS4')).toEqual({ name: 'PlayStation 4', family: 'PlayStation' });
+  it('normalizes "PS4" to PlayStation 4 with family and type', () => {
+    expect(normalizePlatform('PS4')).toEqual({
+      name: 'PlayStation 4',
+      family: 'PlayStation',
+      type: 'console',
+    });
   });
 
-  it('normalizes "xbox360" to Xbox 360 with family', () => {
-    expect(normalizePlatform('xbox360')).toEqual({ name: 'Xbox 360', family: 'Xbox' });
+  it('normalizes "xbox360" to Xbox 360 with family and type', () => {
+    expect(normalizePlatform('xbox360')).toEqual({
+      name: 'Xbox 360',
+      family: 'Xbox',
+      type: 'console',
+    });
   });
 
-  it('normalizes "switch" to Nintendo Switch with family', () => {
-    expect(normalizePlatform('switch')).toEqual({ name: 'Nintendo Switch', family: 'Nintendo' });
+  it('normalizes "switch" to Nintendo Switch with family and type', () => {
+    expect(normalizePlatform('switch')).toEqual({
+      name: 'Nintendo Switch',
+      family: 'Nintendo',
+      type: 'console',
+    });
   });
 
-  it('normalizes "pc" to PC with family', () => {
-    expect(normalizePlatform('pc')).toEqual({ name: 'PC', family: 'PC' });
+  it('normalizes "pc" to PC with family and type', () => {
+    expect(normalizePlatform('pc')).toEqual({ name: 'PC', family: 'PC', type: 'computer' });
   });
 
-  it('normalizes "windows" to Windows with PC family (not PC itself)', () => {
-    expect(normalizePlatform('windows')).toEqual({ name: 'Windows', family: 'PC' });
+  it('normalizes "windows" to Windows with PC family and computer type', () => {
+    expect(normalizePlatform('windows')).toEqual({
+      name: 'Windows',
+      family: 'PC',
+      type: 'computer',
+    });
   });
 
-  it('normalizes "linux" to Linux with PC family', () => {
-    expect(normalizePlatform('linux')).toEqual({ name: 'Linux', family: 'PC' });
+  it('normalizes "linux" to Linux with PC family and computer type', () => {
+    expect(normalizePlatform('linux')).toEqual({ name: 'Linux', family: 'PC', type: 'computer' });
   });
 
-  it('normalizes "mac" to macOS with PC family', () => {
-    expect(normalizePlatform('mac')).toEqual({ name: 'macOS', family: 'PC' });
+  it('normalizes "mac" to macOS with PC family and computer type', () => {
+    expect(normalizePlatform('mac')).toEqual({ name: 'macOS', family: 'PC', type: 'computer' });
   });
 
   it('preserves "steam" as-is (distribution channel, not platform)', () => {
-    expect(normalizePlatform('steam')).toEqual({ name: 'steam', family: null });
+    expect(normalizePlatform('steam')).toEqual({ name: 'steam', family: null, type: 'other' });
   });
 
   it('preserves "epic games" as-is (distribution channel, not platform)', () => {
-    expect(normalizePlatform('epic games')).toEqual({ name: 'epic games', family: null });
+    expect(normalizePlatform('epic games')).toEqual({
+      name: 'epic games',
+      family: null,
+      type: 'other',
+    });
   });
 
   it('preserves "gog" as-is (distribution channel, not platform)', () => {
-    expect(normalizePlatform('gog')).toEqual({ name: 'gog', family: null });
+    expect(normalizePlatform('gog')).toEqual({ name: 'gog', family: null, type: 'other' });
   });
 
-  it('normalizes "mega drive" to Sega Genesis with Sega family', () => {
-    expect(normalizePlatform('mega drive')).toEqual({ name: 'Sega Genesis', family: 'Sega' });
+  it('normalizes "mega drive" to Sega Genesis with Sega family and console type', () => {
+    expect(normalizePlatform('mega drive')).toEqual({
+      name: 'Sega Genesis',
+      family: 'Sega',
+      type: 'console',
+    });
   });
 
-  it('normalizes "3ds" to Nintendo 3DS with family', () => {
-    expect(normalizePlatform('3ds')).toEqual({ name: 'Nintendo 3DS', family: 'Nintendo' });
+  it('normalizes "3ds" to Nintendo 3DS with family and handheld type', () => {
+    expect(normalizePlatform('3ds')).toEqual({
+      name: 'Nintendo 3DS',
+      family: 'Nintendo',
+      type: 'handheld',
+    });
   });
 
-  it('normalizes "wii u" to Wii U with family', () => {
-    expect(normalizePlatform('wii u')).toEqual({ name: 'Wii U', family: 'Nintendo' });
+  it('normalizes "wii u" to Wii U with family and console type', () => {
+    expect(normalizePlatform('wii u')).toEqual({
+      name: 'Wii U',
+      family: 'Nintendo',
+      type: 'console',
+    });
   });
 
-  it('normalizes "xbox series x" to Xbox Series X with family', () => {
-    expect(normalizePlatform('xbox series x')).toEqual({ name: 'Xbox Series X', family: 'Xbox' });
+  it('normalizes "xbox series x" to Xbox Series X with family and console type', () => {
+    expect(normalizePlatform('xbox series x')).toEqual({
+      name: 'Xbox Series X',
+      family: 'Xbox',
+      type: 'console',
+    });
   });
 
-  it('normalizes "ios" to iOS with Mobile family', () => {
-    expect(normalizePlatform('ios')).toEqual({ name: 'iOS', family: 'Mobile' });
+  it('normalizes "ios" to iOS with Mobile family and mobile type', () => {
+    expect(normalizePlatform('ios')).toEqual({ name: 'iOS', family: 'Mobile', type: 'mobile' });
   });
 
-  it('normalizes "android" to Android with Mobile family', () => {
-    expect(normalizePlatform('android')).toEqual({ name: 'Android', family: 'Mobile' });
+  it('normalizes "android" to Android with Mobile family and mobile type', () => {
+    expect(normalizePlatform('android')).toEqual({
+      name: 'Android',
+      family: 'Mobile',
+      type: 'mobile',
+    });
   });
 
-  it('normalizes "arcade" to Arcade with null family', () => {
-    expect(normalizePlatform('arcade')).toEqual({ name: 'Arcade', family: null });
+  it('normalizes "arcade" to Arcade with Other family and arcade type', () => {
+    expect(normalizePlatform('arcade')).toEqual({
+      name: 'Arcade',
+      family: 'Other',
+      type: 'arcade',
+    });
   });
 
-  it('preserves unknown platform names with null family', () => {
-    expect(normalizePlatform('Custom Console')).toEqual({ name: 'Custom Console', family: null });
+  it('preserves unknown platform names with null family and other type', () => {
+    expect(normalizePlatform('Custom Console')).toEqual({
+      name: 'Custom Console',
+      family: null,
+      type: 'other',
+    });
+  });
+
+  it('normalizes "psp" to PlayStation Portable with handheld type', () => {
+    expect(normalizePlatform('psp')).toEqual({
+      name: 'PlayStation Portable',
+      family: 'PlayStation',
+      type: 'handheld',
+    });
+  });
+
+  it('normalizes "ps vita" to PlayStation Vita with handheld type', () => {
+    expect(normalizePlatform('ps vita')).toEqual({
+      name: 'PlayStation Vita',
+      family: 'PlayStation',
+      type: 'handheld',
+    });
+  });
+
+  it('normalizes "gba" to Game Boy Advance with handheld type', () => {
+    expect(normalizePlatform('gba')).toEqual({
+      name: 'Game Boy Advance',
+      family: 'Nintendo',
+      type: 'handheld',
+    });
+  });
+
+  it('normalizes "gb" to Game Boy with handheld type', () => {
+    expect(normalizePlatform('gb')).toEqual({
+      name: 'Game Boy',
+      family: 'Nintendo',
+      type: 'handheld',
+    });
+  });
+
+  it('normalizes "ds" to Nintendo DS with handheld type', () => {
+    expect(normalizePlatform('ds')).toEqual({
+      name: 'Nintendo DS',
+      family: 'Nintendo',
+      type: 'handheld',
+    });
+  });
+
+  it('normalizes "dos" to MS-DOS with computer type', () => {
+    expect(normalizePlatform('dos')).toEqual({ name: 'MS-DOS', family: 'PC', type: 'computer' });
+  });
+
+  it('normalizes "c64" to Commodore 64 with computer type', () => {
+    expect(normalizePlatform('c64')).toEqual({
+      name: 'Commodore 64',
+      family: 'Other',
+      type: 'computer',
+    });
+  });
+
+  it('normalizes "cps2" to CPS2 with arcade type', () => {
+    expect(normalizePlatform('cps2')).toEqual({ name: 'CPS2', family: 'Other', type: 'arcade' });
+  });
+
+  it('normalizes "pico-8" to PICO-8 with fantasy-console type', () => {
+    expect(normalizePlatform('pico-8')).toEqual({
+      name: 'PICO-8',
+      family: 'Other',
+      type: 'fantasy-console',
+    });
+  });
+
+  it('normalizes "tic-80" to TIC-80 with fantasy-console type', () => {
+    expect(normalizePlatform('tic-80')).toEqual({
+      name: 'TIC-80',
+      family: 'Other',
+      type: 'fantasy-console',
+    });
   });
 });
 
@@ -505,7 +629,11 @@ describe('normalizeCandidate', () => {
     expect(result.developers).toEqual([{ name: 'Capcom' }]);
     expect(result.genres).toEqual([{ name: 'action' }]);
     expect(result.releases).toHaveLength(1);
-    expect(result.releases[0].platform).toEqual({ name: 'PlayStation 4', family: 'PlayStation' });
+    expect(result.releases[0].platform).toEqual({
+      name: 'PlayStation 4',
+      family: 'PlayStation',
+      type: 'console',
+    });
     expect(result.releases[0].region).toEqual({ name: 'North America' });
     expect(result.releases[0].releaseDate).toEqual({
       year: 2005,

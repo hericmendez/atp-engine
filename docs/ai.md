@@ -6,12 +6,12 @@ Artificial Intelligence is an optional capability of the ATP Engine.
 
 AI exists to improve difficult operations such as:
 
-* game classification;
-* search-result classification;
-* identity resolution;
-* metadata interpretation;
-* conflict resolution;
-* ambiguous candidate analysis.
+- game classification;
+- search-result classification;
+- identity resolution;
+- metadata interpretation;
+- conflict resolution;
+- ambiguous candidate analysis.
 
 AI is **not a required runtime dependency**.
 
@@ -55,11 +55,11 @@ The LLM is an assistant to the engine.
 
 It is not:
 
-* the source of truth;
-* the database;
-* the identity authority;
-* the classifier authority;
-* the application orchestrator.
+- the source of truth;
+- the database;
+- the identity authority;
+- the classifier authority;
+- the application orchestrator.
 
 The application decides what to ask the model and whether its answer is acceptable.
 
@@ -191,11 +191,11 @@ AI may interpret poorly structured source data.
 
 Examples:
 
-* extracting release information;
-* identifying edition markers;
-* interpreting descriptions;
-* recognizing alternate titles;
-* extracting relationships.
+- extracting release information;
+- identifying edition markers;
+- interpreting descriptions;
+- recognizing alternate titles;
+- extracting relationships.
 
 AI output must still be validated before entering the domain.
 
@@ -252,12 +252,12 @@ AI prompts should contain the minimum information necessary for the task.
 
 Avoid sending:
 
-* unrelated source records;
-* entire HTML documents;
-* unnecessary raw responses;
-* sensitive configuration;
-* database credentials;
-* internal infrastructure details.
+- unrelated source records;
+- entire HTML documents;
+- unnecessary raw responses;
+- sensitive configuration;
+- database credentials;
+- internal infrastructure details.
 
 ---
 
@@ -330,10 +330,10 @@ Deterministic evidence has priority over AI.
 
 Examples:
 
-* verified external ID;
-* explicit source relationship;
-* known release relationship;
-* explicit DLC classification.
+- verified external ID;
+- explicit source relationship;
+- known release relationship;
+- explicit DLC classification.
 
 AI cannot override hard evidence simply because its prediction differs.
 
@@ -343,15 +343,15 @@ AI cannot override hard evidence simply because its prediction differs.
 
 AI failure includes:
 
-* provider unavailable;
-* Ollama unavailable;
-* network timeout;
-* rate limiting;
-* malformed response;
-* invalid JSON;
-* invalid schema;
-* model failure;
-* excessive latency.
+- provider unavailable;
+- Ollama unavailable;
+- network timeout;
+- rate limiting;
+- malformed response;
+- invalid JSON;
+- invalid schema;
+- model failure;
+- excessive latency.
 
 AI failure must never make the entire engine fail when native logic can continue.
 
@@ -509,10 +509,10 @@ The engine must avoid generating a different ordering on every request merely be
 
 Where practical, AI-assisted decisions should use:
 
-* deterministic prompts;
-* structured output;
-* low randomness;
-* stable model configuration.
+- deterministic prompts;
+- structured output;
+- low randomness;
+- stable model configuration.
 
 AI output should be treated as potentially nondeterministic.
 

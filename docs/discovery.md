@@ -174,18 +174,18 @@ Candidate
 
 Candidates may contain:
 
-* source;
-* external identifier;
-* title;
-* description;
-* release date;
-* platforms;
-* developers;
-* publishers;
-* genres;
-* URLs;
-* cover information;
-* source-specific metadata.
+- source;
+- external identifier;
+- title;
+- description;
+- release date;
+- platforms;
+- developers;
+- publishers;
+- genres;
+- URLs;
+- cover information;
+- source-specific metadata.
 
 ---
 
@@ -195,11 +195,11 @@ Candidates should be filtered before expensive processing.
 
 Possible filters:
 
-* obvious non-game content;
-* irrelevant source results;
-* unsupported content types;
-* missing minimum identifying information;
-* duplicate source records.
+- obvious non-game content;
+- irrelevant source results;
+- unsupported content types;
+- missing minimum identifying information;
+- duplicate source records.
 
 ---
 
@@ -207,14 +207,14 @@ Possible filters:
 
 Normalization should standardize:
 
-* title formatting;
-* whitespace;
-* punctuation;
-* dates;
-* platform names;
-* regions;
-* organization names;
-* genres.
+- title formatting;
+- whitespace;
+- punctuation;
+- dates;
+- platform names;
+- regions;
+- organization names;
+- genres.
 
 Normalization should not destroy the original source representation.
 
@@ -248,10 +248,10 @@ Non-game candidates should not enter the canonical Game pipeline.
 
 The same external entity may appear:
 
-* multiple times in one source;
-* across multiple sources;
-* under different titles;
-* in different regions.
+- multiple times in one source;
+- across multiple sources;
+- under different titles;
+- in different regions.
 
 Obvious duplicates should be reduced before identity resolution.
 
@@ -273,6 +273,14 @@ Identity Resolution
 Canonical identity groups
 ```
 
+The identity resolver uses a priority-based deterministic approach:
+
+1. Exact external ID match → SAME_GAME
+2. External ID mismatch → DIFFERENT_GAME
+3. Remake markers → DIFFERENT_GAME with REMAKE relationship
+4. Version markers with base title match → RELATED_GAME
+5. Score-based → SAME_GAME / DIFFERENT_GAME / UNRESOLVED
+
 See:
 
 ```text
@@ -287,13 +295,13 @@ Search results should be ranked using explicit criteria.
 
 Possible signals include:
 
-* title relevance;
-* exact match;
-* normalized match;
-* source confidence;
-* metadata completeness;
-* identity confidence;
-* popularity signals when available.
+- title relevance;
+- exact match;
+- normalized match;
+- source confidence;
+- metadata completeness;
+- identity confidence;
+- popularity signals when available.
 
 Ranking must be deterministic unless AI assistance is explicitly used.
 
@@ -323,9 +331,9 @@ Pagination must happen after the system has established a stable result ordering
 
 For multi-source discovery, the engine must define whether pagination applies to:
 
-* each source independently;
-* the merged candidate set;
-* canonical results.
+- each source independently;
+- the merged candidate set;
+- canonical results.
 
 The public API contract must define the final behavior.
 
@@ -345,10 +353,10 @@ the engine should be capable of returning relevant related titles.
 
 Search should support:
 
-* partial matches;
-* normalized matches;
-* alternate titles;
-* source-specific search behavior.
+- partial matches;
+- normalized matches;
+- alternate titles;
+- source-specific search behavior.
 
 ---
 
@@ -452,11 +460,11 @@ The ATP implementation should preserve the ability to return a small, high-quali
 
 Cover selection should consider:
 
-* title relevance;
-* game identity;
-* platform/version relevance;
-* image quality;
-* source reliability.
+- title relevance;
+- game identity;
+- platform/version relevance;
+- image quality;
+- source reliability.
 
 ---
 
@@ -472,11 +480,11 @@ A cover is supporting evidence.
 
 AI may assist with:
 
-* candidate classification;
-* semantic relevance;
-* identity ambiguity;
-* metadata normalization;
-* source conflicts.
+- candidate classification;
+- semantic relevance;
+- identity ambiguity;
+- metadata normalization;
+- source conflicts.
 
 AI must not replace the discovery architecture.
 
@@ -558,3 +566,127 @@ Classification interprets it.
 Identity resolution determines what it represents.
 
 Validation determines what may become canonical knowledge.
+
+---
+
+# 31. Implementation Architecture
+
+## Source Types
+
+```text
+src/discovery/
+├── discovery-types.ts          # DiscoveryRequest, DiscoveryResult, DiscoveryGroupResult
+├── discovery-engine.ts         # DiscoveryEngine orchestration
+├── aggregation.ts              # aggregateAndDeduplicate, rankGroups
+└── index.ts                    # barrel exports
+```
+
+## Data Flow
+
+```text
+DiscoveryRequest
+        ↓
+SourceRegistry.selectSources()
+        ↓
+Promise.allSettled(sourceAdapter.search())
+        ↓
+normalizeCandidate() per source result
+        ↓
+DeterministicClassifier.classify() per candidate
+        ↓
+DiscoverySourceObservation[]
+        ↓
+aggregateAndDeduplicate()
+  ├── pairwise IdentityResolver.resolve()
+  ├── group SAME_GAME candidates
+  └── calculate ranking scores
+        ↓
+rankGroups() (deterministic sort)
+        ↓
+Pagination (limit/offset)
+        ↓
+DiscoveryResult
+```
+
+## DiscoveryEngine
+
+Main orchestrator:
+
+```typescript
+const engine = new DiscoveryEngine(registry, classifier, identityResolver);
+const result = await engine.discover({ query: 'zelda', limit: 20 });
+```
+
+Responsibilities:
+- Select sources by capabilities
+- Query sources in parallel with failure isolation
+- Normalize candidates via existing normalization
+- Classify via DeterministicClassifier
+- Aggregate and deduplicate via IdentityResolver
+- Rank deterministically
+- Paginate results
+
+## Aggregation Strategy
+
+Candidates are grouped by pairwise identity resolution:
+
+1. For each unprocessed candidate, compare against all other unprocessed candidates
+2. If IdentityResolver returns SAME_GAME, group them together
+3. Each group becomes one DiscoveryGroupResult with multiple observations
+
+Group IDs are derived from sorted source:sourceId pairs, ensuring determinism.
+
+## Deduplication Strategy
+
+Uses existing IdentityResolver - NOT title-only matching.
+
+The aggregator creates a temporary Game object from observation A and resolves observation B against it. If outcome is SAME_GAME, they are grouped.
+
+## Ranking Strategy
+
+Deterministic ranking based on weighted signals:
+
+| Signal | Weight |
+|--------|--------|
+| Identity confidence | 0.3 |
+| Classification confidence | 0.2 |
+| Source count (capped at 3) | 0.2 |
+| Metadata completeness | 0.15 |
+| Title relevance | 0.15 |
+
+Title relevance scoring:
+- Exact match: 1.0
+- Query contained in title: 0.8
+- Title contained in query: 0.6
+- Partial word match: 0.2 * (matching words / total words)
+
+Tie-breaking: source count > groupId (deterministic).
+
+## Source Failure Behavior
+
+- Each source is queried via `Promise.allSettled`
+- Failed sources produce `DiscoverySourceError` entries
+- Successful sources continue processing
+- If ALL sources fail, empty groups with errors is returned
+- Source errors include: source, errorType, message, retryable
+
+## Determinism Guarantees
+
+- Group IDs derived from sorted source:sourceId pairs (not counter)
+- Ranking uses deterministic weighted scoring
+- Tie-breaking uses deterministic comparisons
+- Source execution order does not affect final result
+- Same input always produces same output
+
+## Platform Ontology Regression
+
+Discovery explicitly tests that:
+- Steam → DistributionChannel (not Platform)
+- Google Play → DistributionChannel (not Platform)
+- MAME → NOT promoted to Platform
+- RetroArch → NOT promoted to Platform
+- Unity → NOT promoted to Platform
+- PICO-8 → Platform (fantasy-console)
+- CPS2 → Platform (arcade)
+- Commodore 64 → Platform (computer)
+- MS-DOS → Platform (computer)

@@ -1,4 +1,4 @@
-import type { PlatformFamily } from '../domain/shared/platform.js';
+import type { PlatformFamily, PlatformType } from '../domain/shared/platform.js';
 
 const PLATFORM_ALIASES: Record<string, string> = {
   // Sony PlayStation
@@ -82,6 +82,9 @@ const PLATFORM_ALIASES: Record<string, string> = {
   mac: 'macOS',
   macos: 'macOS',
   linux: 'Linux',
+  dos: 'MS-DOS',
+  'ms-dos': 'MS-DOS',
+  msdos: 'MS-DOS',
 
   // Mobile
   ios: 'iOS',
@@ -105,11 +108,40 @@ const PLATFORM_ALIASES: Record<string, string> = {
   jaguar: 'Atari Jaguar',
   lynx: 'Atari Lynx',
 
-  // Other
+  // Retro computers
+  c64: 'Commodore 64',
+  'commodore 64': 'Commodore 64',
+  amiga: 'Amiga',
+  msx: 'MSX',
+  zx: 'ZX Spectrum',
+  'zx spectrum': 'ZX Spectrum',
+  'apple ii': 'Apple II',
+  'sharp x68000': 'Sharp X68000',
+  'pc-98': 'PC-98',
+  'atari st': 'Atari ST',
+
+  // Arcade
   arcade: 'Arcade',
-  neo: 'Neo Geo',
+  cps1: 'CPS1',
+  cps2: 'CPS2',
+  cps3: 'CPS3',
   'neo geo': 'Neo Geo',
+  neo: 'Neo Geo',
   'neo geo pocket': 'Neo Geo Pocket',
+  naomi: 'Naomi',
+  atomiswave: 'Atomiswave',
+
+  // Fantasy consoles
+  'pico-8': 'PICO-8',
+  pico8: 'PICO-8',
+  'tic-80': 'TIC-80',
+  tic80: 'TIC-80',
+  'wasm-4': 'WASM-4',
+  wasm4: 'WASM-4',
+  'lowres nx': 'LowRes NX',
+  vircon32: 'Vircon32',
+
+  // Other
   'virtual boy': 'Virtual Boy',
   'oculus quest': 'Meta Quest',
   'meta quest': 'Meta Quest',
@@ -123,6 +155,15 @@ const PLATFORM_FAMILIES: Record<string, PlatformFamily> = {
   windows: 'PC',
   macos: 'PC',
   linux: 'PC',
+  'ms-dos': 'PC',
+  'commodore 64': 'Other',
+  amiga: 'Other',
+  msx: 'Other',
+  'zx spectrum': 'Other',
+  'apple ii': 'Other',
+  'sharp x68000': 'Other',
+  'pc-98': 'Other',
+  'atari st': 'Other',
 
   // PlayStation family
   playstation: 'PlayStation',
@@ -175,6 +216,100 @@ const PLATFORM_FAMILIES: Record<string, PlatformFamily> = {
   ios: 'Mobile',
   android: 'Mobile',
   'windows phone': 'Mobile',
+
+  // Arcade
+  arcade: 'Other',
+  cps1: 'Other',
+  cps2: 'Other',
+  cps3: 'Other',
+  'neo geo': 'Other',
+  'neo geo pocket': 'Other',
+  naomi: 'Other',
+  atomiswave: 'Other',
+
+  // Fantasy consoles
+  'pico-8': 'Other',
+  'tic-80': 'Other',
+  'wasm-4': 'Other',
+  'lowres nx': 'Other',
+  vircon32: 'Other',
+} as const;
+
+const PLATFORM_TYPES: Record<string, PlatformType> = {
+  // Consoles
+  playstation: 'console',
+  'playstation 2': 'console',
+  'playstation 3': 'console',
+  'playstation 4': 'console',
+  'playstation 5': 'console',
+  xbox: 'console',
+  'xbox 360': 'console',
+  'xbox one': 'console',
+  'xbox series x': 'console',
+  'xbox series s': 'console',
+  'nintendo entertainment system': 'console',
+  'super nintendo entertainment system': 'console',
+  'nintendo 64': 'console',
+  gamecube: 'console',
+  wii: 'console',
+  'wii u': 'console',
+  'nintendo switch': 'console',
+  'sega genesis': 'console',
+  'sega saturn': 'console',
+  'sega dreamcast': 'console',
+  'atari 2600': 'console',
+  'atari 7800': 'console',
+  'atari jaguar': 'console',
+  'virtual boy': 'console',
+
+  // Handhelds
+  'playstation portable': 'handheld',
+  'playstation vita': 'handheld',
+  'game boy': 'handheld',
+  'game boy color': 'handheld',
+  'game boy advance': 'handheld',
+  'nintendo ds': 'handheld',
+  'nintendo 3ds': 'handheld',
+  'nintendo 2ds': 'handheld',
+  'sega game gear': 'handheld',
+  'atari lynx': 'handheld',
+  'neo geo pocket': 'handheld',
+
+  // Computers
+  pc: 'computer',
+  windows: 'computer',
+  macos: 'computer',
+  linux: 'computer',
+  'ms-dos': 'computer',
+  'commodore 64': 'computer',
+  amiga: 'computer',
+  msx: 'computer',
+  'zx spectrum': 'computer',
+  'apple ii': 'computer',
+  'sharp x68000': 'computer',
+  'pc-98': 'computer',
+  'atari st': 'computer',
+
+  // Mobile
+  android: 'mobile',
+  ios: 'mobile',
+  'windows phone': 'mobile',
+
+  // Arcade
+  arcade: 'arcade',
+  cps1: 'arcade',
+  cps2: 'arcade',
+  cps3: 'arcade',
+  'neo geo': 'arcade',
+  naomi: 'arcade',
+  atomiswave: 'arcade',
+
+  // Fantasy consoles
+  'pico-8': 'fantasy-console',
+  'tic-80': 'fantasy-console',
+  'wasm-4': 'fantasy-console',
+  'lowres nx': 'fantasy-console',
+  vircon32: 'fantasy-console',
 } as const;
 
 export function resolvePlatformAlias(input: string): string {
@@ -186,4 +321,10 @@ export function resolvePlatformFamily(input: string): PlatformFamily | null {
   const normalized = input.trim().toLowerCase();
   const resolved = (PLATFORM_ALIASES[normalized] ?? normalized).toLowerCase();
   return PLATFORM_FAMILIES[resolved] ?? null;
+}
+
+export function resolvePlatformType(input: string): PlatformType {
+  const normalized = input.trim().toLowerCase();
+  const resolved = (PLATFORM_ALIASES[normalized] ?? normalized).toLowerCase();
+  return PLATFORM_TYPES[resolved] ?? 'other';
 }

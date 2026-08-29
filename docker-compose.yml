@@ -6,7 +6,7 @@ services:
       target: base
     command: npm run dev
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - PORT=3000
       - NODE_ENV=development
@@ -23,7 +23,7 @@ services:
   mongo:
     image: mongo:7
     ports:
-      - "27017:27017"
+      - '27017:27017'
     volumes:
       - mongo_data:/data/db
 

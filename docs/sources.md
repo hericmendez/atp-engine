@@ -49,12 +49,12 @@ The source registry should expose supported capabilities.
 
 A source adapter is responsible for:
 
-* communicating with the source;
-* handling source-specific requests;
-* parsing source-specific responses;
-* extracting relevant fields;
-* exposing source identifiers;
-* converting source data into ATP source representations.
+- communicating with the source;
+- handling source-specific requests;
+- parsing source-specific responses;
+- extracting relevant fields;
+- exposing source identifiers;
+- converting source data into ATP source representations.
 
 It should not perform canonical identity resolution.
 
@@ -120,11 +120,11 @@ It should not invent missing values.
 
 Raw source data may be retained where useful for:
 
-* debugging;
-* provenance;
-* reprocessing;
-* parser development;
-* dispute resolution.
+- debugging;
+- provenance;
+- reprocessing;
+- parser development;
+- dispute resolution.
 
 Raw data should not automatically become part of the canonical Game model.
 
@@ -220,13 +220,13 @@ A source failure should be isolated.
 
 Possible failures:
 
-* timeout;
-* HTTP error;
-* rate limiting;
-* malformed response;
-* parser failure;
-* authentication failure;
-* temporary unavailability.
+- timeout;
+- HTTP error;
+- rate limiting;
+- malformed response;
+- parser failure;
+- authentication failure;
+- temporary unavailability.
 
 A multi-source search should continue when other sources remain available.
 
@@ -252,11 +252,11 @@ These metrics may influence source selection.
 
 Each source adapter must respect source-specific:
 
-* rate limits;
-* request policies;
-* retry rules;
-* caching policies;
-* terms of service.
+- rate limits;
+- request policies;
+- retry rules;
+- caching policies;
+- terms of service.
 
 Do not implement aggressive scraping by default.
 
@@ -284,9 +284,9 @@ ATP should never allow an unavailable source to block the entire request indefin
 
 Independent sources may be queried in parallel when:
 
-* source policies allow it;
-* request budget allows it;
-* latency benefits justify it.
+- source policies allow it;
+- request budget allows it;
+- latency benefits justify it.
 
 Example:
 
@@ -348,10 +348,10 @@ It should not leak into the core domain unless it represents a meaningful canoni
 
 Source URLs should be preserved where useful for:
 
-* provenance;
-* debugging;
-* user-facing navigation;
-* auditability.
+- provenance;
+- debugging;
+- user-facing navigation;
+- auditability.
 
 ---
 
@@ -384,11 +384,11 @@ The system should degrade gracefully when a source disappears.
 
 If a source becomes unavailable permanently, ATP should be able to replace it with another source without rewriting:
 
-* domain entities;
-* identity logic;
-* classification logic;
-* persistence;
-* API contracts.
+- domain entities;
+- identity logic;
+- classification logic;
+- persistence;
+- API contracts.
 
 ---
 
@@ -424,13 +424,101 @@ ATP interprets observations and constructs canonical knowledge.
 
 # 28. Current Initial Sources
 
-The initial architecture is expected to support:
+The initial sources are:
 
 ```text
 Wikipedia
-SteamDB
+Steam (Store API)
 ```
 
 Additional sources may be introduced later.
 
 The adapter boundary must exist from the beginning so that the architecture does not become coupled to these initial sources.
+
+---
+
+# 29. Implementation Architecture
+
+## Source Types
+
+```text
+src/sources/
+├── raw-candidate.ts          # RawCandidate input type
+├── source-adapter.ts         # SourceAdapter interface
+├── source-registry.ts        # SourceRegistry management
+├── source-errors.ts          # SourceError with retryable classification
+├── base-adapter.ts           # BaseAdapter with HTTP, timeout, error mapping
+├── index.ts                  # barrel exports
+├── wikipedia/
+│   ├── wikipedia-adapter.ts  # MediaWiki API adapter
+│   └── index.ts
+└── steam/
+    ├── steam-adapter.ts      # Steam Store API adapter
+    └── index.ts
+```
+
+## Data Flow
+
+```text
+External Source API
+        ↓
+SourceAdapter.search() / getById()
+        ↓
+RawCandidate (source-specific, pre-normalization)
+        ↓
+normalizeCandidate()
+        ↓
+NormalizedCandidate (domain-aligned)
+        ↓
+Classification
+        ↓
+Identity Resolution
+        ↓
+Canonical Game
+```
+
+## BaseAdapter
+
+All adapters extend `BaseAdapter` which provides:
+
+- `fetchJson<T>(url, signal?)` — HTTP GET with JSON parsing
+- Configurable timeout via `AbortController` (default 10s)
+- HTTP error mapping: 404 → `not_found`, 429 → `rate_limited`, other → `invalid_response`
+- Network error handling and timeout detection
+- Custom User-Agent header
+
+## SourceError
+
+Every source failure produces a `SourceError` with:
+
+- `source` — which adapter failed
+- `errorType` — `timeout | rate_limited | network_failure | invalid_response | not_found | parse_failure | source_unavailable | authentication_failure`
+- `retryable` — `true` for transient failures (timeout, rate_limited, network_failure, source_unavailable), `false` for permanent failures
+
+## SourceRegistry
+
+Central registry for adapter instances:
+
+```typescript
+registry.register(adapter);
+registry.get('wikipedia'); // → WikipediaAdapter
+registry.getAll(); // → [WikipediaAdapter, SteamAdapter]
+registry.getSources(); // → ['wikipedia', 'steam']
+```
+
+## WikipediaAdapter
+
+- **Search**: MediaWiki action API (`action=query&list=search`)
+- **GetById**: MediaWiki parse API (`action=parse`) with wikitext extraction
+- **Pagination**: offset-based
+- **Extracts**: platforms, developers, publishers, genres, release date from Infobox wikitext
+- **Classification hints**: generates hints from wikitext content (e.g., "video game" presence → GAME)
+
+## SteamAdapter
+
+- **Search**: Steam app list (`/api/applist`) with in-memory cache, then individual `getById` calls
+- **GetById**: Steam Store API (`/appdetails?appids={id}`)
+- **Pagination**: none (app list is fully cached)
+- **Extracts**: platforms (Windows/macOS/Linux), developers, publishers, genres, release date, cover images
+- **Distribution**: always sets `distributionChannels: ['Steam']` and `launchers: ['Steam Client']`
+- **Classification hints**: based on Steam type field (game → GAME, dlc → DLC)

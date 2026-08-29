@@ -8,7 +8,7 @@ export interface GameDocument extends Document {
   }[];
   releases: {
     domainId: string;
-    platform: { name: string; family: string | null };
+    platform: { name: string; family: string | null; type: string };
     region: { name: string } | null;
     releaseDate: {
       year: number;
@@ -103,6 +103,7 @@ const releaseSchema = new Schema(
     platform: {
       name: { type: String, required: true },
       family: { type: String, default: null },
+      type: { type: String, default: 'other' },
     },
     region: {
       name: { type: String, default: null },

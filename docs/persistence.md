@@ -34,11 +34,11 @@ Only validated domain data should become canonical.
 
 The following must not automatically become canonical:
 
-* raw HTML;
-* raw API responses;
-* unvalidated source records;
-* unvalidated LLM output;
-* temporary candidates.
+- raw HTML;
+- raw API responses;
+- unvalidated source records;
+- unvalidated LLM output;
+- temporary candidates.
 
 ---
 
@@ -104,10 +104,10 @@ Database implementation details belong to infrastructure.
 
 A canonical Game should be persisted independently from:
 
-* source records;
-* source observations;
-* AI decisions;
-* discovery sessions.
+- source records;
+- source observations;
+- AI decisions;
+- discovery sessions.
 
 These concepts may be related but should not be conflated.
 
@@ -269,11 +269,11 @@ A relationship should not be represented solely through title conventions.
 
 ATP should retain source evidence sufficiently to support:
 
-* provenance;
-* enrichment;
-* conflict resolution;
-* debugging;
-* reprocessing.
+- provenance;
+- enrichment;
+- conflict resolution;
+- debugging;
+- reprocessing.
 
 Source evidence may be stored separately from canonical entities.
 
@@ -310,11 +310,11 @@ New source information should not blindly overwrite existing canonical values.
 
 The merge process should consider:
 
-* provenance;
-* source reliability;
-* existing confidence;
-* completeness;
-* conflicts.
+- provenance;
+- source reliability;
+- existing confidence;
+- completeness;
+- conflicts.
 
 ---
 
@@ -406,13 +406,13 @@ Duplicate prevention should use multiple signals.
 
 Potential lookup keys:
 
-* external IDs;
-* normalized titles;
-* alternate titles;
-* release metadata;
-* platform;
-* developer;
-* known relationships.
+- external IDs;
+- normalized titles;
+- alternate titles;
+- release metadata;
+- platform;
+- developer;
+- known relationships.
 
 No single fuzzy title query should be sufficient for destructive deduplication.
 
@@ -490,11 +490,11 @@ The exact transaction strategy depends on the persistence implementation.
 
 The persistence layer must enforce appropriate constraints such as:
 
-* unique internal identifiers;
-* unique source/external-ID combinations;
-* valid relationship references;
-* valid release references;
-* required fields.
+- unique internal identifiers;
+- unique source/external-ID combinations;
+- valid relationship references;
+- valid release references;
+- required fields.
 
 Database constraints complement domain validation.
 
@@ -546,11 +546,11 @@ This allows future enrichment.
 
 Future enrichment may prioritize fields based on:
 
-* missingness;
-* importance;
-* source availability;
-* source reliability;
-* confidence.
+- missingness;
+- importance;
+- source availability;
+- source reliability;
+- confidence.
 
 This should be implemented deliberately rather than causing unrestricted scraping.
 

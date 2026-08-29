@@ -6,11 +6,11 @@ This document defines the conceptual domain model of the ATP Engine.
 
 The domain represents knowledge about video games independently of:
 
-* external sources;
-* scraping implementations;
-* databases;
-* HTTP;
-* AI providers.
+- external sources;
+- scraping implementations;
+- databases;
+- HTTP;
+- AI providers.
 
 ---
 
@@ -86,14 +86,14 @@ A Release represents a specific manifestation of a game.
 
 A release may be associated with:
 
-* platform;
-* region;
-* release date;
-* version;
-* edition;
-* distribution channels;
-* launchers;
-* external identifiers.
+- platform;
+- region;
+- release date;
+- version;
+- edition;
+- distribution channels;
+- launchers;
+- external identifiers.
 
 **Distribution channels** describe how a release is obtained (e.g., Steam, GOG, PlayStation Store, Physical).
 
@@ -129,9 +129,32 @@ Game
 
 # 6. Platform
 
-Platform represents the hardware or operating system on which a game release runs.
+Platform represents an **execution environment** — the hardware or software environment in which a game release is intended or historically designed to execute as playable software.
 
-Each platform belongs to a **Platform Family** — a broader category grouping related platforms:
+The important question is:
+
+> "On what execution environment does this release run?"
+
+NOT:
+
+> "Where was this game obtained?"
+
+The second question belongs to `DistributionChannel`.
+
+## 6.1 Platform Dimensions
+
+Each platform has three dimensions:
+
+```text
+Platform
+ ├── name: the concrete platform name (e.g., "PlayStation 5", "Windows", "PICO-8")
+ ├── family: broad ecosystem grouping (e.g., "PlayStation", "PC", "Other")
+ └── type: kind of execution environment (e.g., "console", "computer", "fantasy-console")
+```
+
+### Platform Family
+
+**Platform Family** answers: "What ecosystem does this belong to?"
 
 ```text
 Platform Family: PlayStation
@@ -144,24 +167,114 @@ Platform Family: Nintendo
   └── NES, SNES, Nintendo 64, GameCube, Game Boy, DS, 3DS, Wii, Wii U, Nintendo Switch
 
 Platform Family: PC
-  └── PC, Windows, macOS, Linux
+  └── Windows, macOS, Linux, MS-DOS
 
 Platform Family: Mobile
   └── Android, iOS, Windows Phone
 
 Platform Family: Sega
   └── Sega Genesis, Sega Saturn, Sega Dreamcast
+
+Platform Family: Other
+  └── Arcade, CPS2, Commodore 64, PICO-8, etc.
 ```
 
-**Critical distinction**: A Distribution Channel (Steam, GOG, Epic Games Store, Google Play, App Store) is NOT a Platform. Distribution channels describe how a game is obtained, not what hardware runs it.
+### Platform Type
+
+**Platform Type** answers: "What kind of execution environment is this?"
+
+```text
+console     → PlayStation 5, Xbox Series X, Nintendo Switch, Sega Genesis
+handheld    → PSP, Game Boy Advance, Nintendo DS, PlayStation Vita
+arcade      → CPS2, Neo Geo, Naomi
+computer    → Windows, macOS, Linux, MS-DOS, Commodore 64
+mobile      → Android, iOS
+fantasy-console → PICO-8, TIC-80, WASM-4
+web         → (future)
+other       → unknown or unclassified
+```
+
+### Platform Examples
+
+```text
+PlayStation 5
+  family = PlayStation
+  type   = console
+
+PSP
+  family = PlayStation
+  type   = handheld
+
+Game Boy Advance
+  family = Nintendo
+  type   = handheld
+
+CPS2
+  family = Other
+  type   = arcade
+
+Commodore 64
+  family = Other
+  type   = computer
+
+MS-DOS
+  family = PC
+  type   = computer
+
+Windows
+  family = PC
+  type   = computer
+
+Android
+  family = Mobile
+  type   = mobile
+
+PICO-8
+  family = Other
+  type   = fantasy-console
+```
+
+## 6.2 Critical Distinctions
+
+**A Distribution Channel is NOT a Platform.** Distribution channels describe how a game is obtained, not what hardware runs it.
+
+```text
+Steam           → DistributionChannel (NOT a platform)
+Epic Games Store → DistributionChannel (NOT a platform)
+GOG             → DistributionChannel (NOT a platform)
+Google Play     → DistributionChannel (NOT a platform)
+App Store       → DistributionChannel (NOT a platform)
+```
+
+**A Launcher is NOT a Platform.** A launcher is software used to start/manage the game.
+
+```text
+Steam Client    → Launcher (NOT a platform)
+EA App          → Launcher (NOT a platform)
+```
+
+**A Runtime/Emulator is NOT the original Platform.** Runtimes execute software but are not the original execution environment.
+
+```text
+ScummVM         → Runtime/CompatibilityLayer (NOT the original platform)
+DOSBox           → Runtime/CompatibilityLayer (NOT the original platform)
+MAME             → Runtime/Emulator (NOT the original platform)
+```
+
+**An Engine is NOT a Platform.** An engine is technology used to create games.
+
+```text
+Unity           → Engine (NOT a platform)
+Unreal Engine   → Engine (NOT a platform)
+```
 
 ### Mobile Platforms
 
 Mobile platforms follow the same distinction:
 
 ```text
-Platform: Android (family: Mobile)
-Platform: iOS (family: Mobile)
+Platform: Android (family: Mobile, type: mobile)
+Platform: iOS (family: Mobile, type: mobile)
 
 Distribution: Google Play (NOT a platform)
 Distribution: Apple App Store (NOT a platform)
@@ -170,6 +283,7 @@ Distribution: Direct APK (NOT a platform)
 ```
 
 **Android ≠ Google Play**: Google Play is a distribution channel, not an execution platform. Android games may be distributed through:
+
 - Google Play
 - Amazon Appstore
 - Samsung Galaxy Store
@@ -178,6 +292,7 @@ Distribution: Direct APK (NOT a platform)
 - Direct APK / Sideload
 
 **iOS ≠ App Store**: The App Store is a distribution channel, not an execution platform. iOS games may be distributed through:
+
 - Apple App Store
 - TestFlight
 - Enterprise distribution
@@ -185,19 +300,57 @@ Distribution: Direct APK (NOT a platform)
 
 A game being absent from a store does not mean it doesn't exist on the platform. Delisted games remain valid historical releases.
 
+## 6.3 Invariants
+
 ```text
-Platform ≠ Distribution Channel ≠ Launcher
+Platform ≠ DistributionChannel ≠ Launcher
 ```
 
 Examples:
+
 - `Steam` is a distribution channel, not a platform
 - `GOG` is a distribution channel, not a platform
-- `Windows` is a platform (family: PC)
-- `PlayStation 4` is a platform (family: PlayStation)
+- `Windows` is a platform (family: PC, type: computer)
+- `PlayStation 4` is a platform (family: PlayStation, type: console)
+- `PICO-8` is a platform (family: Other, type: fantasy-console)
 
 The platform family allows grouping queries (e.g., "all PlayStation releases") without conflating platform identity.
 
+The platform type allows distinguishing execution environments (e.g., "all handhelds") within a family.
+
 Platform identity should be normalized. Source-specific platform strings must not become canonical platform names automatically.
+
+## 6.4 Retro Computers
+
+Retro computers are execution platforms. They should not be forced into a generic `PC` platform.
+
+```text
+Commodore 64    → family: Other, type: computer
+Amiga           → family: Other, type: computer
+MSX             → family: Other, type: computer
+ZX Spectrum     → family: Other, type: computer
+Apple II        → family: Other, type: computer
+```
+
+## 6.5 Fantasy Consoles
+
+Fantasy consoles are actual execution platforms. They define constrained virtual execution environments for games.
+
+```text
+PICO-8          → family: Other, type: fantasy-console
+TIC-80          → family: Other, type: fantasy-console
+WASM-4         → family: Other, type: fantasy-console
+```
+
+## 6.6 Arcade
+
+Arcade systems are execution platforms. An arcade board/system can be the historical execution environment of a game.
+
+```text
+CPS1            → family: Other, type: arcade
+CPS2            → family: Other, type: arcade
+Neo Geo         → family: Other, type: arcade
+```
 
 ---
 
@@ -507,9 +660,9 @@ Some evidence may be considered authoritative within the domain.
 
 Examples may include:
 
-* verified identical external identifiers;
-* explicit regional-release relationships;
-* canonical internal identifiers.
+- verified identical external identifiers;
+- explicit regional-release relationships;
+- canonical internal identifiers.
 
 Hard evidence must be defined explicitly.
 

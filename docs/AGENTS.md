@@ -26,14 +26,14 @@ The ATP Engine does not own user-specific gameplay information.
 
 It does not manage:
 
-* users;
-* authentication;
-* personal libraries;
-* personal ratings;
-* hours played;
-* completion state;
-* user-created lists;
-* personal progress.
+- users;
+- authentication;
+- personal libraries;
+- personal ratings;
+- hours played;
+- completion state;
+- user-created lists;
+- personal progress.
 
 The ATP Engine is responsible for knowledge about the games themselves.
 
@@ -61,14 +61,14 @@ Canonical result
 
 If AI is:
 
-* disabled;
-* unavailable;
-* unreachable;
-* rate-limited;
-* too slow;
-* malformed;
-* uncertain;
-* incompatible with the expected schema;
+- disabled;
+- unavailable;
+- unreachable;
+- rate-limited;
+- too slow;
+- malformed;
+- uncertain;
+- incompatible with the expected schema;
 
 the native engine must remain capable of completing the operation whenever deterministic logic is sufficient.
 
@@ -82,15 +82,15 @@ Before changing code, understand the existing system.
 
 Agents MUST NOT:
 
-* rewrite working systems without a documented reason;
-* replace technologies without explicit justification;
-* introduce architecture solely because it is familiar;
-* create speculative abstractions;
-* duplicate existing functionality;
-* silently change domain semantics;
-* treat external source data as authoritative;
-* treat AI output as canonical truth;
-* perform destructive data merges without strong evidence.
+- rewrite working systems without a documented reason;
+- replace technologies without explicit justification;
+- introduce architecture solely because it is familiar;
+- create speculative abstractions;
+- duplicate existing functionality;
+- silently change domain semantics;
+- treat external source data as authoritative;
+- treat AI output as canonical truth;
+- perform destructive data merges without strong evidence.
 
 When uncertain, inspect the repository and documentation first.
 
@@ -135,15 +135,15 @@ Documentation and tests may intentionally describe behavior that has not yet bee
 
 For any non-trivial change, determine:
 
-* which architectural component is affected;
-* which domain concepts are involved;
-* whether existing behavior may change;
-* whether persistence behavior changes;
-* whether external source behavior changes;
-* whether API contracts change;
-* whether AI behavior changes;
-* whether tests are required;
-* whether documentation must be updated.
+- which architectural component is affected;
+- which domain concepts are involved;
+- whether existing behavior may change;
+- whether persistence behavior changes;
+- whether external source behavior changes;
+- whether API contracts change;
+- whether AI behavior changes;
+- whether tests are required;
+- whether documentation must be updated.
 
 For larger changes, create a concise implementation plan before editing.
 
@@ -171,13 +171,13 @@ The original Next.js scraper established the initial functional baseline of the 
 
 It was capable of:
 
-* searching multiple external sources;
-* filtering results;
-* searching game metadata by term;
-* finding game covers;
-* returning a small set of filtered cover candidates;
-* distinguishing games from unrelated media;
-* handling results such as movies, anime, DLC, and promotional content.
+- searching multiple external sources;
+- filtering results;
+- searching game metadata by term;
+- finding game covers;
+- returning a small set of filtered cover candidates;
+- distinguishing games from unrelated media;
+- handling results such as movies, anime, DLC, and promotional content.
 
 The ATP Engine must preserve these capabilities unless the new architecture intentionally changes their behavior.
 
@@ -191,29 +191,29 @@ The ATP Engine is expected to support:
 
 ## Discovery
 
-* querying multiple external sources;
-* filtering source results;
-* classifying candidates;
-* ranking candidates;
-* deduplicating candidates;
-* paginating results;
-* merging results from multiple sources.
+- querying multiple external sources;
+- filtering source results;
+- classifying candidates;
+- ranking candidates;
+- deduplicating candidates;
+- paginating results;
+- merging results from multiple sources.
 
 ## Covers
 
-* dedicated cover search;
-* filtered cover candidates;
-* multiple source support.
+- dedicated cover search;
+- filtered cover candidates;
+- multiple source support.
 
 ## Individual Game Metadata
 
-* database-first lookup;
-* external discovery when required;
-* normalization;
-* classification;
-* identity resolution;
-* persistence of newly discovered data;
-* enrichment of incomplete records.
+- database-first lookup;
+- external discovery when required;
+- normalization;
+- classification;
+- identity resolution;
+- persistence of newly discovered data;
+- enrichment of incomplete records.
 
 ## Game Search
 
@@ -231,26 +231,26 @@ and return relevant game candidates or canonical games.
 
 Support filtering by:
 
-* search terms;
-* titles;
-* release year/date;
-* platforms;
-* developers;
-* publishers;
-* genres.
+- search terms;
+- titles;
+- release year/date;
+- platforms;
+- developers;
+- publishers;
+- genres.
 
 ## Identity Resolution
 
 Distinguish:
 
-* different games with similar names;
-* the same game across platforms;
-* regional releases;
-* ports;
-* remasters;
-* enhanced versions;
-* remakes;
-* related games.
+- different games with similar names;
+- the same game across platforms;
+- regional releases;
+- ports;
+- remasters;
+- enhanced versions;
+- remakes;
+- related games.
 
 ## Persistence
 
@@ -298,14 +298,14 @@ It is not merely a disposable HTTP cache.
 
 External sources may contain:
 
-* incomplete metadata;
-* duplicate records;
-* inconsistent names;
-* regional naming;
-* incorrect information;
-* conflicting information;
-* unrelated media;
-* source-specific representations.
+- incomplete metadata;
+- duplicate records;
+- inconsistent names;
+- regional naming;
+- incorrect information;
+- conflicting information;
+- unrelated media;
+- source-specific representations.
 
 Source data must not be inserted directly into the canonical domain model.
 
@@ -367,11 +367,11 @@ AI/LLM functionality must remain behind explicit interfaces.
 
 The rest of the system should not depend directly on:
 
-* a specific model;
-* a specific provider;
-* a specific SDK;
-* prompt text;
-* provider-specific response formats.
+- a specific model;
+- a specific provider;
+- a specific SDK;
+- prompt text;
+- provider-specific response formats.
 
 Prefer capabilities such as:
 
@@ -402,12 +402,12 @@ The exact architecture may evolve, but the boundary must remain explicit.
 
 AI may assist with:
 
-* game classification;
-* identity resolution;
-* ambiguous search result interpretation;
-* metadata normalization;
-* source conflict resolution;
-* candidate ranking.
+- game classification;
+- identity resolution;
+- ambiguous search result interpretation;
+- metadata normalization;
+- source conflict resolution;
+- candidate ranking.
 
 AI MUST NOT be treated as the canonical source of factual metadata.
 
@@ -429,16 +429,16 @@ Every AI-assisted operation must have a defined fallback strategy.
 
 If the AI provider fails because of:
 
-* network failure;
-* timeout;
-* provider outage;
-* invalid response;
-* malformed structured output;
-* unavailable model;
-* rate limiting;
-* exceeded budget;
-* disabled AI;
-* insufficient confidence;
+- network failure;
+- timeout;
+- provider outage;
+- invalid response;
+- malformed structured output;
+- unavailable model;
+- rate limiting;
+- exceeded budget;
+- disabled AI;
+- insufficient confidence;
 
 the native engine must continue whenever possible.
 
@@ -470,13 +470,13 @@ Agents should prefer deterministic rules when sufficient evidence exists.
 
 Examples include:
 
-* exact external identifiers;
-* normalized titles;
-* known release dates;
-* platform information;
-* known region information;
-* explicit remake/remaster markers;
-* known source relationships.
+- exact external identifiers;
+- normalized titles;
+- known release dates;
+- platform information;
+- known region information;
+- explicit remake/remaster markers;
+- known source relationships.
 
 Do not invoke an LLM merely because an LLM can solve the same deterministic problem.
 
@@ -506,11 +506,11 @@ Avoid sending hundreds of irrelevant records to an LLM.
 
 This improves:
 
-* cost;
-* latency;
-* reliability;
-* accuracy;
-* observability.
+- cost;
+- latency;
+- reliability;
+- accuracy;
+- observability.
 
 ---
 
@@ -613,11 +613,11 @@ Do not invent arbitrary relationship strings in isolated features.
 
 Agents MUST NOT automatically merge or delete canonical game records based solely on:
 
-* similar titles;
-* AI confidence;
-* one external source;
-* fuzzy matching;
-* incomplete evidence.
+- similar titles;
+- AI confidence;
+- one external source;
+- fuzzy matching;
+- incomplete evidence.
 
 When confidence is insufficient:
 
@@ -740,15 +740,15 @@ API contracts are public contracts.
 
 When modifying an endpoint, consider:
 
-* request parameters;
-* response shape;
-* pagination;
-* filtering;
-* errors;
-* compatibility;
-* consumers;
-* tests;
-* documentation.
+- request parameters;
+- response shape;
+- pagination;
+- filtering;
+- errors;
+- compatibility;
+- consumers;
+- tests;
+- documentation.
 
 Do not casually rename or remove fields.
 
@@ -760,11 +760,11 @@ Pagination must be deterministic.
 
 Define:
 
-* page semantics;
-* page size;
-* maximum page size;
-* ordering;
-* invalid parameter behavior.
+- page semantics;
+- page size;
+- maximum page size;
+- ordering;
+- invalid parameter behavior.
 
 When querying the database, filtering, sorting, and pagination should occur at the database layer whenever practical.
 
@@ -796,21 +796,21 @@ Meaningful domain behavior must have automated tests.
 
 Prioritize tests for:
 
-* classification;
-* normalization;
-* identity resolution;
-* regional releases;
-* platform releases;
-* remakes;
-* remasters;
-* ports;
-* duplicate detection;
-* source merging;
-* persistence;
-* database-first behavior;
-* AI fallback;
-* pagination;
-* filtering.
+- classification;
+- normalization;
+- identity resolution;
+- regional releases;
+- platform releases;
+- remakes;
+- remasters;
+- ports;
+- duplicate detection;
+- source merging;
+- persistence;
+- database-first behavior;
+- AI fallback;
+- pagination;
+- filtering.
 
 AI-assisted functionality must also have tests for AI failure.
 
@@ -840,12 +840,12 @@ The ATP must remain correct under these conditions.
 
 Normal tests must not depend on:
 
-* Wikipedia availability;
-* SteamDB availability;
-* DNS;
-* live scraping;
-* external API availability;
-* LLM availability.
+- Wikipedia availability;
+- SteamDB availability;
+- DNS;
+- live scraping;
+- external API availability;
+- LLM availability.
 
 Use fixtures, mocks, stubs, and deterministic test data.
 
@@ -857,12 +857,12 @@ External failures are expected.
 
 Sources may:
 
-* timeout;
-* rate-limit;
-* change structure;
-* return malformed data;
-* return no results;
-* become unavailable.
+- timeout;
+- rate-limit;
+- change structure;
+- return malformed data;
+- return no results;
+- become unavailable.
 
 The system should degrade gracefully whenever possible.
 
@@ -923,14 +923,14 @@ AI operations should expose enough information to diagnose behavior.
 
 Where appropriate, record:
 
-* provider;
-* model;
-* capability;
-* latency;
-* success/failure;
-* structured decision;
-* confidence;
-* fallback usage.
+- provider;
+- model;
+- capability;
+- latency;
+- success/failure;
+- structured decision;
+- confidence;
+- fallback usage.
 
 Do not store prompts or responses containing sensitive data unless explicitly required and safe.
 
@@ -940,24 +940,24 @@ Do not store prompts or responses containing sensitive data unless explicitly re
 
 Agents may:
 
-* inspect the repository;
-* create implementation plans;
-* implement clearly specified tasks;
-* add tests;
-* fix local bugs discovered during implementation;
-* improve local maintainability;
-* update relevant documentation.
+- inspect the repository;
+- create implementation plans;
+- implement clearly specified tasks;
+- add tests;
+- fix local bugs discovered during implementation;
+- improve local maintainability;
+- update relevant documentation.
 
 Agents must NOT autonomously:
 
-* redefine project scope;
-* replace the core stack;
-* remove major capabilities;
-* redesign domain semantics;
-* introduce unrelated infrastructure;
-* perform destructive migrations;
-* make AI mandatory;
-* change identity semantics without documentation.
+- redefine project scope;
+- replace the core stack;
+- remove major capabilities;
+- redesign domain semantics;
+- introduce unrelated infrastructure;
+- perform destructive migrations;
+- make AI mandatory;
+- change identity semantics without documentation.
 
 ---
 
@@ -965,13 +965,13 @@ Agents must NOT autonomously:
 
 Before introducing a dependency, determine:
 
-* whether existing dependencies already provide the functionality;
-* maintenance status;
-* compatibility;
-* security implications;
-* licensing;
-* runtime impact;
-* whether the dependency is actually necessary.
+- whether existing dependencies already provide the functionality;
+- maintenance status;
+- compatibility;
+- security implications;
+- licensing;
+- runtime impact;
+- whether the dependency is actually necessary.
 
 Do not add dependencies simply to shorten a small implementation.
 
@@ -991,15 +991,15 @@ Do not turn a small feature into a complete architectural rewrite unless the rew
 
 Update documentation when changing:
 
-* architecture;
-* domain semantics;
-* API contracts;
-* persistence;
-* source behavior;
-* identity resolution;
-* classification;
-* AI behavior;
-* fallback behavior.
+- architecture;
+- domain semantics;
+- API contracts;
+- persistence;
+- source behavior;
+- identity resolution;
+- classification;
+- AI behavior;
+- fallback behavior.
 
 Important decisions must not exist only inside source code.
 
@@ -1037,7 +1037,7 @@ The report must be independently reviewable without requiring access to the enti
 
 ### Report Structure
 
-```text
+````text
 ## Step-by-Step Implementation
 
 Describe the implementation sequence in order.
@@ -1089,7 +1089,7 @@ npm run build
 npm test
 npm run lint
 npm run format:check
-```
+````
 
 Do not summarize failures as successes.
 
@@ -1100,7 +1100,8 @@ Document deferred functionality, technical debt, and assumptions.
 ## Next Step
 
 Confirm what phase comes next. Do not implement it.
-```
+
+````
 
 ### Report Principles
 
@@ -1138,7 +1139,7 @@ Validation
 Canonical Knowledge
         ↓
 Persistence
-```
+````
 
 AI should make ATP better at ambiguous problems.
 

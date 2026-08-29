@@ -43,12 +43,12 @@ ATP runs on Node.js.
 
 Node.js is responsible for:
 
-* HTTP server execution;
-* external source requests;
-* scraping operations;
-* database communication;
-* AI provider communication;
-* application orchestration.
+- HTTP server execution;
+- external source requests;
+- scraping operations;
+- database communication;
+- AI provider communication;
+- application orchestration.
 
 The implementation must use modern Node.js APIs where practical.
 
@@ -90,12 +90,12 @@ Express is the HTTP API framework.
 
 Express is responsible for:
 
-* routing;
-* HTTP request handling;
-* middleware;
-* request validation integration;
-* response serialization;
-* HTTP-level error handling.
+- routing;
+- HTTP request handling;
+- middleware;
+- request validation integration;
+- response serialization;
+- HTTP-level error handling.
 
 Express must remain at the interface layer.
 
@@ -143,13 +143,13 @@ Zod is the standard validation library.
 
 It must be used to validate externally controlled data, including:
 
-* HTTP request bodies;
-* query parameters;
-* route parameters;
-* environment variables;
-* external source responses where appropriate;
-* AI responses;
-* configuration.
+- HTTP request bodies;
+- query parameters;
+- route parameters;
+- environment variables;
+- external source responses where appropriate;
+- AI responses;
+- configuration.
 
 ---
 
@@ -217,15 +217,15 @@ The choice must not leak into the domain layer.
 
 The decision between Mongoose and the official driver must consider:
 
-* schema complexity;
-* domain modeling requirements;
-* transaction support;
-* validation needs;
-* query complexity;
-* performance;
-* maintainability;
-* TypeScript integration;
-* repository implementation complexity.
+- schema complexity;
+- domain modeling requirements;
+- transaction support;
+- validation needs;
+- query complexity;
+- performance;
+- maintainability;
+- TypeScript integration;
+- repository implementation complexity.
 
 The application architecture must allow the implementation to change between these approaches without rewriting domain logic.
 
@@ -294,17 +294,17 @@ Vitest is the standard testing framework.
 
 Tests should cover:
 
-* domain rules;
-* classification;
-* identity resolution;
-* normalization;
-* filtering;
-* pagination;
-* repositories;
-* source adapters;
-* AI providers;
-* API behavior;
-* integration flows.
+- domain rules;
+- classification;
+- identity resolution;
+- normalization;
+- filtering;
+- pagination;
+- repositories;
+- source adapters;
+- AI providers;
+- API behavior;
+- integration flows.
 
 ---
 
@@ -331,11 +331,11 @@ must have deterministic tests.
 
 Tests must not depend on:
 
-* live Wikipedia;
-* live SteamDB;
-* a production database;
-* a remote LLM;
-* Ollama availability.
+- live Wikipedia;
+- live SteamDB;
+- a production database;
+- a remote LLM;
+- Ollama availability.
 
 External integrations should be mocked, stubbed, or tested through dedicated integration suites.
 
@@ -349,11 +349,11 @@ ESLint is the standard linter.
 
 Lint rules should enforce:
 
-* TypeScript correctness;
-* unused variables;
-* problematic patterns;
-* import consistency;
-* maintainability rules.
+- TypeScript correctness;
+- unused variables;
+- problematic patterns;
+- import consistency;
+- maintainability rules.
 
 The lint configuration should remain compatible with the project's TypeScript setup.
 
@@ -419,11 +419,11 @@ Ollama is the initial local AI runtime.
 
 Ollama may provide models for:
 
-* game classification;
-* identity resolution;
-* metadata interpretation;
-* conflict resolution;
-* search assistance.
+- game classification;
+- identity resolution;
+- metadata interpretation;
+- conflict resolution;
+- search assistance.
 
 The specific model is not part of the core domain architecture.
 
@@ -470,13 +470,13 @@ AI must improve the quality of results, not determine whether the engine works.
 
 The following must not terminate normal engine operation:
 
-* Ollama unavailable;
-* remote provider unavailable;
-* timeout;
-* invalid model response;
-* malformed JSON;
-* provider rate limit;
-* model loading failure.
+- Ollama unavailable;
+- remote provider unavailable;
+- timeout;
+- invalid model response;
+- malformed JSON;
+- provider rate limit;
+- model loading failure.
 
 AI failures must degrade gracefully to native logic.
 
@@ -549,13 +549,13 @@ Relationship
 
 Domain code must remain independent of:
 
-* Express;
-* MongoDB;
-* Mongoose;
-* Ollama;
-* HTTP libraries;
-* filesystem;
-* environment variables.
+- Express;
+- MongoDB;
+- Mongoose;
+- Ollama;
+- HTTP libraries;
+- filesystem;
+- environment variables.
 
 ---
 
@@ -795,9 +795,9 @@ New dependencies should be introduced only when they provide clear value.
 
 Before adding a dependency, determine whether the requirement can reasonably be satisfied using:
 
-* existing dependencies;
-* Node.js built-ins;
-* existing project abstractions.
+- existing dependencies;
+- Node.js built-ins;
+- existing project abstractions.
 
 Avoid dependency proliferation.
 

@@ -2,6 +2,7 @@ export type {
   NormalizedCandidate,
   NormalizedTitle,
   NormalizedRelease,
+  NormalizedClassificationHint,
   Provenance,
   TitleType,
 } from './normalized-candidate.js';
@@ -22,5 +23,9 @@ export {
   type RawCandidateInput,
 } from './normalize.js';
 
-export { resolvePlatformAlias, resolvePlatformFamily } from './platform-aliases.js';
+export {
+  resolvePlatformAlias,
+  resolvePlatformFamily,
+  resolvePlatformType,
+} from './platform-aliases.js';
 export { resolveRegionAlias } from './region-aliases.js';

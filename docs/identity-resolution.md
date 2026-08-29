@@ -278,28 +278,28 @@ Identity resolution should consider evidence with different strengths.
 
 ### Strong evidence
 
-* identical verified external identifiers;
-* explicit source relationships;
-* canonical source references;
-* known regional-release mappings;
-* known platform-release mappings.
+- identical verified external identifiers;
+- explicit source relationships;
+- canonical source references;
+- known regional-release mappings;
+- known platform-release mappings.
 
 ### Medium evidence
 
-* normalized title;
-* alternate title;
-* release date;
-* developer;
-* publisher;
-* platform;
-* genre.
+- normalized title;
+- alternate title;
+- release date;
+- developer;
+- publisher;
+- platform;
+- genre.
 
 ### Weak evidence
 
-* textual similarity;
-* franchise similarity;
-* vague descriptions;
-* similar artwork.
+- textual similarity;
+- franchise similarity;
+- vague descriptions;
+- similar artwork.
 
 No weak signal should independently trigger a merge.
 
@@ -328,12 +328,12 @@ Titles should be normalized before comparison.
 
 Normalization may address:
 
-* casing;
-* whitespace;
-* punctuation;
-* separators;
-* Unicode normalization;
-* common regional markers.
+- casing;
+- whitespace;
+- punctuation;
+- separators;
+- Unicode normalization;
+- common regional markers.
 
 Example:
 
@@ -410,12 +410,12 @@ Release date is useful evidence but is not definitive.
 
 Different dates may represent:
 
-* regional release;
-* platform release;
-* remake;
-* remaster;
-* re-release;
-* port.
+- regional release;
+- platform release;
+- remake;
+- remaster;
+- re-release;
+- port.
 
 Therefore release date must be interpreted in context.
 
@@ -552,11 +552,11 @@ For related games:
 
 AI output must be validated against:
 
-* schema;
-* allowed decisions;
-* allowed relationships;
-* hard evidence;
-* domain invariants.
+- schema;
+- allowed decisions;
+- allowed relationships;
+- hard evidence;
+- domain invariants.
 
 Invalid output must be rejected.
 
@@ -689,11 +689,11 @@ The explanation should rely on stored evidence, not merely an opaque model respo
 
 Identity decisions may need to be reconsidered when:
 
-* new sources are added;
-* metadata improves;
-* classification changes;
-* better AI models become available;
-* conflicting evidence appears.
+- new sources are added;
+- metadata improves;
+- classification changes;
+- better AI models become available;
+- conflicting evidence appears.
 
 The architecture should allow re-resolution.
 
@@ -731,3 +731,92 @@ The identity resolver should optimize for:
 > **catalog integrity over catalog completeness.**
 
 It is better to temporarily maintain two records that may eventually be merged than to incorrectly merge two genuinely different games.
+
+---
+
+# 29. Implementation (Phase 6)
+
+## 29.1 Architecture
+
+The identity resolver is implemented as a priority-based deterministic system.
+
+The `DeterministicIdentityResolver` receives a `NormalizedCandidate` and an optional existing `Game`, then produces an `IdentityResolutionResult` with:
+
+- outcome (SAME_GAME, DIFFERENT_GAME, RELATED_GAME, UNRESOLVED);
+- relationship type when applicable;
+- confidence score;
+- explainable signals;
+- resolution method (NATIVE, AI, HYBRID).
+
+## 29.2 Resolution Priority
+
+The resolver uses a priority cascade rather than pure score-based resolution:
+
+1. **Exact external ID match** → SAME_GAME (highest confidence)
+2. **External ID mismatch on same source** → DIFFERENT_GAME (strong negative signal)
+3. **Remake markers in title** → DIFFERENT_GAME with REMAKE relationship
+4. **Version markers with base title match** → RELATED_GAME with REMASTER relationship
+5. **Score-based resolution** → SAME_GAME / DIFFERENT_GAME / UNRESOLVED
+
+## 29.3 Evidence Signals
+
+The resolver produces explainable signals:
+
+| Signal                  | Weight | Confidence | Meaning                                     |
+| ----------------------- | ------ | ---------- | ------------------------------------------- |
+| external-id-match       | +1.0   | 1.0        | Same source, same ID                        |
+| external-id-mismatch    | -0.8   | 0.9        | Same source, different ID                   |
+| title-exact-match       | +0.5   | 1.0        | Identical title strings                     |
+| title-normalized-match  | +0.4   | 0.9        | Same after normalization                    |
+| title-similar           | +0.2   | 0.7        | Base title match (ignoring version markers) |
+| title-different         | -0.3   | 0.8        | No title match                              |
+| version-marker-detected | -0.4   | 0.85       | Remaster/HD/etc. detected                   |
+| remake-marker-detected  | -0.9   | 0.95       | Remake detected                             |
+| developer-match         | +0.2   | 0.8        | Same developer                              |
+| developer-different     | -0.15  | 0.6        | Different developers                        |
+| publisher-match         | +0.1   | 0.6        | Same publisher                              |
+| publisher-different     | -0.05  | 0.4        | Different publishers                        |
+| release-date-match      | +0.15  | 0.7        | Same release date/year                      |
+| release-date-different  | -0.1   | 0.5        | Different release dates                     |
+
+## 29.4 Scoring Thresholds
+
+- Score >= 0.35 → SAME_GAME
+- Score <= -0.3 → DIFFERENT_GAME
+- Otherwise → UNRESOLVED
+
+## 29.5 Version Markers
+
+The resolver detects the following version markers:
+
+```text
+remake, remastered, hd, definitive edition,
+director's cut, gold edition, enhanced edition,
+the war of the lions, the ivalice chronicles,
+complete edition, goty, game of the year,
+digital deluxe, ultimate edition, anniversary edition
+```
+
+Remake-specific markers:
+
+```text
+remake, reborn, reimagined
+```
+
+## 29.6 Test Coverage
+
+36 tests covering:
+
+- External ID matching (exact match, mismatch, cross-source)
+- Title comparison (exact, normalized, base title)
+- Remake detection (marker-based, relationship)
+- Remaster detection (version markers, HD editions)
+- Cross-platform releases (PC family, console families)
+- Distribution channels (Steam vs GOG)
+- Regional releases (NTSC vs PAL)
+- Mobile and desktop versions
+- Developer/publisher signals
+- Release date signals
+- Explainability (reason, signals, confidence)
+- Edge cases (empty titles, empty releases)
+- Complex scenarios (RE4 remake, FF Tactics, BotW)

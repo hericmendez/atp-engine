@@ -8,22 +8,22 @@ The classification system exists primarily to prevent unrelated media and non-ga
 
 Examples of content that may appear in external search results:
 
-* games;
-* remakes;
-* remasters;
-* DLC;
-* expansions;
-* movies;
-* television series;
-* anime;
-* books;
-* soundtracks;
-* promotional material;
-* hardware;
-* characters;
-* franchises;
-* people;
-* events.
+- games;
+- remakes;
+- remasters;
+- DLC;
+- expansions;
+- movies;
+- television series;
+- anime;
+- books;
+- soundtracks;
+- promotional material;
+- hardware;
+- characters;
+- franchises;
+- people;
+- events.
 
 ATP must distinguish these entities before attempting canonical game identity resolution.
 
@@ -230,19 +230,19 @@ should not become separate Games solely because of region.
 
 Classification may consider:
 
-* source type;
-* source metadata;
-* title;
-* description;
-* URL structure;
-* category metadata;
-* structured source fields;
-* platform information;
-* platform family;
-* release information;
-* known media markers;
-* relationships;
-* external identifiers.
+- source type;
+- source metadata;
+- title;
+- description;
+- URL structure;
+- category metadata;
+- structured source fields;
+- platform information;
+- platform family;
+- release information;
+- known media markers;
+- relationships;
+- external identifiers.
 
 Distribution channels (Steam, GOG, Epic) and launchers are NOT classification signals. A game on Steam is still a game; a movie on Steam is still a movie.
 
@@ -371,12 +371,12 @@ Hard evidence has priority.
 
 If the LLM:
 
-* times out;
-* returns invalid JSON;
-* violates the schema;
-* exceeds limits;
-* becomes unavailable;
-* produces an unsupported category;
+- times out;
+- returns invalid JSON;
+- violates the schema;
+- exceeds limits;
+- becomes unavailable;
+- produces an unsupported category;
 
 the system must fall back to native classification.
 
@@ -483,10 +483,10 @@ ATP should allow previously classified candidates to be re-evaluated.
 
 This is important because:
 
-* classification rules may improve;
-* source data may change;
-* AI models may improve;
-* new evidence may become available.
+- classification rules may improve;
+- source data may change;
+- AI models may improve;
+- new evidence may become available.
 
 ---
 
@@ -526,3 +526,286 @@ CHARACTER
 as a Game.
 
 False positives are more damaging than temporary uncertainty.
+
+---
+
+# 26. Implementation Architecture
+
+## Source Types
+
+```text
+src/classification/
+├── classification-signal.ts     # ClassificationSignal type
+├── classification-result.ts     # ClassificationResult type
+├── classifier.ts                # Classifier interface
+├── deterministic-classifier.ts  # DeterministicClassifier implementation
+└── index.ts                     # barrel exports
+```
+
+## Data Flow
+
+```text
+NormalizedCandidate
+        ↓
+DeterministicClassifier.classify()
+        ↓
+ClassificationResult
+├── category: ClassificationCategory
+├── confidence: number (0.0 - 1.0)
+├── signals: ClassificationSignal[]
+└── reason: string (human-readable explanation)
+```
+
+## Classifier Interface
+
+```typescript
+interface Classifier {
+  classify(candidate: NormalizedCandidate): ClassificationResult;
+}
+```
+
+The `Classifier` interface enables future AI-backed implementations without changing the classification pipeline. The `DeterministicClassifier` is the primary implementation.
+
+## ClassificationSignal
+
+Every signal used for classification is recorded:
+
+```typescript
+interface ClassificationSignal {
+  source: SignalSource; // Where the signal came from
+  category: ClassificationCategory;
+  weight: number; // Signal strength (0.0 - 1.0)
+  confidence: number; // Signal reliability (0.0 - 1.0)
+  evidence: string; // Human-readable explanation
+}
+```
+
+Signal sources:
+
+- `source-type` — explicit type from source (Steam type, etc.)
+- `source-category` — category hint from source (Wikipedia categories)
+- `title-pattern` — pattern match in the title
+- `infobox-type` — Wikipedia infobox type
+- `category-list` — Wikipedia category list
+- `genre-indicator` — game-specific genre terms
+- `metadata-field` — structured metadata
+- `description-keyword` — keyword match in description
+
+## Weighted Scoring
+
+Classification uses weighted scoring to resolve signals:
+
+```text
+totalWeight = sum(signal.weight × signal.confidence) per category
+```
+
+The category with the highest `totalWeight` wins, provided it exceeds the confidence threshold (0.3).
+
+If no category exceeds the threshold, the result is `UNKNOWN`.
+
+## Confidence Model
+
+| Score Range | Meaning                                                              |
+| ----------- | -------------------------------------------------------------------- |
+| 0.8 - 1.0   | Strong evidence: explicit source type or multiple concordant signals |
+| 0.5 - 0.7   | Moderate evidence: title pattern or single strong signal             |
+| 0.3 - 0.4   | Weak evidence: below reliable threshold                              |
+| 0.0 - 0.2   | Insufficient evidence: classified as UNKNOWN                         |
+
+The confidence score is `min(1.0, totalWeight)` for the winning category.
+
+## Conflict Resolution
+
+When multiple categories have competing signals:
+
+1. All signals are collected
+2. Weighted scores are computed per category
+3. The highest-scoring category wins
+4. If the winner does not exceed the threshold, `UNKNOWN` is returned
+5. The reason field documents the conflict and resolution
+
+Example:
+
+```text
+Steam type: game → GAME (weight: 1.0, confidence: 0.9) → score: 0.90
+Title contains "Soundtrack" → SOUNDTRACK (weight: 0.7, confidence: 0.6) → score: 0.42
+
+Winner: GAME (0.90 > 0.42)
+```
+
+## Signal Weights
+
+| Source                | Weight | Rationale                                         |
+| --------------------- | ------ | ------------------------------------------------- |
+| `source-type`         | 1.0    | Direct type declaration from authoritative source |
+| `source-category`     | 0.8    | Category hint from structured source data         |
+| `title-pattern`       | 0.7    | Meaningful pattern but may have exceptions        |
+| `description-keyword` | 0.6    | Descriptive text may be ambiguous                 |
+| `genre-indicator`     | 0.4    | Supporting evidence, not decisive alone           |
+
+---
+
+# 27. Classification Signals in Detail
+
+## Source Type Signals
+
+Source adapters provide classification hints as part of `RawCandidate`. These are normalized into `NormalizedClassificationHint` and flow through the normalization pipeline.
+
+Example from Steam adapter:
+
+```typescript
+classificationHints: [
+  {
+    category: 'GAME',
+    confidence: 0.9,
+    evidence: 'Steam type: game',
+  },
+];
+```
+
+Example from Wikipedia adapter:
+
+```typescript
+classificationHints: [
+  {
+    category: 'GAME',
+    confidence: 0.7,
+    evidence: 'Wikitext contains "video game"',
+  },
+];
+```
+
+## Title Pattern Signals
+
+Title patterns detect known entity types:
+
+| Pattern                                       | Category    | Notes                        |
+| --------------------------------------------- | ----------- | ---------------------------- |
+| `soundtrack`, `ost`, `original score`         | SOUNDTRACK  | Music collections            |
+| `dlc`                                         | DLC         | Downloadable content markers |
+| `expansion pack`, `expansion`                 | EXPANSION   | Substantial additions        |
+| `movie`, `film`                               | MOVIE       | Film adaptations             |
+| `tv series`, `television`, `tv show`          | TV_SHOW     | Television productions       |
+| `anime`                                       | ANIME       | Japanese animation           |
+| `guide`, `strategy guide`, `walkthrough`      | BOOK        | Published guides             |
+| `hardware`, `console`, `controller`           | HARDWARE    | Physical hardware            |
+| `promotional`, `promo`, `bonus content`       | PROMOTIONAL | Marketing materials          |
+| `character design`, `art book`, `concept art` | CHARACTER   | Character-focused content    |
+| `franchise`, `series overview`                | FRANCHISE   | Franchise-level content      |
+| `profile`, `biography`, `pedia`               | PERSON      | Individual profiles          |
+| `event`, `tournament`, `convention`           | EVENT       | Events and competitions      |
+
+**Important**: Title patterns are heuristics. They may produce false positives when words appear in game titles (e.g., "Doom Eternal" contains neither "dlc" nor "expansion"). Source type signals have higher priority.
+
+## Description Keyword Signals
+
+Description text is analyzed for entity-type keywords:
+
+| Pattern                                            | Category   |
+| -------------------------------------------------- | ---------- |
+| `video game`, `playable`, `gameplay`, `in-game`    | GAME       |
+| `soundtrack`, `original score`, `features...music` | SOUNDTRACK |
+| `movie`, `film`, `feature film`                    | MOVIE      |
+| `television`, `tv series`, `animated series`       | TV_SHOW    |
+| `anime`, `animated`                                | ANIME      |
+| `book`, `novel`, `guide book`                      | BOOK       |
+
+## Genre Indicator Signals
+
+Game-specific genres provide supporting evidence for GAME classification:
+
+```text
+action, adventure, rpg, role-playing, strategy, puzzle,
+simulation, racing, sports, fighting, platformer, shooter,
+stealth, survival, horror, mmorpg, roguelike, indie
+```
+
+Genre signals have lower weight (0.4) and serve as supporting evidence rather than primary classification.
+
+---
+
+# 28. Platform and Distribution Independence
+
+## Platforms Are Not Classification Signals
+
+The classifier does NOT use platform information for classification:
+
+```text
+Android + GAME evidence → GAME
+Android + no evidence → UNKNOWN
+Windows + GAME evidence → GAME
+Windows + no evidence → UNKNOWN
+PlayStation + GAME evidence → GAME
+```
+
+Platform determines **where** a game runs, not **what** it is.
+
+## Distribution Channels Are Not Classification Signals
+
+The classifier does NOT use distribution channel information:
+
+```text
+Steam + GAME evidence → GAME
+Steam + DLC evidence → DLC
+Google Play + GAME evidence → GAME
+Google Play + no evidence → UNKNOWN
+```
+
+A game on Steam is still a game. A movie on Steam is still a movie.
+
+## Store Listing ≠ Game
+
+The existence of a page in a store does not automatically make it a game. Evidence must indicate the entity is a game.
+
+---
+
+# 29. UNKNOWN Policy
+
+`UNKNOWN` is returned when:
+
+1. No classification signals are available
+2. Available signals do not exceed the confidence threshold (0.3)
+3. Conflicting signals cannot be resolved with confidence
+
+`UNKNOWN` does NOT mean:
+
+- "This is not a game"
+- "This should be discarded"
+- "This is an error"
+
+`UNKNOWN` means:
+
+- "ATP currently lacks sufficient evidence to classify this candidate"
+- "Additional evidence or AI assistance may improve classification"
+
+Unknown candidates may be:
+
+- Retained as temporary discovery evidence
+- Re-evaluated when new evidence becomes available
+- Classified by AI when deterministic rules are insufficient
+
+---
+
+# 30. Future AI Integration
+
+The `Classifier` interface enables AI-backed implementations:
+
+```typescript
+class AIClassifier implements Classifier {
+  classify(candidate: NormalizedCandidate): ClassificationResult {
+    // Call LLM with candidate evidence
+    // Validate structured output
+    // Return ClassificationResult
+  }
+}
+```
+
+AI classification will:
+
+- Receive only the evidence required for classification
+- Return a structured `ClassificationResult`
+- Be validated before entering domain logic
+- Never override hard deterministic evidence
+- Fall back to native classification on failure
+
+The deterministic layer remains the primary classifier. AI is an optional enhancement for ambiguous cases.

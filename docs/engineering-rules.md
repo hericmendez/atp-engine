@@ -8,16 +8,16 @@ These rules are independent of the development environment, coding agent, AI pro
 
 The goal is to preserve:
 
-* correctness;
-* data integrity;
-* deterministic behavior;
-* modularity;
-* testability;
-* source independence;
-* AI provider independence;
-* maintainability;
-* observability;
-* extensibility.
+- correctness;
+- data integrity;
+- deterministic behavior;
+- modularity;
+- testability;
+- source independence;
+- AI provider independence;
+- maintainability;
+- observability;
+- extensibility.
 
 ---
 
@@ -73,14 +73,14 @@ Dependencies should point inward.
 
 The domain must not depend directly on:
 
-* HTTP;
-* HTML;
-* scraping libraries;
-* database drivers;
-* ORM/ODM implementations;
-* LLM SDKs;
-* AI providers;
-* framework-specific controllers.
+- HTTP;
+- HTML;
+- scraping libraries;
+- database drivers;
+- ORM/ODM implementations;
+- LLM SDKs;
+- AI providers;
+- framework-specific controllers.
 
 ---
 
@@ -142,13 +142,13 @@ The domain represents canonical video game knowledge.
 
 It must not know whether data came from:
 
-* Wikipedia;
-* SteamDB;
-* another website;
-* an API;
-* an LLM;
-* a local model;
-* manual input.
+- Wikipedia;
+- SteamDB;
+- another website;
+- an API;
+- an LLM;
+- a local model;
+- manual input.
 
 The domain should operate on normalized concepts.
 
@@ -195,11 +195,11 @@ Different platforms do not automatically imply different games.
 
 Release-level information may include:
 
-* platform;
-* region;
-* release date;
-* version;
-* edition.
+- platform;
+- region;
+- release date;
+- version;
+- edition.
 
 ---
 
@@ -209,17 +209,17 @@ Game identity must never rely solely on title equality.
 
 The engine should consider available evidence such as:
 
-* normalized title;
-* alternate titles;
-* external identifiers;
-* release dates;
-* platforms;
-* developers;
-* publishers;
-* regions;
-* edition markers;
-* version markers;
-* known relationships.
+- normalized title;
+- alternate titles;
+- external identifiers;
+- release dates;
+- platforms;
+- developers;
+- publishers;
+- regions;
+- edition markers;
+- version markers;
+- known relationships.
 
 Identity resolution must be treated as a domain capability.
 
@@ -316,11 +316,11 @@ Source-specific parsing must remain inside the source adapter.
 
 Do not leak:
 
-* CSS selectors;
-* HTML structure;
-* source-specific field names;
-* source-specific assumptions;
-* scraping logic;
+- CSS selectors;
+- HTML structure;
+- source-specific field names;
+- source-specific assumptions;
+- scraping logic;
 
 into domain services.
 
@@ -563,15 +563,15 @@ AI useful?
 
 AI failure includes:
 
-* timeout;
-* network failure;
-* provider outage;
-* rate limiting;
-* malformed response;
-* invalid schema;
-* model unavailable;
-* low confidence;
-* disabled AI.
+- timeout;
+- network failure;
+- provider outage;
+- rate limiting;
+- malformed response;
+- invalid schema;
+- model unavailable;
+- low confidence;
+- disabled AI.
 
 ---
 
@@ -718,10 +718,10 @@ Final Fantasy Tactics: The War of the Lions
 
 The AI should determine:
 
-* same game or different;
-* relationship when different;
-* confidence;
-* optionally reason codes/evidence.
+- same game or different;
+- relationship when different;
+- confidence;
+- optionally reason codes/evidence.
 
 The result must be validated by the native engine.
 
@@ -751,10 +751,10 @@ External evidence remains the source of facts.
 
 When external sources disagree, the system should first use deterministic policies such as:
 
-* source priority;
-* corroboration;
-* known identifiers;
-* field-specific rules.
+- source priority;
+- corroboration;
+- known identifiers;
+- field-specific rules.
 
 AI may assist when deterministic resolution is insufficient.
 
@@ -959,11 +959,11 @@ Pagination must be deterministic.
 
 Define:
 
-* page;
-* limit;
-* maximum limit;
-* ordering;
-* invalid parameter behavior.
+- page;
+- limit;
+- maximum limit;
+- ordering;
+- invalid parameter behavior.
 
 Database queries should perform filtering and pagination at the database layer whenever practical.
 
@@ -1007,10 +1007,10 @@ Duplicate handling must be conservative.
 
 Never merge records merely because:
 
-* titles are similar;
-* fuzzy matching is high;
-* an LLM says so;
-* one source claims they are identical.
+- titles are similar;
+- fuzzy matching is high;
+- an LLM says so;
+- one source claims they are identical.
 
 Identity operations should favor preserving information over destructive merging.
 
@@ -1180,11 +1180,11 @@ AI should be adopted only when it provides measurable value.
 
 If a deterministic solution is:
 
-* more accurate;
-* cheaper;
-* faster;
-* easier to test;
-* easier to maintain;
+- more accurate;
+- cheaper;
+- faster;
+- easier to test;
+- easier to maintain;
 
 then prefer the deterministic solution.
 
@@ -1278,12 +1278,12 @@ Avoid reading environment variables directly from domain entities or domain serv
 
 Never commit:
 
-* API keys;
-* tokens;
-* passwords;
-* cookies;
-* credentials;
-* private authentication data.
+- API keys;
+- tokens;
+- passwords;
+- cookies;
+- credentials;
+- private authentication data.
 
 Use the designated configuration/secret mechanism.
 
@@ -1305,10 +1305,10 @@ identity structure
 
 determine:
 
-* migration requirements;
-* existing records;
-* backward compatibility;
-* API implications.
+- migration requirements;
+- existing records;
+- backward compatibility;
+- API implications.
 
 ---
 
@@ -1320,37 +1320,37 @@ Testing should exist at multiple levels.
 
 For:
 
-* normalization;
-* classification;
-* deterministic identity rules;
-* scoring;
-* filtering;
-* source parsing.
+- normalization;
+- classification;
+- deterministic identity rules;
+- scoring;
+- filtering;
+- source parsing.
 
 ### Integration tests
 
 For:
 
-* repositories;
-* persistence;
-* application orchestration.
+- repositories;
+- persistence;
+- application orchestration.
 
 ### Source tests
 
 For:
 
-* source adapters;
-* fixtures;
-* parsing behavior.
+- source adapters;
+- fixtures;
+- parsing behavior.
 
 ### AI integration tests
 
 For:
 
-* provider adapters;
-* structured output;
-* failure handling;
-* fallback behavior.
+- provider adapters;
+- structured output;
+- failure handling;
+- fallback behavior.
 
 ### End-to-end tests
 
@@ -1362,10 +1362,10 @@ For critical user-facing flows.
 
 The standard test suite must not require:
 
-* live websites;
-* external APIs;
-* LLM providers;
-* internet access.
+- live websites;
+- external APIs;
+- LLM providers;
+- internet access.
 
 Use fixtures and mocks.
 
@@ -1391,12 +1391,12 @@ Optimization
 
 Likely future bottlenecks include:
 
-* catalog queries;
-* external discovery;
-* scraping;
-* identity resolution;
-* AI calls;
-* database indexes.
+- catalog queries;
+- external discovery;
+- scraping;
+- identity resolution;
+- AI calls;
+- database indexes.
 
 ---
 
@@ -1464,12 +1464,12 @@ HIGH_IDENTITY_CONFIDENCE
 
 The same applies to:
 
-* AI thresholds;
-* pagination limits;
-* source weights;
-* retry counts;
-* timeouts;
-* ranking weights.
+- AI thresholds;
+- pagination limits;
+- source weights;
+- retry counts;
+- timeouts;
+- ranking weights.
 
 ---
 
@@ -1479,15 +1479,15 @@ Architecture and domain behavior must be documented outside source code.
 
 Documentation is required when changing:
 
-* domain semantics;
-* identity rules;
-* source contracts;
-* persistence;
-* API behavior;
-* classification;
-* AI capabilities;
-* AI fallback;
-* canonicalization.
+- domain semantics;
+- identity rules;
+- source contracts;
+- persistence;
+- API behavior;
+- classification;
+- AI capabilities;
+- AI fallback;
+- canonicalization.
 
 ---
 

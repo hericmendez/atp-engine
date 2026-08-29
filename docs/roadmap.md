@@ -26,19 +26,19 @@ Create the project skeleton and development environment.
 
 ### Tasks
 
-* initialize TypeScript project;
-* configure Node.js;
-* configure Express;
-* configure Zod;
-* configure ESLint;
-* configure Prettier;
-* configure Vitest;
-* configure Docker;
-* establish environment configuration;
-* establish project structure;
-* establish logging;
-* establish error handling;
-* establish health endpoint.
+- initialize TypeScript project;
+- configure Node.js;
+- configure Express;
+- configure Zod;
+- configure ESLint;
+- configure Prettier;
+- configure Vitest;
+- configure Docker;
+- establish environment configuration;
+- establish project structure;
+- establish logging;
+- establish error handling;
+- establish health endpoint.
 
 ### Exit Criteria
 
@@ -81,11 +81,11 @@ GameRelationship
 
 Define:
 
-* identifiers;
-* invariants;
-* value objects where justified;
-* relationships;
-* validation rules.
+- identifiers;
+- invariants;
+- value objects where justified;
+- relationships;
+- validation rules.
 
 ### Exit Criteria
 
@@ -109,15 +109,15 @@ Implement canonical persistence.
 
 ### Tasks
 
-* define repository interfaces;
-* choose Mongoose or official MongoDB driver;
-* implement MongoDB infrastructure;
-* implement Game repository;
-* persist canonical Games;
-* persist Releases;
-* persist source identifiers;
-* persist provenance;
-* implement duplicate-safe operations.
+- define repository interfaces;
+- choose Mongoose or official MongoDB driver;
+- implement MongoDB infrastructure;
+- implement Game repository;
+- persist canonical Games;
+- persist Releases;
+- persist source identifiers;
+- persist provenance;
+- implement duplicate-safe operations.
 
 ### Exit Criteria
 
@@ -146,14 +146,14 @@ Create a consistent internal representation for external data.
 
 Implement:
 
-* title normalization;
-* platform normalization;
-* region normalization;
-* developer normalization;
-* publisher normalization;
-* genre normalization;
-* release-date normalization;
-* edition/version normalization.
+- title normalization;
+- platform normalization;
+- region normalization;
+- developer normalization;
+- publisher normalization;
+- genre normalization;
+- release-date normalization;
+- edition/version normalization.
 
 ### Exit Criteria
 
@@ -161,7 +161,7 @@ Equivalent source representations converge on the same normalized representation
 
 ---
 
-# 6. Phase 4 — Source Infrastructure
+# 6. Phase 4 — Source Infrastructure ✅
 
 ## Objectives
 
@@ -170,29 +170,33 @@ Implement the external source architecture.
 ### Initial Sources
 
 ```text
-Wikipedia
-SteamDB
+Wikipedia (MediaWiki API)
+Steam (Store API)
 ```
 
 ### Tasks
 
-* define SourceAdapter contract;
-* implement source registry;
-* implement Wikipedia adapter;
-* implement SteamDB adapter;
-* implement source-specific parsing;
-* implement source timeouts;
-* implement retry rules;
-* implement source error handling;
-* implement rate limiting where required.
+- define SourceAdapter contract;
+- implement source registry;
+- implement Wikipedia adapter;
+- implement Steam adapter;
+- implement source-specific parsing;
+- implement source timeouts;
+- implement retry rules;
+- implement source error handling;
+- implement rate limiting where required.
 
 ### Exit Criteria
 
 Sources can independently return normalized candidate records.
 
+### Status
+
+**Complete.** All adapters, registry, error handling, base adapter, and tests implemented.
+
 ---
 
-# 7. Phase 5 — Classification
+# 7. Phase 5 — Classification ✅
 
 ## Objectives
 
@@ -200,12 +204,12 @@ Prevent non-game entities from entering the Game catalog.
 
 ### Tasks
 
-* implement deterministic classifier;
-* implement classification categories;
-* implement classification confidence;
-* implement AI classifier interface;
-* implement native fallback;
-* add classification tests.
+- implement deterministic classifier;
+- implement classification categories;
+- implement classification confidence;
+- implement AI classifier interface;
+- implement native fallback;
+- add classification tests.
 
 ### Exit Criteria
 
@@ -223,9 +227,13 @@ promotional content
 
 without requiring an LLM.
 
+### Status
+
+**Complete.** DeterministicClassifier with weighted scoring, 54 tests covering all categories, platform/distribution independence, edge cases, and explainability.
+
 ---
 
-# 8. Phase 6 — Identity Resolution
+# 8. Phase 6 — Identity Resolution ✅
 
 ## Objectives
 
@@ -233,17 +241,17 @@ Prevent duplicate and incorrect Game identities.
 
 ### Tasks
 
-* implement title comparison;
-* implement external-ID matching;
-* implement release comparison;
-* implement platform handling;
-* implement region handling;
-* implement remake detection;
-* implement remaster detection;
-* implement port relationships;
-* implement related-game relationships;
-* implement native identity scoring;
-* implement unresolved state.
+- implement title comparison;
+- implement external-ID matching;
+- implement release comparison;
+- implement platform handling;
+- implement region handling;
+- implement remake detection;
+- implement remaster detection;
+- implement port relationships;
+- implement related-game relationships;
+- implement native identity scoring;
+- implement unresolved state.
 
 ### Exit Criteria
 
@@ -277,9 +285,13 @@ The War of the Lions
 
 as a relationship without blindly merging them.
 
+### Status
+
+**Complete.** DeterministicIdentityResolver with priority-based resolution, 36 tests covering all identity scenarios, external ID matching, title comparison, remake/remaster detection, and explainability.
+
 ---
 
-# 9. Phase 7 — Discovery Engine
+# 9. Phase 7 — Discovery Engine ✅
 
 ## Objectives
 
@@ -292,15 +304,17 @@ Query
  ↓
 Source Registry
  ↓
-Parallel Source Search
+Parallel Source Search (with failure isolation)
  ↓
-Candidate Aggregation
+Candidate Collection
  ↓
 Normalization
  ↓
 Classification
  ↓
 Identity Resolution
+ ↓
+Aggregation & Deduplication
  ↓
 Ranking
  ↓
@@ -309,13 +323,13 @@ Pagination
 
 ### Tasks
 
-* implement discovery use case;
-* aggregate source results;
-* deduplicate candidates;
-* classify;
-* resolve identity;
-* rank;
-* paginate.
+- implement discovery use case;
+- aggregate source results;
+- deduplicate candidates;
+- classify;
+- resolve identity;
+- rank;
+- paginate.
 
 ### Exit Criteria
 
@@ -327,9 +341,13 @@ Zelda
 
 returns relevant game candidates from multiple sources without obvious non-game contamination.
 
+### Status
+
+**Complete.** DiscoveryEngine with multi-source orchestration, deterministic deduplication via IdentityResolver, deterministic ranking, source failure isolation, pagination, and 31 comprehensive tests covering basic discovery, multi-source, source failures, classification, identity resolution, ranking, pagination, source filtering, platform ontology regression, and determinism guarantees.
+
 ---
 
-# 10. Phase 8 — Canonical Enrichment
+# 10. Phase 8 — Canonical Enrichment ✅
 
 ## Objectives
 
@@ -337,17 +355,21 @@ Turn discovered candidates into progressively richer canonical records.
 
 ### Tasks
 
-* database-first retrieval;
-* missing-field detection;
-* source enrichment;
-* provenance;
-* conflict detection;
-* non-destructive updates;
-* persistence after enrichment.
+- database-first retrieval;
+- missing-field detection;
+- source enrichment;
+- provenance;
+- conflict detection;
+- non-destructive updates;
+- persistence after enrichment.
 
 ### Exit Criteria
 
 Repeated searches improve existing records rather than creating duplicates.
+
+### Status
+
+**Complete.** EnrichmentEngine with deterministic additive enrichment, conservative conflict resolution, release enrichment with date precision improvement, organization name normalization with suffix detection, platform ontology preservation, idempotence, determinism, and 32 comprehensive tests covering basic enrichment, conflict handling, release enrichment, completeness calculation, platform ontology regression, determinism, identity safety, and classification safety.
 
 ---
 
@@ -388,11 +410,11 @@ distributionChannel
 
 API consumers can:
 
-* search games;
-* retrieve individual games;
-* filter catalog;
-* paginate results;
-* retrieve covers.
+- search games;
+- retrieve individual games;
+- filter catalog;
+- paginate results;
+- retrieve covers.
 
 ---
 
@@ -404,13 +426,13 @@ Implement dedicated cover discovery.
 
 ### Tasks
 
-* define CoverCandidate;
-* source cover adapters;
-* cover relevance filtering;
-* cover ranking;
-* duplicate filtering;
-* cover persistence;
-* dedicated cover endpoint.
+- define CoverCandidate;
+- source cover adapters;
+- cover relevance filtering;
+- cover ranking;
+- duplicate filtering;
+- cover persistence;
+- dedicated cover endpoint.
 
 ### Exit Criteria
 
@@ -426,16 +448,16 @@ Introduce AI assistance without making it mandatory.
 
 ### Tasks
 
-* define AIProvider interface;
-* implement Ollama provider;
-* implement remote provider adapter;
-* implement structured outputs;
-* implement Zod validation;
-* implement classification assistance;
-* implement identity assistance;
-* implement fallback behavior;
-* implement AI observability;
-* implement prompt versioning.
+- define AIProvider interface;
+- implement Ollama provider;
+- implement remote provider adapter;
+- implement structured outputs;
+- implement Zod validation;
+- implement classification assistance;
+- implement identity assistance;
+- implement fallback behavior;
+- implement AI observability;
+- implement prompt versioning.
 
 ### Exit Criteria
 
@@ -504,16 +526,16 @@ Make the engine resilient to external failures.
 
 ### Tasks
 
-* source timeout handling;
-* retry policy;
-* rate-limit handling;
-* source isolation;
-* AI timeout handling;
-* AI fallback;
-* database error handling;
-* structured logging;
-* request IDs;
-* metrics.
+- source timeout handling;
+- retry policy;
+- rate-limit handling;
+- source isolation;
+- AI timeout handling;
+- AI fallback;
+- database error handling;
+- structured logging;
+- request IDs;
+- metrics.
 
 ### Exit Criteria
 
@@ -529,14 +551,14 @@ Optimize only after correctness is established.
 
 ### Tasks
 
-* database indexing;
-* query optimization;
-* candidate retrieval optimization;
-* source parallelization;
-* caching;
-* AI caching;
-* connection pooling;
-* response optimization.
+- database indexing;
+- query optimization;
+- candidate retrieval optimization;
+- source parallelization;
+- caching;
+- AI caching;
+- connection pooling;
+- response optimization.
 
 ### Exit Criteria
 
@@ -552,15 +574,15 @@ Prepare ATP for long-term use.
 
 ### Tasks
 
-* production Docker configuration;
-* configuration validation;
-* security review;
-* API rate limiting;
-* request limits;
-* observability;
-* backup strategy;
-* migration strategy;
-* operational documentation.
+- production Docker configuration;
+- configuration validation;
+- security review;
+- API rate limiting;
+- request limits;
+- observability;
+- backup strategy;
+- migration strategy;
+- operational documentation.
 
 ---
 

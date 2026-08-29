@@ -10,10 +10,15 @@ import {
   type NormalizedCandidate,
   type NormalizedTitle,
   type NormalizedRelease,
+  type NormalizedClassificationHint,
   type Provenance,
   type TitleType,
 } from './normalized-candidate.js';
-import { resolvePlatformAlias, resolvePlatformFamily } from './platform-aliases.js';
+import {
+  resolvePlatformAlias,
+  resolvePlatformFamily,
+  resolvePlatformType,
+} from './platform-aliases.js';
 import { resolveRegionAlias } from './region-aliases.js';
 
 export function normalizeTitle(input: string, type: TitleType = 'primary'): NormalizedTitle {
@@ -168,7 +173,8 @@ function createSafeReleaseDate(year: number, month?: number, day?: number): Rele
 export function normalizePlatform(input: string): Platform {
   const resolved = resolvePlatformAlias(input);
   const family = resolvePlatformFamily(input);
-  return { name: resolved, family };
+  const type = resolvePlatformType(input);
+  return { name: resolved, family, type };
 }
 
 export function normalizeRegion(input: string): Region {
@@ -247,6 +253,8 @@ export interface RawCandidateInput {
   distributionChannels?: readonly string[];
   launchers?: readonly string[];
   externalIdentifiers?: readonly { source: string; id: string }[];
+  description?: string;
+  classificationHints?: readonly { category: string; confidence: number; evidence: string }[];
 }
 
 export function normalizeCandidate(
@@ -290,7 +298,7 @@ export function normalizeCandidate(
 
   if (platformNames.length === 0) {
     releases.push({
-      platform: { name: 'UNKNOWN', family: null },
+      platform: { name: 'UNKNOWN', family: null, type: 'other' },
       region: null,
       releaseDate,
       version,
@@ -331,6 +339,16 @@ export function normalizeCandidate(
     }
   }
 
+  const classificationHints: NormalizedClassificationHint[] = (input.classificationHints ?? []).map(
+    (h) => ({
+      category: h.category.trim(),
+      confidence: h.confidence,
+      evidence: h.evidence.trim(),
+    }),
+  );
+
+  const description = input.description?.trim() ?? null;
+
   return {
     titles,
     developers,
@@ -338,6 +356,8 @@ export function normalizeCandidate(
     genres,
     releases,
     externalIdentifiers,
+    classificationHints,
+    description,
     provenance: normalizeProvenance(source, sourceId, input.title ?? null),
   };
 }

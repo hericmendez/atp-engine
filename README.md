@@ -1,4 +1,3 @@
-
 # ATP Engine
 
 > Ash Twin Project — Video Game Metadata Discovery and Catalog Engine
@@ -19,19 +18,19 @@ Applications such as Save State may use ATP as a metadata service, but ATP does 
 
 ATP is responsible for:
 
-* discovering games across multiple sources;
-* searching games by terms;
-* retrieving metadata for individual games;
-* discovering game covers;
-* filtering and ranking search results;
-* classifying candidates;
-* identifying duplicate or equivalent records;
-* distinguishing different games with similar names;
-* representing relationships between related games;
-* normalizing metadata;
-* persisting validated canonical information;
-* enriching incomplete records;
-* querying the canonical catalog.
+- discovering games across multiple sources;
+- searching games by terms;
+- retrieving metadata for individual games;
+- discovering game covers;
+- filtering and ranking search results;
+- classifying candidates;
+- identifying duplicate or equivalent records;
+- distinguishing different games with similar names;
+- representing relationships between related games;
+- normalizing metadata;
+- persisting validated canonical information;
+- enriching incomplete records;
+- querying the canonical catalog.
 
 ---
 
@@ -41,12 +40,12 @@ The original Next.js scraper established the initial functional baseline.
 
 It was capable of:
 
-* searching multiple sources;
-* filtering source results;
-* searching game metadata by term;
-* discovering game covers;
-* returning a small set of filtered cover candidates;
-* distinguishing games from unrelated media such as movies, anime, DLC, and promotional content.
+- searching multiple sources;
+- filtering source results;
+- searching game metadata by term;
+- discovering game covers;
+- returning a small set of filtered cover candidates;
+- distinguishing games from unrelated media such as movies, anime, DLC, and promotional content.
 
 It did not yet implement persistent catalog storage.
 
@@ -96,11 +95,11 @@ ATP must remain operational when no AI provider is available.
 
 AI may assist with:
 
-* classification;
-* identity resolution;
-* semantic normalization;
-* conflict resolution;
-* candidate ranking.
+- classification;
+- identity resolution;
+- semantic normalization;
+- conflict resolution;
+- candidate ranking.
 
 AI is never the canonical source of truth.
 
@@ -148,17 +147,17 @@ Canonical data
 
 ATP is expected to represent:
 
-* games;
-* releases;
-* platforms;
-* regions;
-* developers;
-* publishers;
-* genres;
-* alternate titles;
-* external identifiers;
-* relationships between related games;
-* source provenance.
+- games;
+- releases;
+- platforms;
+- regions;
+- developers;
+- publishers;
+- genres;
+- alternate titles;
+- external identifiers;
+- relationships between related games;
+- source provenance.
 
 ---
 
@@ -218,13 +217,13 @@ GET /games/search?q=zelda
 
 By:
 
-* terms;
-* titles;
-* release year/date;
-* platforms;
-* developers;
-* publishers;
-* genres.
+- terms;
+- titles;
+- release year/date;
+- platforms;
+- developers;
+- publishers;
+- genres.
 
 ### Individual game lookup
 
@@ -398,10 +397,10 @@ The catalog should become increasingly useful as knowledge accumulates.
 
 ATP should remain useful without:
 
-* a specific external source;
-* a specific AI provider;
-* a specific LLM;
-* a specific consuming application.
+- a specific external source;
+- a specific AI provider;
+- a specific LLM;
+- a specific consuming application.
 
 The core of ATP is its domain and deterministic processing.
 

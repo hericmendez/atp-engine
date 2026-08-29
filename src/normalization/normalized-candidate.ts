@@ -32,6 +32,12 @@ export interface Provenance {
   readonly rawTitle: string | null;
 }
 
+export interface NormalizedClassificationHint {
+  readonly category: string;
+  readonly confidence: number;
+  readonly evidence: string;
+}
+
 export interface NormalizedCandidate {
   readonly titles: readonly NormalizedTitle[];
   readonly developers: readonly Organization[];
@@ -40,4 +46,6 @@ export interface NormalizedCandidate {
   readonly releases: readonly NormalizedRelease[];
   readonly externalIdentifiers: readonly ExternalIdentifier[];
   readonly provenance: Provenance;
+  readonly classificationHints: readonly NormalizedClassificationHint[];
+  readonly description: string | null;
 }
