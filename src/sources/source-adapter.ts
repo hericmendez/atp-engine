@@ -14,6 +14,7 @@ export interface SearchResult {
 export interface SourceCapabilities {
   readonly search: boolean;
   readonly getById: boolean;
+  readonly searchCovers: boolean;
   readonly searchPagination: 'none' | 'offset' | 'cursor';
 }
 

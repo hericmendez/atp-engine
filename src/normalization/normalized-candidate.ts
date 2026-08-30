@@ -48,4 +48,5 @@ export interface NormalizedCandidate {
   readonly provenance: Provenance;
   readonly classificationHints: readonly NormalizedClassificationHint[];
   readonly description: string | null;
+  readonly coverUrls: readonly string[];
 }

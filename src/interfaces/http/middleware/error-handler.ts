@@ -11,7 +11,6 @@ interface ErrorResponse {
 }
 
 // Express requires 4 parameters to recognize error-handling middleware
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction): void {
   if (err instanceof SyntaxError && 'body' in err) {
     const response: ErrorResponse = {

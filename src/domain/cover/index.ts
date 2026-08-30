@@ -1,0 +1,15 @@
+export {
+  CoverType,
+  createCoverEvidence,
+  createCoverCandidate,
+  coverCandidateEquals,
+  coverFromCandidate,
+  type CoverEvidence,
+  type CoverCandidate,
+  type CoverCandidateInput,
+  type Cover,
+  type CoverRankingBreakdown,
+  type RankedCoverCandidate,
+  type CoverSourceError,
+  type CoverResult,
+} from './cover-candidate.js';

@@ -13,6 +13,7 @@ export interface MockAdapterConfig {
   readonly searchError?: Error;
   readonly getByIdError?: Error;
   readonly delayMs?: number;
+  readonly searchCovers?: boolean;
 }
 
 export class MockAdapter implements SourceAdapter {
@@ -40,6 +41,7 @@ export class MockAdapter implements SourceAdapter {
     this.capabilities = {
       search: true,
       getById: true,
+      searchCovers: config.searchCovers ?? false,
       searchPagination: 'none',
     };
   }

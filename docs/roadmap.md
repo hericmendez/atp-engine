@@ -373,7 +373,7 @@ Repeated searches improve existing records rather than creating duplicates.
 
 ---
 
-# 11. Phase 9 — Search and Catalog API
+# 11. Phase 9 — Search and Catalog API ✅
 
 ## Objectives
 
@@ -387,7 +387,6 @@ Implement:
 GET /api/v1/games
 GET /api/v1/games/search
 GET /api/v1/games/:id
-GET /api/v1/games/:id/cover
 ```
 
 and required filter/query contracts.
@@ -397,13 +396,14 @@ and required filter/query contracts.
 ```text
 search
 title
-release
 platform
 platformFamily
 developer
 publisher
 genre
-distributionChannel
+classification
+completeness
+releaseYear
 ```
 
 ### Exit Criteria
@@ -413,30 +413,44 @@ API consumers can:
 - search games;
 - retrieve individual games;
 - filter catalog;
-- paginate results;
-- retrieve covers.
+- paginate results.
+
+### Status
+
+**Complete.** REST API with catalog listing, search, and single game retrieval. CatalogService application layer, Zod validation, GameRepository.findMany extension, MongoGameRepository implementation, comprehensive API tests covering filtering, pagination, platform ontology, and response structure. 571 tests passing.
 
 ---
 
-# 12. Phase 10 — Cover Engine
+# 12. Phase 10 — Cover Engine ✅
 
 ## Objectives
 
-Implement dedicated cover discovery.
+Implement dedicated cover discovery with two modes: query-based (no Game required) and game-based (for existing canonical Games).
 
 ### Tasks
 
-- define CoverCandidate;
-- source cover adapters;
-- cover relevance filtering;
-- cover ranking;
-- duplicate filtering;
-- cover persistence;
-- dedicated cover endpoint.
+- define CoverCandidate and cover types (CoverType, Cover, CoverEvidence, CoverResult);
+- CoverResult supports both query-based and game-based flows (`query`, `gameId: string | null`);
+- add coverUrls to NormalizedCandidate;
+- extend SourceCapabilities with searchCovers;
+- enhance Wikipedia adapter with pageimages extraction during search (batch pageids → pageimages);
+- implement cover validation (URL + candidate);
+- implement cover deduplication (source:sourceId + normalized URL);
+- implement relevance-aware deterministic ranking (relevance 0.35, source 0.25, type 0.25, quality 0.08, aspectRatio 0.07);
+- implement CoverEngine with `searchCovers(query)` as primary method;
+- `discoverCovers(gameId, query)` delegates to `searchCovers` and sets gameId;
+- add cover field to Game domain and persistence layer;
+- create CoverService with `searchCovers(query)` and `getGameCover(gameId)`;
+- implement GET /api/v1/covers/search?q=... endpoint (independent cover search);
+- implement GET /api/v1/games/:id/cover endpoint (game-based cover);
+- CoverSearchQuerySchema validation (required, 1–200 chars, trimmed);
+- comprehensive test coverage (cover-validate, cover-rank, cover-engine, cover-service, cover-api).
 
 ### Exit Criteria
 
-A game query can return a small set of relevant cover candidates rather than arbitrary image results.
+✅ Query-based cover discovery works without any Game in the database.
+✅ Game-based cover discovery continues working for existing Games.
+✅ Both modes share the same multi-source → validation → dedup → ranking infrastructure.
 
 ---
 

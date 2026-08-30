@@ -51,6 +51,14 @@ export interface GameDocument extends Document {
   }[];
   classification: string;
   completeness: string;
+  cover: {
+    url: string;
+    source: string;
+    sourceId: string | null;
+    width: number | null;
+    height: number | null;
+    type: string;
+  } | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -128,6 +136,18 @@ const gameRelationshipSchema = new Schema(
   { _id: false },
 );
 
+const coverSchema = new Schema(
+  {
+    url: { type: String, required: true },
+    source: { type: String, required: true },
+    sourceId: { type: String, default: null },
+    width: { type: Number, default: null },
+    height: { type: Number, default: null },
+    type: { type: String, required: true },
+  },
+  { _id: false },
+);
+
 const gameSchema = new Schema<GameDocument>(
   {
     domainId: { type: String, required: true, unique: true },
@@ -158,6 +178,7 @@ const gameSchema = new Schema<GameDocument>(
     evidence: [sourceEvidenceSchema],
     classification: { type: String, required: true },
     completeness: { type: String, required: true },
+    cover: { type: coverSchema, default: null },
   },
   {
     timestamps: true,

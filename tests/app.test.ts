@@ -1,9 +1,61 @@
 import { describe, it, expect } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/interfaces/http/app.js';
+import type { CatalogService } from '../src/application/catalog-service.js';
+import type { CoverService } from '../src/application/cover-service.js';
+import type { GameQuery, PaginatedResult } from '../src/domain/game/game-repository.js';
+import type { Game } from '../src/domain/game/game.js';
+import type { CoverResult } from '../src/domain/cover/cover-candidate.js';
+
+function createMockCatalogService(): CatalogService {
+  return {
+    listGames: async (_query: GameQuery): Promise<PaginatedResult<Game>> => ({
+      items: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      totalPages: 0,
+    }),
+    searchGames: async (
+      _query: string,
+      _options?: { page?: number; limit?: number; sort?: GameQuery['sort'] },
+    ): Promise<PaginatedResult<Game>> => ({
+      items: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      totalPages: 0,
+    }),
+    getGameById: async (_id: string): Promise<Game> => {
+      throw new Error('Not implemented');
+    },
+  };
+}
+
+function createMockCoverService(): CoverService {
+  return {
+    searchCovers: async (_query: string): Promise<CoverResult> => ({
+      query: _query,
+      gameId: null,
+      selected: null,
+      candidates: [],
+      errors: [],
+    }),
+    getGameCover: async (_gameId: string): Promise<CoverResult> => ({
+      query: '',
+      gameId: _gameId,
+      selected: null,
+      candidates: [],
+      errors: [],
+    }),
+  } as CoverService;
+}
 
 describe('app', () => {
-  const app = createApp();
+  const app = createApp({
+    games: { catalogService: createMockCatalogService() },
+    cover: { coverService: createMockCoverService() },
+  });
 
   it('creates an express application', () => {
     expect(app).toBeDefined();

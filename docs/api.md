@@ -88,9 +88,9 @@ Internal implementation details must not be exposed.
 
 # 6. Game Search
 
-## GET `/games/search`
+## GET `/api/v1/games/search`
 
-Search external sources and/or the canonical catalog for games matching a term.
+Search the canonical catalog for games matching a term.
 
 Example:
 
@@ -98,14 +98,9 @@ Example:
 GET /api/v1/games/search?q=zelda
 ```
 
-The endpoint may combine:
+The endpoint queries the database using partial/case-insensitive matching on titles, developers, and publishers.
 
-- database results;
-- external discovery;
-- normalization;
-- classification;
-- identity resolution;
-- ranking.
+Supports pagination via `page` and `limit` query parameters.
 
 ---
 
@@ -210,23 +205,19 @@ Invalid pagination values must be rejected.
 
 # 13. Game Retrieval
 
-## GET `/games/:id`
+## GET `/api/v1/games/:id`
 
 Returns a canonical game.
 
 Example:
 
 ```text
-GET /api/v1/games/123
+GET /api/v1/games/game-123
 ```
 
-The endpoint should:
+The endpoint queries the database and returns the canonical Game.
 
-1. query the database;
-2. determine whether stored metadata is sufficient;
-3. enrich from external sources if necessary;
-4. persist validated enrichment;
-5. return the canonical Game.
+Returns 404 if the game is not found.
 
 ---
 
@@ -260,25 +251,149 @@ Return
 
 ---
 
-# 15. Game Cover
+# 15. Cover Search (Independent)
 
-## GET `/games/:id/cover`
+## GET `/api/v1/covers/search`
 
-Returns the best available cover image for a canonical game.
+Search for cover images by query. No Game required.
 
-Cover retrieval is a dedicated capability.
+Example:
 
-The engine may:
+```text
+GET /api/v1/covers/search?q=Doom%20Eternal
+```
 
-- use a persisted cover;
-- retrieve external covers;
-- rank candidates;
-- filter unsuitable images;
-- persist the selected cover.
+### Query Parameters
+
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `q` | yes | Search query (1–200 chars, trimmed) |
+| `source` | no | Filter to specific source (e.g., `wikipedia`, `steam`) |
+
+### Response
+
+```json
+{
+  "data": {
+    "query": "Doom Eternal",
+    "selected": {
+      "url": "https://example.com/cover.jpg",
+      "source": "wikipedia",
+      "sourceId": "wp-123",
+      "width": 600,
+      "height": 900,
+      "type": "front_cover"
+    },
+    "candidates": [
+      {
+        "url": "https://example.com/cover.jpg",
+        "source": "wikipedia",
+        "sourceId": "wp-123",
+        "width": 600,
+        "height": 900,
+        "type": "front_cover",
+        "ranking": {
+          "relevanceScore": 0.9,
+          "sourceScore": 0.8,
+          "typeScore": 1.0,
+          "qualityScore": 0.8,
+          "aspectRatioScore": 1.0,
+          "totalScore": 0.9
+        }
+      }
+    ],
+    "errors": []
+  }
+}
+```
+
+### Behavior
+
+- Queries all sources with `searchCovers` capability.
+- Sources without `searchCovers` are silently skipped.
+- Failed sources are isolated — partial success is valid.
+- Returns 200 with `selected: null` when no covers found (not an error).
+- Does NOT persist results. This is a discovery operation.
 
 ---
 
-# 16. Cover Search
+# 16. Game Cover
+
+## GET `/api/v1/games/:id/cover`
+
+Returns the best available cover image for a canonical game.
+
+Example:
+
+```text
+GET /api/v1/games/game-123/cover
+```
+
+### Behavior
+
+- If the game already has a persisted cover, returns the cached cover immediately.
+- If no cover exists, queries all sources with `searchCovers` capability using the game's primary title.
+- If a cover is found, it is persisted on the game record for future requests.
+- Returns 404 if the game is not found.
+- Returns 200 with `selected: null` when no covers found.
+
+### Response
+
+```json
+{
+  "data": {
+    "gameId": "game-123",
+    "query": "Doom Eternal",
+    "selected": {
+      "url": "https://example.com/cover.jpg",
+      "source": "wikipedia",
+      "sourceId": "wp-123",
+      "width": 600,
+      "height": 900,
+      "type": "front_cover"
+    },
+    "candidates": [...],
+    "errors": []
+  }
+}
+```
+
+---
+
+# 17. Cover Types
+
+| Type | Description |
+|------|-------------|
+| `front_cover` | Standard game box art |
+| `box_art` | Alternative box art |
+| `poster` | Promotional poster |
+| `key_art` | Key promotional art |
+| `screenshot` | In-game screenshot |
+| `unknown` | Unclassified cover type |
+
+---
+
+# 18. Cover Ranking
+
+Candidates are ranked using deterministic weighted scoring:
+
+| Factor | Weight | Description |
+|--------|--------|-------------|
+| Relevance | 0.35 | Query-title match quality |
+| Source reliability | 0.25 | Steam (0.9), Wikipedia (0.8), others (0.5) |
+| Cover type | 0.25 | front_cover (1.0), box_art (0.95), poster (0.85), key_art (0.8), unknown (0.6), screenshot (0.3) |
+| Quality (resolution) | 0.08 | Based on pixel count thresholds |
+| Aspect ratio | 0.07 | Deviation from ideal 2:3 ratio |
+
+Tie-breaking: relevance → type → source → URL lexicographic order.
+
+---
+
+# 19. Cover Error Handling
+
+- Source failures are isolated and returned in the `errors` array.
+- A single source failure does not cause a 500 response.
+- Returns 200 with `selected: null` when no covers are found (not an error).
 
 A separate search operation may be supported:
 
@@ -296,7 +411,7 @@ The API must not return arbitrary image search results without classification/re
 
 # 17. Game Filtering
 
-## GET `/games`
+## GET `/api/v1/games`
 
 Returns canonical games matching filters.
 
@@ -305,13 +420,14 @@ Supported filters:
 ```text
 search
 title
-release
 platform
 platformFamily
 developer
 publisher
 genre
-distributionChannel
+classification
+completeness
+releaseYear
 ```
 
 Additional filters may be introduced later.

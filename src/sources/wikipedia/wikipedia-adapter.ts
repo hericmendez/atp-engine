@@ -27,6 +27,18 @@ interface WikipediaPageResponse {
   error?: { code: string; info: string };
 }
 
+interface WikipediaPageImagesResponse {
+  query?: {
+    pages?: Record<
+      string,
+      {
+        thumbnail?: { source: string };
+        original?: { source: string };
+      }
+    >;
+  };
+}
+
 export interface WikipediaAdapterConfig extends BaseAdapterConfig {
   readonly namespace?: number;
 }
@@ -43,6 +55,7 @@ export class WikipediaAdapter extends BaseAdapter {
       {
         search: true,
         getById: true,
+        searchCovers: true,
         searchPagination: 'offset',
       },
     );
@@ -74,7 +87,13 @@ export class WikipediaAdapter extends BaseAdapter {
       return { candidates: [], hasMore: false };
     }
 
-    const candidates = response.query.search.map((result) => this.searchResultToCandidate(result));
+    const searchResults = response.query.search;
+    const pageIds = searchResults.map((r) => String(r.pageid));
+    const coverUrlsByPageId = await this.fetchPageImagesByPageIds(pageIds);
+
+    const candidates = searchResults.map((result) =>
+      this.searchResultToCandidate(result, coverUrlsByPageId.get(String(result.pageid)) ?? []),
+    );
 
     const totalHits = response.query.searchinfo?.totalhits ?? 0;
     const hasMore = offset + limit < totalHits;
@@ -115,7 +134,9 @@ export class WikipediaAdapter extends BaseAdapter {
         return null;
       }
 
-      return this.parseResponseToCandidate(response.parse);
+      const candidate = this.parseResponseToCandidate(response.parse);
+      const coverUrls = await this.fetchPageImages(response.parse.title);
+      return { ...candidate, coverUrls };
     } catch (error) {
       if (error instanceof SourceError) {
         throw error;
@@ -124,12 +145,16 @@ export class WikipediaAdapter extends BaseAdapter {
     }
   }
 
-  private searchResultToCandidate(result: WikipediaSearchResult): RawCandidate {
+  private searchResultToCandidate(
+    result: WikipediaSearchResult,
+    coverUrls: string[],
+  ): RawCandidate {
     return {
       source: this.source,
       sourceId: String(result.pageid),
       title: result.title,
       description: this.stripHtml(result.snippet),
+      coverUrls,
       metadata: {
         wordcount: result.wordcount,
       },
@@ -279,5 +304,83 @@ export class WikipediaAdapter extends BaseAdapter {
 
   private stripHtml(text: string): string {
     return text.replace(/<[^>]*>/g, '').trim();
+  }
+
+  private async fetchPageImagesByPageIds(pageIds: string[]): Promise<Map<string, string[]>> {
+    if (pageIds.length === 0) {
+      return new Map();
+    }
+
+    try {
+      const params = new URLSearchParams({
+        action: 'query',
+        pageids: pageIds.join('|'),
+        prop: 'pageimages',
+        pithumbsize: '600',
+        format: 'json',
+        origin: '*',
+      });
+
+      const url = `${this.baseUrl}?${params.toString()}`;
+      const response = await this.fetchJson<WikipediaPageImagesResponse>(url);
+
+      const pages = response.query?.pages;
+      if (!pages) {
+        return new Map();
+      }
+
+      const result = new Map<string, string[]>();
+      for (const [pageId, page] of Object.entries(pages)) {
+        const urls: string[] = [];
+        if (page.thumbnail?.source) {
+          urls.push(page.thumbnail.source);
+        }
+        if (page.original?.source && page.original.source !== page.thumbnail?.source) {
+          urls.push(page.original.source);
+        }
+        if (urls.length > 0) {
+          result.set(pageId, urls);
+        }
+      }
+
+      return result;
+    } catch {
+      return new Map();
+    }
+  }
+
+  private async fetchPageImages(title: string): Promise<string[]> {
+    try {
+      const params = new URLSearchParams({
+        action: 'query',
+        titles: title,
+        prop: 'pageimages',
+        pithumbsize: '600',
+        format: 'json',
+        origin: '*',
+      });
+
+      const url = `${this.baseUrl}?${params.toString()}`;
+      const response = await this.fetchJson<WikipediaPageImagesResponse>(url);
+
+      const pages = response.query?.pages;
+      if (!pages) {
+        return [];
+      }
+
+      const urls: string[] = [];
+      for (const page of Object.values(pages)) {
+        if (page.thumbnail?.source) {
+          urls.push(page.thumbnail.source);
+        }
+        if (page.original?.source && page.original.source !== page.thumbnail?.source) {
+          urls.push(page.original.source);
+        }
+      }
+
+      return urls;
+    } catch {
+      return [];
+    }
   }
 }

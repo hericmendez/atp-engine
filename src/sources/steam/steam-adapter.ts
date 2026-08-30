@@ -53,6 +53,7 @@ export class SteamAdapter extends BaseAdapter {
       {
         search: true,
         getById: true,
+        searchCovers: true,
         searchPagination: 'none',
       },
     );

@@ -72,6 +72,16 @@ export function toDomain(doc: GameDocument): Game {
     evidence: doc.evidence.map((e) => createSourceEvidence(e.source, e.externalId, e.rawTitle)),
     classification: doc.classification as Game['classification'],
     completeness: doc.completeness as Game['completeness'],
+    cover: doc.cover
+      ? {
+          url: doc.cover.url,
+          source: doc.cover.source,
+          sourceId: doc.cover.sourceId,
+          width: doc.cover.width,
+          height: doc.cover.height,
+          type: doc.cover.type as Game['cover'] extends { type: infer T } ? T : never,
+        }
+      : null,
   };
 }
 
@@ -126,5 +136,15 @@ export function toPersistence(game: Game): Record<string, unknown> {
     })),
     classification: game.classification,
     completeness: game.completeness,
+    cover: game.cover
+      ? {
+          url: game.cover.url,
+          source: game.cover.source,
+          sourceId: game.cover.sourceId,
+          width: game.cover.width,
+          height: game.cover.height,
+          type: game.cover.type,
+        }
+      : null,
   };
 }

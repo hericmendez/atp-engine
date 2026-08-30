@@ -1,4 +1,4 @@
-export type { Game, CreateGameInput } from './game/game.js';
+export type { Game, GameCover, CreateGameInput } from './game/game.js';
 export {
   createGame,
   gameAddRelease,
@@ -11,9 +11,18 @@ export {
   gameFindRelease,
   gameHasRelationship,
   gamePrimaryTitle,
+  gameWithCover,
 } from './game/game.js';
 
-export type { GameRepository, FindByExternalIdentifierInput } from './game/game-repository.js';
+export type {
+  GameRepository,
+  FindByExternalIdentifierInput,
+  GameQuery,
+  GameSortField,
+  GameSortDirection,
+  GameSort,
+  PaginatedResult,
+} from './game/game-repository.js';
 
 export type { Release, CreateReleaseInput } from './game/release.js';
 export { createRelease } from './game/release.js';

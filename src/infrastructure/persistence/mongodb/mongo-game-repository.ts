@@ -3,10 +3,20 @@ import type { Game } from '../../../domain/game/game.js';
 import type {
   GameRepository,
   FindByExternalIdentifierInput,
+  GameQuery,
+  PaginatedResult,
 } from '../../../domain/game/game-repository.js';
 import { GameModel } from './game-schema.js';
 import { toDomain, toPersistence } from './game-mapper.js';
 import { PersistenceError, ValidationError } from '../../../shared/errors/errors.js';
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 100;
+
+interface MongoFilter {
+  [key: string]: unknown;
+}
 
 export class MongoGameRepository implements GameRepository {
   async findById(id: GameId): Promise<Game | null> {
@@ -51,6 +61,102 @@ export class MongoGameRepository implements GameRepository {
     } catch (error) {
       throw new PersistenceError('Failed to check game existence by ID', { cause: error });
     }
+  }
+
+  async findMany(query: GameQuery): Promise<PaginatedResult<Game>> {
+    try {
+      const filter = this.buildFilter(query);
+      const page = query.page ?? DEFAULT_PAGE;
+      const limit = Math.min(query.limit ?? DEFAULT_LIMIT, MAX_LIMIT);
+      const skip = (page - 1) * limit;
+
+      const sort = this.buildSort(query.sort);
+
+      const [docs, total] = await Promise.all([
+        GameModel.find(filter).sort(sort).skip(skip).limit(limit).lean(),
+        GameModel.countDocuments(filter),
+      ]);
+
+      const items = docs.map((doc) =>
+        toDomain(doc as unknown as import('./game-schema.js').GameDocument),
+      );
+
+      return {
+        items,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+    } catch (error) {
+      throw new PersistenceError('Failed to find games', { cause: error });
+    }
+  }
+
+  private buildFilter(query: GameQuery): MongoFilter {
+    const filter: MongoFilter = {};
+
+    if (query.search) {
+      filter.$or = [
+        { 'titles.value': { $regex: query.search, $options: 'i' } },
+        { 'developers.name': { $regex: query.search, $options: 'i' } },
+        { 'publishers.name': { $regex: query.search, $options: 'i' } },
+      ];
+    }
+
+    if (query.title) {
+      filter['titles.value'] = { $regex: query.title, $options: 'i' };
+    }
+
+    if (query.platform) {
+      filter['releases.platform.name'] = { $regex: query.platform, $options: 'i' };
+    }
+
+    if (query.platformFamily) {
+      filter['releases.platform.family'] = query.platformFamily;
+    }
+
+    if (query.developer) {
+      filter['developers.name'] = { $regex: query.developer, $options: 'i' };
+    }
+
+    if (query.publisher) {
+      filter['publishers.name'] = { $regex: query.publisher, $options: 'i' };
+    }
+
+    if (query.genre) {
+      filter['genres.name'] = { $regex: query.genre, $options: 'i' };
+    }
+
+    if (query.classification) {
+      filter.classification = query.classification;
+    }
+
+    if (query.completeness) {
+      filter.completeness = query.completeness;
+    }
+
+    if (query.releaseYear) {
+      filter['releases.releaseDate.year'] = query.releaseYear;
+    }
+
+    return filter;
+  }
+
+  private buildSort(sort: GameQuery['sort']): Record<string, 1 | -1> {
+    if (!sort) {
+      return { updatedAt: -1 };
+    }
+
+    const fieldMap: Record<string, string> = {
+      title: 'titles.value',
+      createdAt: 'createdAt',
+      updatedAt: 'updatedAt',
+      completeness: 'completeness',
+    };
+
+    const direction = sort.direction === 'asc' ? 1 : -1;
+    return { [fieldMap[sort.field] ?? sort.field]: direction };
   }
 
   async save(game: Game): Promise<void> {

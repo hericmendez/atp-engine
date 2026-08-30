@@ -134,6 +134,7 @@ function areSameGame(
     evidence: [],
     classification: 'UNKNOWN',
     completeness: 'FOUND_PARTIAL',
+    cover: null,
   };
 
   const resolution = resolver.resolve(obsB.candidate, fakeGame);

@@ -9,6 +9,16 @@ import type { ClassificationCategory } from '../shared/classification-category.j
 import type { Release } from './release.js';
 import type { GameRelationship } from './game-relationship.js';
 import type { GameRelationshipType } from '../shared/game-relationship-type.js';
+import type { CoverType } from '../cover/cover-candidate.js';
+
+export interface GameCover {
+  readonly url: string;
+  readonly source: string;
+  readonly sourceId: string | null;
+  readonly width: number | null;
+  readonly height: number | null;
+  readonly type: CoverType;
+}
 
 export interface Game {
   readonly id: GameId;
@@ -22,6 +32,7 @@ export interface Game {
   readonly evidence: readonly SourceEvidence[];
   readonly classification: ClassificationCategory;
   readonly completeness: MetadataCompleteness;
+  readonly cover: GameCover | null;
 }
 
 export interface CreateGameInput {
@@ -52,6 +63,7 @@ export function createGame(input: CreateGameInput): Game {
     evidence: [],
     classification: input.classification ?? 'UNKNOWN',
     completeness: input.completeness ?? 'FOUND_PARTIAL',
+    cover: null,
   };
 }
 
@@ -159,4 +171,11 @@ export function gameHasRelationship(
 
 export function gamePrimaryTitle(game: Game): GameTitle | undefined {
   return game.titles.find((t) => t.type === 'primary') ?? game.titles[0];
+}
+
+export function gameWithCover(game: Game, cover: GameCover | null): Game {
+  return {
+    ...game,
+    cover,
+  };
 }

@@ -1,0 +1,77 @@
+import { Router, type Request, type Response, type NextFunction } from 'express';
+import type { CatalogService } from '../../../application/catalog-service.js';
+import { CatalogQuerySchema, SearchQuerySchema, GameIdParamSchema } from '../validation/schemas.js';
+import { toGameResponse, toPaginatedResponse } from '../types/api.js';
+import type { GameQuery, GameSort, GameSortField } from '../../../domain/game/game-repository.js';
+
+export interface GamesRouterDependencies {
+  catalogService: CatalogService;
+}
+
+export function gamesRouter(deps: GamesRouterDependencies): Router {
+  const router = Router();
+  const { catalogService } = deps;
+
+  router.get('/games/search', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const query = SearchQuerySchema.parse(req.query);
+
+      const sort: GameSort | undefined = query.sort
+        ? { field: query.sort as GameSortField, direction: query.order }
+        : undefined;
+
+      const result = await catalogService.searchGames(query.q, {
+        page: query.page,
+        limit: query.limit,
+        sort,
+      });
+
+      res.json(toPaginatedResponse(result, toGameResponse));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/games/:id', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = GameIdParamSchema.parse(req.params);
+      const game = await catalogService.getGameById(id);
+
+      res.json({ data: toGameResponse(game) });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  router.get('/games', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const query = CatalogQuerySchema.parse(req.query);
+
+      const gameQuery: GameQuery = {
+        search: query.search,
+        title: query.title,
+        platform: query.platform,
+        platformFamily: query.platformFamily,
+        developer: query.developer,
+        publisher: query.publisher,
+        genre: query.genre,
+        classification: query.classification,
+        completeness: query.completeness,
+        releaseYear: query.releaseYear,
+        page: query.page,
+        limit: query.limit,
+        sort: query.sort
+          ? { field: query.sort as GameSortField, direction: query.order }
+          : undefined,
+      };
+
+      const result = await catalogService.listGames(gameQuery);
+
+      res.json(toPaginatedResponse(result, toGameResponse));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  return router;
+}

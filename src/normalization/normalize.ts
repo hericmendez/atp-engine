@@ -255,6 +255,7 @@ export interface RawCandidateInput {
   externalIdentifiers?: readonly { source: string; id: string }[];
   description?: string;
   classificationHints?: readonly { category: string; confidence: number; evidence: string }[];
+  coverUrls?: readonly string[];
 }
 
 export function normalizeCandidate(
@@ -348,6 +349,9 @@ export function normalizeCandidate(
   );
 
   const description = input.description?.trim() ?? null;
+  const coverUrls = (input.coverUrls ?? []).filter(
+    (url): url is string => typeof url === 'string' && url.trim().length > 0,
+  );
 
   return {
     titles,
@@ -358,6 +362,7 @@ export function normalizeCandidate(
     externalIdentifiers,
     classificationHints,
     description,
+    coverUrls,
     provenance: normalizeProvenance(source, sourceId, input.title ?? null),
   };
 }
