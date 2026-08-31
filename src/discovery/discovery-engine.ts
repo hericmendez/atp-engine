@@ -8,6 +8,7 @@ import { normalizeCandidate, type RawCandidateInput } from '../normalization/nor
 import { SourceError } from '../sources/source-errors.js';
 import { aggregateAndDeduplicate, rankGroups } from './aggregation.js';
 import type { DiscoverySourceObservation } from './discovery-types.js';
+import { logger } from '../infrastructure/logger/logger.js';
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -20,11 +21,20 @@ export class DiscoveryEngine {
   ) {}
 
   async discover(request: DiscoveryRequest): Promise<DiscoveryResult> {
+    const startTime = Date.now();
     const limit = Math.min(request.limit ?? DEFAULT_LIMIT, MAX_LIMIT);
     const offset = request.offset ?? 0;
     const query = request.query.trim();
 
     const sources = this.selectSources(request.sourceFilter);
+    const sourceNames = sources.map((s) => s.source);
+
+    logger.info('discovery.started', {
+      query,
+      sources: sourceNames,
+      sourceCount: sourceNames.length,
+    });
+
     const sourceResults = await this.querySources(sources, query);
 
     const allObservations: DiscoverySourceObservation[] = [];
@@ -43,6 +53,18 @@ export class DiscoveryEngine {
     const rankedGroups = rankGroups(groups);
 
     const paginatedGroups = rankedGroups.slice(offset, offset + limit);
+
+    const durationMs = Date.now() - startTime;
+
+    logger.info('discovery.completed', {
+      query,
+      sourceCount: sourceNames.length,
+      totalCandidates: allObservations.length,
+      totalGroups: rankedGroups.length,
+      returnedGroups: paginatedGroups.length,
+      errorCount: sourceErrors.length,
+      durationMs,
+    });
 
     return {
       query,

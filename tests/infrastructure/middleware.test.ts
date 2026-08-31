@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import { requestIdMiddleware } from '../../src/interfaces/http/middleware/request-id.js';
 import { requestTimeoutMiddleware } from '../../src/interfaces/http/middleware/request-timeout.js';
 import { rateLimiterMiddleware } from '../../src/interfaces/http/middleware/rate-limiter.js';
+import { getRequestId } from '../../src/infrastructure/request-context.js';
 
 function createMockRequest(overrides?: Partial<Request>): Request {
   return {
@@ -39,7 +40,7 @@ describe('requestIdMiddleware', () => {
     expect(next).toHaveBeenCalled();
   });
 
-  it('should generate requestId if not provided', () => {
+  it('should generate UUID if not provided', () => {
     const req = createMockRequest();
     const res = createMockResponse();
     const next = vi.fn();
@@ -49,6 +50,41 @@ describe('requestIdMiddleware', () => {
     expect(req.requestId).toMatch(/^[0-9a-f-]+$/);
     expect(res.setHeader).toHaveBeenCalled();
     expect(next).toHaveBeenCalled();
+  });
+
+  it('should reject oversized header and generate new ID', () => {
+    const oversized = 'a'.repeat(200);
+    const req = createMockRequest({ headers: { 'x-request-id': oversized } });
+    const res = createMockResponse();
+    const next = vi.fn();
+
+    requestIdMiddleware(req, res, next);
+
+    expect(req.requestId).not.toBe(oversized);
+    expect(req.requestId).toMatch(/^[0-9a-f-]+$/);
+  });
+
+  it('should make requestId available via AsyncLocalStorage', () => {
+    const req = createMockRequest({ headers: { 'x-request-id': 'ctx-test' } });
+    const res = createMockResponse();
+    let capturedRequestId: string | undefined;
+
+    requestIdMiddleware(req, res, () => {
+      capturedRequestId = getRequestId();
+    });
+
+    expect(capturedRequestId).toBe('ctx-test');
+  });
+
+  it('different requests get different IDs', () => {
+    const req1 = createMockRequest();
+    const req2 = createMockRequest();
+    const res = createMockResponse();
+
+    requestIdMiddleware(req1, res, () => {});
+    requestIdMiddleware(req2, res, () => {});
+
+    expect(req1.requestId).not.toBe(req2.requestId);
   });
 });
 

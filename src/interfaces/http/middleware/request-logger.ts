@@ -8,14 +8,11 @@ export function requestLoggerMiddleware(req: Request, res: Response, next: NextF
     const duration = Date.now() - start;
     const level = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info';
 
-    logger[level]('HTTP request', {
-      requestId: req.requestId,
+    logger[level]('http.request.completed', {
       method: req.method,
       path: req.path,
       statusCode: res.statusCode,
       durationMs: duration,
-      userAgent: req.headers['user-agent'],
-      ip: req.ip,
     });
   });
 

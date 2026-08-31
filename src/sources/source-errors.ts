@@ -35,9 +35,9 @@ function isRetryable(errorType: SourceErrorType): boolean {
     case 'rate_limited':
     case 'network_failure':
     case 'source_unavailable':
+    case 'invalid_response':
       return true;
     case 'not_found':
-    case 'invalid_response':
     case 'parse_failure':
     case 'authentication_failure':
       return false;

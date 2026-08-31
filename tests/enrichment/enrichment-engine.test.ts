@@ -202,6 +202,58 @@ describe('enrichGame', () => {
       expect(result.game.genres[0].name).toBe('Action');
     });
 
+    it('detects conflict when developer has same core name but different suffix', () => {
+      const obs = makeObservation('steam', 's1', {
+        titles: [{ value: 'Test Game', type: 'primary' }],
+        developers: [createOrganization('DevStudio Inc.')],
+      });
+
+      const result = enrichGame(baseGame, [obs]);
+      expect(result.game.developers).toHaveLength(1);
+      expect(result.game.developers[0].name).toBe('DevStudio');
+      expect(result.conflicts).toHaveLength(1);
+      expect(result.conflicts[0].fieldType).toBe('developer');
+      expect(result.conflicts[0].valueA).toBe('DevStudio');
+      expect(result.conflicts[0].valueB).toBe('DevStudio Inc.');
+    });
+
+    it('detects conflict when genre is equivalent but not identical', () => {
+      const gameWithGenre = {
+        ...baseGame,
+        genres: [createGenre('Sci-fi')],
+      };
+
+      const obs = makeObservation('steam', 's1', {
+        titles: [{ value: 'Test Game', type: 'primary' }],
+        genres: [createGenre('Science Fiction')],
+      });
+
+      const result = enrichGame(gameWithGenre, [obs]);
+      expect(result.game.genres).toHaveLength(2);
+      expect(result.game.genres.some((g) => g.name === 'Sci-fi')).toBe(true);
+      expect(result.game.genres.some((g) => g.name === 'Science Fiction')).toBe(true);
+    });
+
+    it('detects conflict when publisher has same core name but different suffix', () => {
+      const gameWithPublisher = {
+        ...baseGame,
+        publishers: [createOrganization('PublisherCorp')],
+      };
+
+      const obs = makeObservation('steam', 's1', {
+        titles: [{ value: 'Test Game', type: 'primary' }],
+        publishers: [createOrganization('PublisherCorp Ltd.')],
+      });
+
+      const result = enrichGame(gameWithPublisher, [obs]);
+      expect(result.game.publishers).toHaveLength(1);
+      expect(result.game.publishers[0].name).toBe('PublisherCorp');
+      expect(result.conflicts).toHaveLength(1);
+      expect(result.conflicts[0].fieldType).toBe('publisher');
+      expect(result.conflicts[0].valueA).toBe('PublisherCorp');
+      expect(result.conflicts[0].valueB).toBe('PublisherCorp Ltd.');
+    });
+
     it('retains existing primary title when conflict detected', () => {
       const obs = makeObservation('wikipedia', 'w1', {
         titles: [{ value: 'Test Game', type: 'alternate' }],

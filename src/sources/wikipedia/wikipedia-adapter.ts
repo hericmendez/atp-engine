@@ -2,6 +2,7 @@ import { BaseAdapter, type BaseAdapterConfig } from '../base-adapter.js';
 import type { SearchOptions, SearchResult } from '../source-adapter.js';
 import type { RawCandidate } from '../raw-candidate.js';
 import { SourceError } from '../source-errors.js';
+import { LruCache } from '../../infrastructure/lru-cache.js';
 
 interface WikipediaSearchResult {
   pageid: number;
@@ -45,6 +46,7 @@ export interface WikipediaAdapterConfig extends BaseAdapterConfig {
 
 export class WikipediaAdapter extends BaseAdapter {
   private readonly namespace: number;
+  private readonly pageImageCache: LruCache<string, string>;
 
   constructor(config: WikipediaAdapterConfig) {
     super(
@@ -60,6 +62,7 @@ export class WikipediaAdapter extends BaseAdapter {
       },
     );
     this.namespace = config.namespace ?? 0;
+    this.pageImageCache = new LruCache({ maxSize: 500, ttlMs: 5 * 60 * 1000 });
   }
 
   async search(query: string, options?: SearchOptions): Promise<SearchResult> {
@@ -311,6 +314,17 @@ export class WikipediaAdapter extends BaseAdapter {
       return new Map();
     }
 
+    const cacheKey = [...pageIds].sort().join('|');
+    const cached = this.pageImageCache.get(cacheKey);
+    if (cached !== undefined) {
+      const result = new Map<string, string[]>();
+      const entries = JSON.parse(cached) as Array<[string, string[]]>;
+      for (const [id, urls] of entries) {
+        result.set(id, urls);
+      }
+      return result;
+    }
+
     try {
       const params = new URLSearchParams({
         action: 'query',
@@ -343,6 +357,9 @@ export class WikipediaAdapter extends BaseAdapter {
         }
       }
 
+      const serialized = JSON.stringify([...result.entries()]);
+      this.pageImageCache.set(cacheKey, serialized);
+
       return result;
     } catch {
       return new Map();
@@ -350,6 +367,11 @@ export class WikipediaAdapter extends BaseAdapter {
   }
 
   private async fetchPageImages(title: string): Promise<string[]> {
+    const cached = this.pageImageCache.get(`title:${title}`);
+    if (cached !== undefined) {
+      return JSON.parse(cached) as string[];
+    }
+
     try {
       const params = new URLSearchParams({
         action: 'query',
@@ -377,6 +399,8 @@ export class WikipediaAdapter extends BaseAdapter {
           urls.push(page.original.source);
         }
       }
+
+      this.pageImageCache.set(`title:${title}`, JSON.stringify(urls));
 
       return urls;
     } catch {

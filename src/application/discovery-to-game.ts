@@ -5,6 +5,7 @@ import type { DiscoveryGroupResult } from '../discovery/discovery-types.js';
 import type { NormalizedCandidate } from '../normalization/normalized-candidate.js';
 import type { MetadataCompleteness } from '../domain/shared/metadata-completeness.js';
 import type { ClassificationCategory } from '../domain/shared/classification-category.js';
+import { VALID_CLASSIFICATION_CATEGORIES } from '../ai/constants.js';
 
 function createDiscoveryGameId(source: string, sourceId: string): GameId {
   return `discovery-${source}-${sourceId}` as GameId;
@@ -29,24 +30,7 @@ function mapCompleteness(group: DiscoveryGroupResult): MetadataCompleteness {
 
 function mapClassification(group: DiscoveryGroupResult): ClassificationCategory {
   const cat = group.mergedClassification.category;
-  const valid: readonly ClassificationCategory[] = [
-    'GAME',
-    'DLC',
-    'EXPANSION',
-    'MOVIE',
-    'TV_SHOW',
-    'ANIME',
-    'SOUNDTRACK',
-    'BOOK',
-    'HARDWARE',
-    'PROMOTIONAL',
-    'CHARACTER',
-    'FRANCHISE',
-    'PERSON',
-    'EVENT',
-    'UNKNOWN',
-  ];
-  return valid.includes(cat as ClassificationCategory)
+  return (VALID_CLASSIFICATION_CATEGORIES as readonly string[]).includes(cat)
     ? (cat as ClassificationCategory)
     : 'UNKNOWN';
 }

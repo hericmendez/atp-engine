@@ -54,9 +54,9 @@ describe('SourceError retryable classification', () => {
     expect(error.retryable).toBe(false);
   });
 
-  it('marks invalid_response as not retryable', () => {
+  it('marks invalid_response as retryable', () => {
     const error = new SourceError('src', 'invalid_response', 'msg');
-    expect(error.retryable).toBe(false);
+    expect(error.retryable).toBe(true);
   });
 
   it('marks parse_failure as not retryable', () => {

@@ -12,6 +12,7 @@ import type { GameRelationshipType } from '../domain/shared/game-relationship-ty
 import type { IdentityResolver } from './identity-resolver.js';
 import type { IdentityResolutionResult } from './identity-resolution-result.js';
 import type { IdentitySignal } from './identity-signal.js';
+import { logger } from '../infrastructure/logger/logger.js';
 
 const VERSION_MARKERS = [
   'remake',
@@ -247,10 +248,17 @@ export class DeterministicIdentityResolver implements IdentityResolver {
     candidate: NormalizedCandidate,
     existingGame: Game | null,
   ): Promise<IdentityResolutionResult> {
+    const startTime = Date.now();
     const signals: IdentitySignal[] = [];
 
     if (existingGame === null) {
-      return this.buildNoGameResult(candidate, signals);
+      const result = this.buildNoGameResult(candidate, signals);
+      logger.info('identity_resolution.completed', {
+        outcome: result.outcome,
+        confidence: result.confidence,
+        durationMs: Date.now() - startTime,
+      });
+      return result;
     }
 
     const exactExternalId = findExternalIdMatch(
@@ -288,6 +296,16 @@ export class DeterministicIdentityResolver implements IdentityResolver {
     );
     const confidence = exactExternalId !== null ? 1.0 : Math.min(Math.abs(score) + 0.1, 0.95);
     const reason = this.buildReason(outcome, signals);
+
+    const durationMs = Date.now() - startTime;
+
+    logger.info('identity_resolution.completed', {
+      outcome,
+      relationship,
+      confidence,
+      signalCount: signals.length,
+      durationMs,
+    });
 
     return {
       outcome,

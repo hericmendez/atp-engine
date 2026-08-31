@@ -9,6 +9,7 @@ import type {
 import { GameModel } from './game-schema.js';
 import { toDomain, toPersistence } from './game-mapper.js';
 import { PersistenceError, ValidationError } from '../../../shared/errors/errors.js';
+import { escapeRegex } from './escape-regex.js';
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
@@ -97,19 +98,20 @@ export class MongoGameRepository implements GameRepository {
     const filter: MongoFilter = {};
 
     if (query.search) {
+      const escaped = escapeRegex(query.search);
       filter.$or = [
-        { 'titles.value': { $regex: query.search, $options: 'i' } },
-        { 'developers.name': { $regex: query.search, $options: 'i' } },
-        { 'publishers.name': { $regex: query.search, $options: 'i' } },
+        { 'titles.value': { $regex: escaped, $options: 'i' } },
+        { 'developers.name': { $regex: escaped, $options: 'i' } },
+        { 'publishers.name': { $regex: escaped, $options: 'i' } },
       ];
     }
 
     if (query.title) {
-      filter['titles.value'] = { $regex: query.title, $options: 'i' };
+      filter['titles.value'] = { $regex: escapeRegex(query.title), $options: 'i' };
     }
 
     if (query.platform) {
-      filter['releases.platform.name'] = { $regex: query.platform, $options: 'i' };
+      filter['releases.platform.name'] = { $regex: escapeRegex(query.platform), $options: 'i' };
     }
 
     if (query.platformFamily) {
@@ -117,15 +119,15 @@ export class MongoGameRepository implements GameRepository {
     }
 
     if (query.developer) {
-      filter['developers.name'] = { $regex: query.developer, $options: 'i' };
+      filter['developers.name'] = { $regex: escapeRegex(query.developer), $options: 'i' };
     }
 
     if (query.publisher) {
-      filter['publishers.name'] = { $regex: query.publisher, $options: 'i' };
+      filter['publishers.name'] = { $regex: escapeRegex(query.publisher), $options: 'i' };
     }
 
     if (query.genre) {
-      filter['genres.name'] = { $regex: query.genre, $options: 'i' };
+      filter['genres.name'] = { $regex: escapeRegex(query.genre), $options: 'i' };
     }
 
     if (query.classification) {
@@ -161,20 +163,15 @@ export class MongoGameRepository implements GameRepository {
 
   async save(game: Game): Promise<void> {
     try {
-      const alreadyExists = await this.existsById(game.id);
-      if (alreadyExists) {
-        throw new ValidationError(`Game with ID ${game.id} already exists`);
-      }
-
       const data = toPersistence(game);
       const doc = new GameModel(data);
       await doc.save();
     } catch (error) {
-      if (error instanceof ValidationError) {
-        throw error;
-      }
-
       if (this.isMongoDuplicateKeyError(error)) {
+        const keyPattern = this.extractDuplicateKeyPattern(error);
+        if (keyPattern === 'domainId') {
+          throw new ValidationError(`Game with ID ${game.id} already exists`);
+        }
         throw new ValidationError('Game with this external identifier already exists');
       }
 
@@ -224,5 +221,14 @@ export class MongoGameRepository implements GameRepository {
       'code' in error &&
       (error as { code: number }).code === 11000
     );
+  }
+
+  private extractDuplicateKeyPattern(error: unknown): string | null {
+    if (typeof error === 'object' && error !== null && 'keyPattern' in error) {
+      const keyPattern = (error as { keyPattern: Record<string, number> }).keyPattern;
+      if (keyPattern?.domainId) return 'domainId';
+      if (keyPattern?.['externalIdentifiers.source']) return 'externalIdentifiers';
+    }
+    return null;
   }
 }

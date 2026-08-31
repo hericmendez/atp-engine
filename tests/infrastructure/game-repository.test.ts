@@ -72,6 +72,42 @@ describe('MongoGameRepository', () => {
       const result = await repository.findById(createGameId('non-existent'));
       expect(result).toBeNull();
     });
+
+    it('throws ValidationError when saving game with duplicate domainId', async () => {
+      const game1 = createGame({
+        id: createGameId('game-dup'),
+        titles: [createGameTitle('Game Dup')],
+        classification: ClassificationCategory.GAME,
+      });
+
+      await repository.save(game1);
+
+      const game2 = createGame({
+        id: createGameId('game-dup'),
+        titles: [createGameTitle('Game Dup 2')],
+        classification: ClassificationCategory.GAME,
+      });
+
+      await expect(repository.save(game2)).rejects.toThrow('already exists');
+    });
+
+    it('save relies on atomic unique constraint, not existsById check', async () => {
+      const game = createGame({
+        id: createGameId('game-atomic'),
+        titles: [createGameTitle('Atomic Game')],
+        classification: ClassificationCategory.GAME,
+      });
+
+      await repository.save(game);
+
+      const duplicate = createGame({
+        id: createGameId('game-atomic'),
+        titles: [createGameTitle('Atomic Game Duplicate')],
+        classification: ClassificationCategory.GAME,
+      });
+
+      await expect(repository.save(duplicate)).rejects.toThrow();
+    });
   });
 
   describe('timestamps', () => {
@@ -470,6 +506,57 @@ describe('MongoGameRepository', () => {
       await repository.save(game);
 
       expect(await repository.existsById(game.id)).toBe(true);
+    });
+  });
+
+  describe('regex-safe search filtering', () => {
+    it('treats regex metacharacters as literal text in search', async () => {
+      const game = createGame({
+        id: createGameId('game-regex'),
+        titles: [createGameTitle('Resident Evil 4')],
+        developers: [createDeveloper('Capcom')],
+        publishers: [createPublisher('Capcom')],
+        classification: ClassificationCategory.GAME,
+      });
+
+      await repository.save(game);
+
+      const result = await repository.findMany({ search: '(a+)+$' });
+      expect(result.items).toHaveLength(0);
+
+      const result2 = await repository.findMany({ search: 'Resident Evil' });
+      expect(result2.items).toHaveLength(1);
+      expect(result2.items[0].id).toBe('game-regex');
+    });
+
+    it('treats regex metacharacters as literal text in title filter', async () => {
+      const game = createGame({
+        id: createGameId('game-regex-title'),
+        titles: [createGameTitle('Game.Series.Test')],
+        classification: ClassificationCategory.GAME,
+      });
+
+      await repository.save(game);
+
+      const result = await repository.findMany({ title: 'Game.Series.Test' });
+      expect(result.items).toHaveLength(1);
+      expect(result.items[0].id).toBe('game-regex-title');
+
+      const result2 = await repository.findMany({ title: 'GameXSeriesXTest' });
+      expect(result2.items).toHaveLength(0);
+    });
+
+    it('search is case-insensitive with escaped input', async () => {
+      const game = createGame({
+        id: createGameId('game-case'),
+        titles: [createGameTitle('Zelda')],
+        classification: ClassificationCategory.GAME,
+      });
+
+      await repository.save(game);
+
+      const result = await repository.findMany({ search: 'zelda' });
+      expect(result.items).toHaveLength(1);
     });
   });
 });

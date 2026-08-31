@@ -190,5 +190,8 @@ gameSchema.index(
   { unique: true, sparse: true },
 );
 gameSchema.index({ 'titles.value': 1 });
+gameSchema.index({ classification: 1, completeness: 1 });
+gameSchema.index({ updatedAt: -1 });
+gameSchema.index({ 'releases.releaseDate.year': 1 });
 
 export const GameModel = mongoose.model<GameDocument>('Game', gameSchema);

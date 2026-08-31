@@ -141,7 +141,7 @@ describe('BaseAdapter', () => {
         await adapter.getById('1');
       } catch (e) {
         expect((e as SourceError).errorType).toBe('invalid_response');
-        expect((e as SourceError).retryable).toBe(false);
+        expect((e as SourceError).retryable).toBe(true);
       }
     });
 

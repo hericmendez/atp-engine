@@ -18,6 +18,7 @@ import { createSourceEvidence } from '../domain/shared/source-evidence.js';
 import { createGameTitle } from '../domain/shared/title.js';
 import { createReleaseId } from '../domain/shared/ids.js';
 import { MetadataCompleteness as Completeness } from '../domain/shared/metadata-completeness.js';
+import { logger } from '../infrastructure/logger/logger.js';
 
 function normalizeForComparison(value: string): string {
   return value
@@ -112,6 +113,8 @@ export function enrichGame(
   game: Game,
   observations: readonly DiscoverySourceObservation[],
 ): EnrichmentResult {
+  const startTime = Date.now();
+
   if (observations.length === 0) {
     return {
       game,
@@ -135,6 +138,17 @@ export function enrichGame(
 
   const completeness = calculateCompleteness(enriched);
   enriched = gameWithCompleteness(enriched, completeness);
+
+  const durationMs = Date.now() - startTime;
+
+  logger.info('enrichment.completed', {
+    gameId: game.id,
+    observationCount: observations.length,
+    changeCount: changes.length,
+    conflictCount: conflicts.length,
+    completeness,
+    durationMs,
+  });
 
   return {
     game: enriched,
@@ -220,7 +234,11 @@ function enrichOrganizations(
       kind === 'developer' ? obs.candidate.developers : obs.candidate.publishers;
 
     for (const org of candidateOrgs) {
-      const alreadyExists = existingOrgs.some((e) => organizationsEquivalent(e, org));
+      const normalizedCandidate = normalizeForComparison(org.name);
+
+      const alreadyExists = existingOrgs.some(
+        (e) => normalizeForComparison(e.name) === normalizedCandidate,
+      );
       if (alreadyExists) continue;
 
       const conflict = existingOrgs.find((e) => organizationsEquivalent(e, org));
@@ -249,13 +267,13 @@ function enrichOrganizations(
     }
   }
 
+  changes.push(...newChanges);
+  conflicts.push(...newConflicts);
+
   if (newOrgs.length === 0) return game;
 
   const allOrgs = [...existingOrgs, ...newOrgs];
   const deduped = deduplicateOrganizations(allOrgs);
-
-  changes.push(...newChanges);
-  conflicts.push(...newConflicts);
 
   return {
     ...game,
@@ -284,7 +302,11 @@ function enrichGenres(
 
   for (const obs of observations) {
     for (const genre of obs.candidate.genres) {
-      const alreadyExists = existingGenres.some((e) => genreEquivalent(e, genre));
+      const normalizedCandidate = normalizeForComparison(genre.name);
+
+      const alreadyExists = existingGenres.some(
+        (e) => normalizeForComparison(e.name) === normalizedCandidate,
+      );
       if (alreadyExists) continue;
 
       const conflict = existingGenres.find((e) => genreEquivalent(e, genre));

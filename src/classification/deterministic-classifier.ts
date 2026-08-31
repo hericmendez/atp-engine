@@ -3,6 +3,7 @@ import type { NormalizedCandidate } from '../normalization/normalized-candidate.
 import type { Classifier } from './classifier.js';
 import type { ClassificationResult } from './classification-result.js';
 import type { ClassificationSignal, SignalSource } from './classification-signal.js';
+import { logger } from '../infrastructure/logger/logger.js';
 
 const CONFIDENCE_THRESHOLD = 0.3;
 
@@ -15,6 +16,7 @@ interface WeightedCategory {
 
 export class DeterministicClassifier implements Classifier {
   async classify(candidate: NormalizedCandidate): Promise<ClassificationResult> {
+    const startTime = Date.now();
     const signals: ClassificationSignal[] = [];
 
     this.collectSourceSignals(candidate, signals);
@@ -22,7 +24,17 @@ export class DeterministicClassifier implements Classifier {
     this.collectGenreSignals(candidate, signals);
     this.collectDescriptionSignals(candidate, signals);
 
-    return this.resolve(signals);
+    const result = this.resolve(signals);
+    const durationMs = Date.now() - startTime;
+
+    logger.info('classification.completed', {
+      category: result.category,
+      confidence: result.confidence,
+      signalCount: signals.length,
+      durationMs,
+    });
+
+    return result;
   }
 
   private collectSourceSignals(

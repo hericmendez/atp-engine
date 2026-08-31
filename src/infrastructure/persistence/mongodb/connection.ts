@@ -13,7 +13,10 @@ export async function connectDatabase(): Promise<void> {
   const config = getConfig();
 
   try {
-    await mongoose.connect(config.MONGODB_URI);
+    await mongoose.connect(config.MONGODB_URI, {
+      maxPoolSize: 10,
+      maxIdleTimeMS: 30_000,
+    });
     isConnected = true;
     logger.info('Connected to MongoDB', { uri: config.MONGODB_URI });
   } catch (error) {

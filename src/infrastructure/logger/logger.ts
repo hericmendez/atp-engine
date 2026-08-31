@@ -1,3 +1,5 @@
+import { getRequestId } from '../request-context.js';
+
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 const LOG_LEVELS: Record<LogLevel, number> = {
@@ -31,10 +33,13 @@ function formatEntry(entry: LogEntry): string {
 function log(level: LogLevel, message: string, data?: Record<string, unknown>): void {
   if (!shouldLog(level)) return;
 
+  const requestId = getRequestId();
+
   const entry: LogEntry = {
     level,
     message,
     timestamp: new Date().toISOString(),
+    ...(requestId ? { requestId } : {}),
     ...data,
   };
 

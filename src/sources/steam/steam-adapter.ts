@@ -41,6 +41,28 @@ interface SteamAppDetailsResponse {
 
 export type SteamAdapterConfig = BaseAdapterConfig;
 
+const STEAM_SEARCH_CONCURRENCY = 5;
+
+async function parallelMap<T, R>(
+  items: readonly T[],
+  fn: (item: T) => Promise<R>,
+  limit: number,
+): Promise<R[]> {
+  const results: R[] = [];
+  let index = 0;
+
+  async function worker(): Promise<void> {
+    while (index < items.length) {
+      const currentIndex = index++;
+      results[currentIndex] = await fn(items[currentIndex]);
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(limit, items.length) }, () => worker());
+  await Promise.all(workers);
+  return results;
+}
+
 export class SteamAdapter extends BaseAdapter {
   private appListCache: Map<number, string> | null = null;
 
@@ -75,16 +97,14 @@ export class SteamAdapter extends BaseAdapter {
       }
     }
 
-    const candidates: RawCandidate[] = [];
-    for (const match of matches.slice(0, limit)) {
-      const candidate = await this.getById(String(match.appid));
-      if (candidate) {
-        candidates.push(candidate);
-      }
-    }
+    const candidates = await parallelMap(
+      matches.slice(0, limit),
+      (match) => this.getById(String(match.appid)),
+      STEAM_SEARCH_CONCURRENCY,
+    );
 
     return {
-      candidates,
+      candidates: candidates.filter((c): c is RawCandidate => c !== null),
       hasMore: matches.length > limit,
     };
   }
