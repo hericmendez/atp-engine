@@ -1,0 +1,837 @@
+{
+  "timestamp": "2026-08-30T03:40:29.295Z",
+  "classification": [
+    {
+      "id": "class-001",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-002",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-003",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-004",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-005",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-006",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-007",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-008",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-009",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-010",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-011",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-012",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-013",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-014",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-015",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-016",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-017",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-018",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-019",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-020",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-021",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-022",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-023",
+      "correct": true,
+      "predicted": "DLC",
+      "expected": "DLC"
+    },
+    {
+      "id": "class-024",
+      "correct": true,
+      "predicted": "EXPANSION",
+      "expected": "EXPANSION"
+    },
+    {
+      "id": "class-025",
+      "correct": true,
+      "predicted": "DLC",
+      "expected": "DLC"
+    },
+    {
+      "id": "class-026",
+      "correct": true,
+      "predicted": "DLC",
+      "expected": "DLC"
+    },
+    {
+      "id": "class-027",
+      "correct": true,
+      "predicted": "EXPANSION",
+      "expected": "EXPANSION"
+    },
+    {
+      "id": "class-028",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-029",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-030",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-031",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-032",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-033",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-034",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-035",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-036",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-037",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-038",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-039",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-040",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-041",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-042",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-043",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-044",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-045",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-046",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-047",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-048",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-049",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    },
+    {
+      "id": "class-050",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME"
+    }
+  ],
+  "identity": [
+    {
+      "id": "id-001",
+      "correct": true,
+      "predicted": "SAME_GAME",
+      "expected": "SAME_GAME"
+    },
+    {
+      "id": "id-002",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "SAME_GAME"
+    },
+    {
+      "id": "id-003",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "SAME_GAME"
+    },
+    {
+      "id": "id-004",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-005",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-006",
+      "correct": true,
+      "predicted": "SAME_GAME",
+      "expected": "SAME_GAME"
+    },
+    {
+      "id": "id-007",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-008",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-009",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-010",
+      "correct": true,
+      "predicted": "SAME_GAME",
+      "expected": "SAME_GAME"
+    },
+    {
+      "id": "id-011",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-012",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-013",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-014",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-015",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-016",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-017",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-018",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-019",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-020",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-021",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-022",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-023",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-024",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-025",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-026",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-027",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-028",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-029",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-030",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-031",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-032",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-033",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-034",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-035",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-036",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-037",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-038",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-039",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME"
+    },
+    {
+      "id": "id-040",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "DIFFERENT_GAME"
+    },
+    {
+      "id": "id-041",
+      "correct": true,
+      "predicted": "SAME_GAME",
+      "expected": "SAME_GAME"
+    },
+    {
+      "id": "id-042",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "SAME_GAME"
+    },
+    {
+      "id": "id-043",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "SAME_GAME"
+    },
+    {
+      "id": "id-044",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "SAME_GAME"
+    },
+    {
+      "id": "id-045",
+      "correct": false,
+      "predicted": "UNRESOLVED",
+      "expected": "DIFFERENT_GAME"
+    }
+  ],
+  "enrichment": [
+    {
+      "id": "enr-001",
+      "correct": true,
+      "predicted": "Rockstar North",
+      "expected": "Rockstar North"
+    },
+    {
+      "id": "enr-002",
+      "correct": true,
+      "predicted": "EA Sports",
+      "expected": "EA Sports"
+    },
+    {
+      "id": "enr-003",
+      "correct": false,
+      "predicted": "October 20, 2023",
+      "expected": "2023-10-20"
+    },
+    {
+      "id": "enr-004",
+      "correct": true,
+      "predicted": "Action-adventure",
+      "expected": "Action-adventure"
+    },
+    {
+      "id": "enr-005",
+      "correct": false,
+      "predicted": "CDPR",
+      "expected": "CD Projekt Red"
+    },
+    {
+      "id": "enr-006",
+      "correct": false,
+      "predicted": "Windows",
+      "expected": "PC"
+    },
+    {
+      "id": "enr-007",
+      "correct": false,
+      "predicted": "From Software",
+      "expected": "FromSoftware"
+    },
+    {
+      "id": "enr-008",
+      "correct": false,
+      "predicted": "February 25, 2022",
+      "expected": "2022-02-25"
+    },
+    {
+      "id": "enr-009",
+      "correct": true,
+      "predicted": "Action role-playing",
+      "expected": "Action role-playing"
+    },
+    {
+      "id": "enr-010",
+      "correct": true,
+      "predicted": "Nintendo EPD",
+      "expected": "Nintendo EPD"
+    },
+    {
+      "id": "enr-011",
+      "correct": true,
+      "predicted": "Unreal Engine 5",
+      "expected": "Unreal Engine 5"
+    },
+    {
+      "id": "enr-012",
+      "correct": true,
+      "predicted": "Single-player",
+      "expected": "Single-player"
+    },
+    {
+      "id": "enr-013",
+      "correct": true,
+      "predicted": "Mojang Studios",
+      "expected": "Mojang Studios"
+    },
+    {
+      "id": "enr-014",
+      "correct": false,
+      "predicted": "November 18, 2011",
+      "expected": "2011-11-18"
+    },
+    {
+      "id": "enr-015",
+      "correct": true,
+      "predicted": "Survival horror",
+      "expected": "Survival horror"
+    },
+    {
+      "id": "enr-016",
+      "correct": true,
+      "predicted": "Santa Monica Studio",
+      "expected": "Santa Monica Studio"
+    },
+    {
+      "id": "enr-017",
+      "correct": false,
+      "predicted": "60 USD",
+      "expected": "$59.99"
+    },
+    {
+      "id": "enr-018",
+      "correct": false,
+      "predicted": "Bungie, Inc.",
+      "expected": "Bungie"
+    },
+    {
+      "id": "enr-019",
+      "correct": true,
+      "predicted": "M for Mature",
+      "expected": "M for Mature"
+    },
+    {
+      "id": "enr-020",
+      "correct": true,
+      "predicted": "Naughty Dog",
+      "expected": "Naughty Dog"
+    },
+    {
+      "id": "enr-021",
+      "correct": false,
+      "predicted": "Roguelite",
+      "expected": "Roguelike"
+    },
+    {
+      "id": "enr-022",
+      "correct": false,
+      "predicted": "Larian",
+      "expected": "Larian Studios"
+    },
+    {
+      "id": "enr-023",
+      "correct": false,
+      "predicted": "August 3, 2023",
+      "expected": "2023-08-03"
+    },
+    {
+      "id": "enr-024",
+      "correct": true,
+      "predicted": "PlayStation 5",
+      "expected": "PlayStation 5"
+    },
+    {
+      "id": "enr-025",
+      "correct": true,
+      "predicted": "Blizzard Entertainment",
+      "expected": "Blizzard Entertainment"
+    },
+    {
+      "id": "enr-026",
+      "correct": false,
+      "predicted": "Action-adventure platformer",
+      "expected": "Metroidvania"
+    },
+    {
+      "id": "enr-027",
+      "correct": false,
+      "predicted": "FromSoftware, Inc.",
+      "expected": "FromSoftware"
+    },
+    {
+      "id": "enr-028",
+      "correct": false,
+      "predicted": "March 22, 2019",
+      "expected": "2019-03-22"
+    },
+    {
+      "id": "enr-029",
+      "correct": false,
+      "predicted": "RE ENGINE",
+      "expected": "RE Engine"
+    },
+    {
+      "id": "enr-030",
+      "correct": true,
+      "predicted": "Insomniac Games",
+      "expected": "Insomniac Games"
+    },
+    {
+      "id": "enr-031",
+      "correct": true,
+      "predicted": "Action RPG",
+      "expected": "Action RPG"
+    },
+    {
+      "id": "enr-032",
+      "correct": true,
+      "predicted": "Ubisoft Montreal",
+      "expected": "Ubisoft Montreal"
+    },
+    {
+      "id": "enr-033",
+      "correct": true,
+      "predicted": "Nintendo Switch",
+      "expected": "Nintendo Switch"
+    },
+    {
+      "id": "enr-034",
+      "correct": true,
+      "predicted": "2023-05-12",
+      "expected": "2023-05-12"
+    },
+    {
+      "id": "enr-035",
+      "correct": false,
+      "predicted": "CAPCOM",
+      "expected": "Capcom"
+    },
+    {
+      "id": "enr-036",
+      "correct": true,
+      "predicted": "T for Teen",
+      "expected": "T for Teen"
+    },
+    {
+      "id": "enr-037",
+      "correct": true,
+      "predicted": "Epic Games",
+      "expected": "Epic Games"
+    },
+    {
+      "id": "enr-038",
+      "correct": true,
+      "predicted": "Battle royale",
+      "expected": "Battle royale"
+    },
+    {
+      "id": "enr-039",
+      "correct": false,
+      "predicted": "Rocksteady",
+      "expected": "Rocksteady Studios"
+    },
+    {
+      "id": "enr-040",
+      "correct": true,
+      "predicted": "Xbox Series X|S",
+      "expected": "Xbox Series X|S"
+    }
+  ],
+  "summary": {
+    "classification": {
+      "total": 50,
+      "correct": 50
+    },
+    "identity": {
+      "total": 45,
+      "correct": 4
+    },
+    "enrichment": {
+      "total": 40,
+      "correct": 23
+    },
+    "overall": {
+      "total": 135,
+      "correct": 77
+    }
+  }
+}

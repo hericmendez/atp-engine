@@ -1,0 +1,1477 @@
+{
+  "timestamp": "2026-08-30T07:50:57.998Z",
+  "model": "qwen3:8b",
+  "classification": {
+    "summary": {
+      "bothCorrect": 48,
+      "aiWins": 0,
+      "detWins": 2,
+      "bothWrong": 0
+    },
+    "details": [
+      {
+        "category": "classification",
+        "id": "class-001",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-002",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-003",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-004",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-005",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-006",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-007",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-008",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-009",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-010",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-011",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-012",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-013",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-014",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-015",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-016",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-017",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-018",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-019",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-020",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-021",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-022",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-023",
+        "groundTruth": "DLC",
+        "deterministic": "DLC",
+        "ai": "DLC",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-024",
+        "groundTruth": "EXPANSION",
+        "deterministic": "EXPANSION",
+        "ai": "EXPANSION",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-025",
+        "groundTruth": "DLC",
+        "deterministic": "DLC",
+        "ai": "EXPANSION",
+        "detCorrect": true,
+        "aiCorrect": false,
+        "outcome": "DETERMINISTIC_WINS"
+      },
+      {
+        "category": "classification",
+        "id": "class-026",
+        "groundTruth": "DLC",
+        "deterministic": "DLC",
+        "ai": "DLC",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-027",
+        "groundTruth": "EXPANSION",
+        "deterministic": "EXPANSION",
+        "ai": "EXPANSION",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-028",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-029",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-030",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-031",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-032",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-033",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-034",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-035",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "EXPANSION",
+        "detCorrect": true,
+        "aiCorrect": false,
+        "outcome": "DETERMINISTIC_WINS"
+      },
+      {
+        "category": "classification",
+        "id": "class-036",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-037",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-038",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-039",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-040",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-041",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-042",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-043",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-044",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-045",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-046",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-047",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-048",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-049",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "classification",
+        "id": "class-050",
+        "groundTruth": "GAME",
+        "deterministic": "GAME",
+        "ai": "GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      }
+    ]
+  },
+  "identity": {
+    "summary": {
+      "bothCorrect": 4,
+      "aiWins": 29,
+      "detWins": 0,
+      "bothWrong": 12
+    },
+    "details": [
+      {
+        "category": "identity",
+        "id": "id-001",
+        "groundTruth": "SAME_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "SAME_GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "identity",
+        "id": "id-002",
+        "groundTruth": "SAME_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "ERROR",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "identity",
+        "id": "id-003",
+        "groundTruth": "SAME_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "SAME_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-004",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-005",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-006",
+        "groundTruth": "SAME_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "SAME_GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "identity",
+        "id": "id-007",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "identity",
+        "id": "id-008",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-009",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-010",
+        "groundTruth": "SAME_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "SAME_GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "identity",
+        "id": "id-011",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-012",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-013",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-014",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "identity",
+        "id": "id-015",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "ERROR",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "identity",
+        "id": "id-016",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "identity",
+        "id": "id-017",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-018",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "identity",
+        "id": "id-019",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-020",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "identity",
+        "id": "id-021",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-022",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-023",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-024",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-025",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-026",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-027",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "SAME_GAME",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "identity",
+        "id": "id-028",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-029",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-030",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "ERROR",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "identity",
+        "id": "id-031",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "ERROR",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "identity",
+        "id": "id-032",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-033",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-034",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-035",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "ERROR",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "identity",
+        "id": "id-036",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-037",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-038",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-039",
+        "groundTruth": "RELATED_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "RELATED_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-040",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "ERROR",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "identity",
+        "id": "id-041",
+        "groundTruth": "SAME_GAME",
+        "deterministic": "SAME_GAME",
+        "ai": "SAME_GAME",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "identity",
+        "id": "id-042",
+        "groundTruth": "SAME_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "SAME_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-043",
+        "groundTruth": "SAME_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "SAME_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-044",
+        "groundTruth": "SAME_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "SAME_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "identity",
+        "id": "id-045",
+        "groundTruth": "DIFFERENT_GAME",
+        "deterministic": "UNRESOLVED",
+        "ai": "DIFFERENT_GAME",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      }
+    ]
+  },
+  "enrichment": {
+    "summary": {
+      "bothCorrect": 16,
+      "aiWins": 13,
+      "detWins": 7,
+      "bothWrong": 4
+    },
+    "details": [
+      {
+        "category": "enrichment",
+        "id": "enr-001",
+        "groundTruth": "Rockstar North",
+        "deterministic": "Rockstar North",
+        "ai": "Rockstar Games",
+        "detCorrect": true,
+        "aiCorrect": false,
+        "outcome": "DETERMINISTIC_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-002",
+        "groundTruth": "EA Sports",
+        "deterministic": "EA Sports",
+        "ai": "EA Sports",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-003",
+        "groundTruth": "2023-10-20",
+        "deterministic": "October 20, 2023",
+        "ai": "2023-10-20",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-004",
+        "groundTruth": "Action-adventure",
+        "deterministic": "Action-adventure",
+        "ai": "ERROR",
+        "detCorrect": true,
+        "aiCorrect": false,
+        "outcome": "DETERMINISTIC_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-005",
+        "groundTruth": "CD Projekt Red",
+        "deterministic": "CDPR",
+        "ai": "CD Projekt Red",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-006",
+        "groundTruth": "PC",
+        "deterministic": "Windows",
+        "ai": "PC",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-007",
+        "groundTruth": "FromSoftware",
+        "deterministic": "From Software",
+        "ai": "From Software",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-008",
+        "groundTruth": "2022-02-25",
+        "deterministic": "February 25, 2022",
+        "ai": "ERROR",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-009",
+        "groundTruth": "Action role-playing",
+        "deterministic": "Action role-playing",
+        "ai": "Action RPG",
+        "detCorrect": true,
+        "aiCorrect": false,
+        "outcome": "DETERMINISTIC_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-010",
+        "groundTruth": "Nintendo EPD",
+        "deterministic": "Nintendo EPD",
+        "ai": "Nintendo EPD",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-011",
+        "groundTruth": "Unreal Engine 5",
+        "deterministic": "Unreal Engine 5",
+        "ai": "Unreal Engine 5",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-012",
+        "groundTruth": "Single-player",
+        "deterministic": "Single-player",
+        "ai": "1",
+        "detCorrect": true,
+        "aiCorrect": false,
+        "outcome": "DETERMINISTIC_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-013",
+        "groundTruth": "Mojang Studios",
+        "deterministic": "Mojang Studios",
+        "ai": "Mojang Studios",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-014",
+        "groundTruth": "2011-11-18",
+        "deterministic": "November 18, 2011",
+        "ai": "2011-11-18",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-015",
+        "groundTruth": "Survival horror",
+        "deterministic": "Survival horror",
+        "ai": "Survival Horror",
+        "detCorrect": true,
+        "aiCorrect": false,
+        "outcome": "DETERMINISTIC_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-016",
+        "groundTruth": "Santa Monica Studio",
+        "deterministic": "Santa Monica Studio",
+        "ai": "Santa Monica Studio",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-017",
+        "groundTruth": "$59.99",
+        "deterministic": "60 USD",
+        "ai": "$59.99",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-018",
+        "groundTruth": "Bungie",
+        "deterministic": "Bungie, Inc.",
+        "ai": "Bungie",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-019",
+        "groundTruth": "M for Mature",
+        "deterministic": "M for Mature",
+        "ai": "M for Mature",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-020",
+        "groundTruth": "Naughty Dog",
+        "deterministic": "Naughty Dog",
+        "ai": "Naughty Dog",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-021",
+        "groundTruth": "Roguelike",
+        "deterministic": "Roguelite",
+        "ai": "Roguelike",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-022",
+        "groundTruth": "Larian Studios",
+        "deterministic": "Larian",
+        "ai": "Larian Studios",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-023",
+        "groundTruth": "2023-08-03",
+        "deterministic": "August 3, 2023",
+        "ai": "2023-08-03",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-024",
+        "groundTruth": "PlayStation 5",
+        "deterministic": "PlayStation 5",
+        "ai": "PlayStation 5",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-025",
+        "groundTruth": "Blizzard Entertainment",
+        "deterministic": "Blizzard Entertainment",
+        "ai": "Blizzard Entertainment",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-026",
+        "groundTruth": "Metroidvania",
+        "deterministic": "Action-adventure platformer",
+        "ai": "Metroidvania",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-027",
+        "groundTruth": "FromSoftware",
+        "deterministic": "FromSoftware, Inc.",
+        "ai": "FromSoftware, Inc.",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-028",
+        "groundTruth": "2019-03-22",
+        "deterministic": "March 22, 2019",
+        "ai": "2019-03-22",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-029",
+        "groundTruth": "RE Engine",
+        "deterministic": "RE ENGINE",
+        "ai": "RE ENGINE",
+        "detCorrect": false,
+        "aiCorrect": false,
+        "outcome": "BOTH_WRONG"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-030",
+        "groundTruth": "Insomniac Games",
+        "deterministic": "Insomniac Games",
+        "ai": "Insomniac Games",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-031",
+        "groundTruth": "Action RPG",
+        "deterministic": "Action RPG",
+        "ai": "Soulslike",
+        "detCorrect": true,
+        "aiCorrect": false,
+        "outcome": "DETERMINISTIC_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-032",
+        "groundTruth": "Ubisoft Montreal",
+        "deterministic": "Ubisoft Montreal",
+        "ai": "Ubisoft Montreal",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-033",
+        "groundTruth": "Nintendo Switch",
+        "deterministic": "Nintendo Switch",
+        "ai": "Nintendo Switch",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-034",
+        "groundTruth": "2023-05-12",
+        "deterministic": "2023-05-12",
+        "ai": "2023-05-12",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-035",
+        "groundTruth": "Capcom",
+        "deterministic": "CAPCOM",
+        "ai": "Capcom",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-036",
+        "groundTruth": "T for Teen",
+        "deterministic": "T for Teen",
+        "ai": "T for Teen",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-037",
+        "groundTruth": "Epic Games",
+        "deterministic": "Epic Games",
+        "ai": "Epic Games",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-038",
+        "groundTruth": "Battle royale",
+        "deterministic": "Battle royale",
+        "ai": "Battle Royale",
+        "detCorrect": true,
+        "aiCorrect": false,
+        "outcome": "DETERMINISTIC_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-039",
+        "groundTruth": "Rocksteady Studios",
+        "deterministic": "Rocksteady",
+        "ai": "Rocksteady Studios",
+        "detCorrect": false,
+        "aiCorrect": true,
+        "outcome": "AI_WINS"
+      },
+      {
+        "category": "enrichment",
+        "id": "enr-040",
+        "groundTruth": "Xbox Series X|S",
+        "deterministic": "Xbox Series X|S",
+        "ai": "Xbox Series X|S",
+        "detCorrect": true,
+        "aiCorrect": true,
+        "outcome": "BOTH_CORRECT"
+      }
+    ]
+  },
+  "overall": {
+    "bothCorrect": 68,
+    "aiWins": 42,
+    "detWins": 9,
+    "bothWrong": 16
+  },
+  "latency": {
+    "avg": 79951.02222222222,
+    "min": 28172,
+    "max": 180056
+  },
+  "errors": [
+    {
+      "id": "id-002",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "SAME_GAME",
+      "confidence": 0,
+      "latencyMs": 180014,
+      "error": "Error: Ollama request timed out after 180000ms",
+      "category": "identity"
+    },
+    {
+      "id": "id-015",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "RELATED_GAME",
+      "confidence": 0,
+      "latencyMs": 180020,
+      "error": "Error: Ollama request timed out after 180000ms",
+      "category": "identity"
+    },
+    {
+      "id": "id-030",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 0,
+      "latencyMs": 180052,
+      "error": "Error: Ollama request timed out after 180000ms",
+      "category": "identity"
+    },
+    {
+      "id": "id-031",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "RELATED_GAME",
+      "confidence": 0,
+      "latencyMs": 180002,
+      "error": "Error: Ollama request timed out after 180000ms",
+      "category": "identity"
+    },
+    {
+      "id": "id-035",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 0,
+      "latencyMs": 180056,
+      "error": "Error: Ollama request timed out after 180000ms",
+      "category": "identity"
+    },
+    {
+      "id": "id-040",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 0,
+      "latencyMs": 180002,
+      "error": "Error: Ollama request timed out after 180000ms",
+      "category": "identity"
+    },
+    {
+      "id": "enr-004",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "Action-adventure",
+      "confidence": 0,
+      "latencyMs": 180015,
+      "error": "Error: Ollama request timed out after 180000ms",
+      "category": "enrichment"
+    },
+    {
+      "id": "enr-008",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "2022-02-25",
+      "confidence": 0,
+      "latencyMs": 180001,
+      "error": "Error: Ollama request timed out after 180000ms",
+      "category": "enrichment"
+    }
+  ]
+}

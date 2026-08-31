@@ -25,17 +25,20 @@ export function coverRouter(deps: CoverRouterDependencies): Router {
 
   router.get('/covers/search', async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { q, source } = CoverSearchQuerySchema.parse(req.query);
+      const { q, type, limit, source } = CoverSearchQuerySchema.parse(req.query);
       const sourceFilter = source ? [source] : undefined;
-      const result = await coverService.searchCovers(q, { sourceFilter });
+      const result = await coverService.searchCovers(q, { type, limit, sourceFilter });
 
       res.json({
         data: {
-          query: result.query,
-          selected: result.selected,
-          candidates: result.candidates.map(serializeCandidate),
-          errors: result.errors,
+          query: result.data.query,
+          type: result.data.type,
+          limit: result.data.limit,
+          selected: result.data.selected,
+          candidates: result.data.candidates.map(serializeCandidate),
+          errors: result.data.errors,
         },
+        origin: result.origin,
       });
     } catch (error) {
       next(error);
@@ -49,12 +52,15 @@ export function coverRouter(deps: CoverRouterDependencies): Router {
 
       res.json({
         data: {
-          gameId: result.gameId,
-          query: result.query,
-          selected: result.selected,
-          candidates: result.candidates.map(serializeCandidate),
-          errors: result.errors,
+          gameId: result.data.gameId,
+          query: result.data.query,
+          type: result.data.type,
+          limit: result.data.limit,
+          selected: result.data.selected,
+          candidates: result.data.candidates.map(serializeCandidate),
+          errors: result.data.errors,
         },
+        origin: result.origin,
       });
     } catch (error) {
       next(error);

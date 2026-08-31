@@ -1,5 +1,5 @@
 import type { CoverCandidate, RankedCoverCandidate } from '../domain/cover/cover-candidate.js';
-import { CoverType } from '../domain/cover/cover-candidate.js';
+import { CoverType, CoverSearchType } from '../domain/cover/cover-candidate.js';
 
 const SOURCE_RELIABILITY: Record<string, number> = {
   steam: 0.9,
@@ -15,6 +15,7 @@ const TYPE_SCORES: Record<string, number> = {
   [CoverType.KEY_ART]: 0.8,
   [CoverType.UNKNOWN]: 0.6,
   [CoverType.SCREENSHOT]: 0.3,
+  [CoverType.LOGO]: 0.1,
 };
 
 const IDEAL_ASPECT_RATIO = 2 / 3;
@@ -94,7 +95,14 @@ function computeRelevanceScore(candidateTitle: string | undefined, query: string
   }
 
   if (normalizedQuery.startsWith(normalizedTitle)) {
-    return 0.85;
+    const titleWordCount = normalizedTitle.split(' ').length;
+    const queryWordCount = normalizedQuery.split(' ').length;
+
+    if (titleWordCount < queryWordCount) {
+      return 0.5;
+    }
+
+    return 0.75;
   }
 
   const queryWords = normalizedQuery.split(' ');
@@ -123,7 +131,7 @@ export function rankCandidate(candidate: CoverCandidate, query?: string): Ranked
   const typeScore = getTypeScore(candidate.type);
   const qualityScore = getQualityScore(candidate.width, candidate.height);
   const aspectRatioScore = getAspectRatioScore(candidate.width, candidate.height);
-  const relevanceScore = query ? computeRelevanceScore(candidate.evidence.sourceId, query) : 0.5;
+  const relevanceScore = query ? computeRelevanceScore(candidate.title ?? undefined, query) : 0.5;
 
   const totalScore =
     relevanceScore * WEIGHTS.relevance +
@@ -173,4 +181,32 @@ export function rankCandidates(
   });
 
   return ranked;
+}
+
+const COVER_SEARCH_TYPE_MAP: Record<CoverSearchType, readonly CoverType[]> = {
+  [CoverSearchType.COVER]: [
+    CoverType.FRONT_COVER,
+    CoverType.BOX_ART,
+    CoverType.POSTER,
+    CoverType.KEY_ART,
+    CoverType.UNKNOWN,
+  ],
+  [CoverSearchType.LOGO]: [CoverType.LOGO],
+  [CoverSearchType.ALL]: [
+    CoverType.FRONT_COVER,
+    CoverType.BOX_ART,
+    CoverType.POSTER,
+    CoverType.KEY_ART,
+    CoverType.UNKNOWN,
+    CoverType.SCREENSHOT,
+    CoverType.LOGO,
+  ],
+};
+
+export function filterByType(
+  candidates: CoverCandidate[],
+  searchType: CoverSearchType,
+): CoverCandidate[] {
+  const allowedTypes = COVER_SEARCH_TYPE_MAP[searchType];
+  return candidates.filter((c) => allowedTypes.includes(c.type));
 }

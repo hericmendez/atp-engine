@@ -4,12 +4,14 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   MONGODB_URI: z.string().url().default('mongodb://localhost:27017/atp-engine'),
-  OLLAMA_URL: z.string().url().default('http://localhost:11434'),
-  OLLAMA_MODEL: z.string().min(1).default('llama3'),
   AI_ENABLED: z
     .string()
     .transform((val) => val === 'true')
     .default('false'),
+  AI_PROVIDER: z.enum(['ollama']).default('ollama'),
+  AI_MODEL: z.string().min(1).default('qwen3:8b'),
+  OLLAMA_URL: z.string().url().default('http://localhost:11434'),
+  AI_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
   SOURCE_TIMEOUT: z.coerce.number().int().positive().default(10000),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 });

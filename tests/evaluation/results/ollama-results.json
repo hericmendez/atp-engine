@@ -1,0 +1,775 @@
+{
+  "model": "ollama",
+  "timestamp": "2026-08-30T05:41:07.890Z",
+  "classification": [
+    {
+      "id": "class-001",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.99,
+      "latencyMs": 39601
+    },
+    {
+      "id": "class-002",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 1,
+      "latencyMs": 35010
+    },
+    {
+      "id": "class-003",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 37160
+    },
+    {
+      "id": "class-004",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 1,
+      "latencyMs": 34004
+    },
+    {
+      "id": "class-005",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 1,
+      "latencyMs": 41518
+    },
+    {
+      "id": "class-006",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 1,
+      "latencyMs": 40870
+    },
+    {
+      "id": "class-007",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 1,
+      "latencyMs": 32221
+    },
+    {
+      "id": "class-008",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.99,
+      "latencyMs": 36752
+    },
+    {
+      "id": "class-009",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 39887
+    },
+    {
+      "id": "class-010",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 1,
+      "latencyMs": 36946
+    },
+    {
+      "id": "class-011",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 35194
+    },
+    {
+      "id": "class-012",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 1,
+      "latencyMs": 49553
+    },
+    {
+      "id": "class-013",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 42002
+    },
+    {
+      "id": "class-014",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 28172
+    },
+    {
+      "id": "class-015",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 37331
+    },
+    {
+      "id": "class-016",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 1,
+      "latencyMs": 85068
+    },
+    {
+      "id": "class-017",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.99,
+      "latencyMs": 37253
+    },
+    {
+      "id": "class-018",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 1,
+      "latencyMs": 51354
+    },
+    {
+      "id": "class-019",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 47766
+    },
+    {
+      "id": "class-020",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 31025
+    },
+    {
+      "id": "class-021",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 38501
+    },
+    {
+      "id": "class-022",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 31750
+    },
+    {
+      "id": "class-023",
+      "correct": true,
+      "predicted": "DLC",
+      "expected": "DLC",
+      "confidence": 1,
+      "latencyMs": 47103
+    },
+    {
+      "id": "class-024",
+      "correct": true,
+      "predicted": "EXPANSION",
+      "expected": "EXPANSION",
+      "confidence": 0.95,
+      "latencyMs": 28902
+    },
+    {
+      "id": "class-025",
+      "correct": false,
+      "predicted": "EXPANSION",
+      "expected": "DLC",
+      "confidence": 1,
+      "latencyMs": 84147
+    },
+    {
+      "id": "class-026",
+      "correct": true,
+      "predicted": "DLC",
+      "expected": "DLC",
+      "confidence": 0.95,
+      "latencyMs": 45276
+    },
+    {
+      "id": "class-027",
+      "correct": true,
+      "predicted": "EXPANSION",
+      "expected": "EXPANSION",
+      "confidence": 0.95,
+      "latencyMs": 36207
+    },
+    {
+      "id": "class-028",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 1,
+      "latencyMs": 84858
+    },
+    {
+      "id": "class-029",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 37370
+    },
+    {
+      "id": "class-030",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 42914
+    },
+    {
+      "id": "class-031",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 45792
+    },
+    {
+      "id": "class-032",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 35073
+    },
+    {
+      "id": "class-033",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 1,
+      "latencyMs": 44411
+    },
+    {
+      "id": "class-034",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 39262
+    },
+    {
+      "id": "class-035",
+      "correct": false,
+      "predicted": "EXPANSION",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 127914
+    },
+    {
+      "id": "class-036",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 32582
+    },
+    {
+      "id": "class-037",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 1,
+      "latencyMs": 36302
+    },
+    {
+      "id": "class-038",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 38226
+    },
+    {
+      "id": "class-039",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 38324
+    },
+    {
+      "id": "class-040",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 52164
+    },
+    {
+      "id": "class-041",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 33443
+    },
+    {
+      "id": "class-042",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 35343
+    },
+    {
+      "id": "class-043",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 45599
+    },
+    {
+      "id": "class-044",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 32527
+    },
+    {
+      "id": "class-045",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 36982
+    },
+    {
+      "id": "class-046",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 1,
+      "latencyMs": 35542
+    },
+    {
+      "id": "class-047",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 36182
+    },
+    {
+      "id": "class-048",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 34241
+    },
+    {
+      "id": "class-049",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 37029
+    },
+    {
+      "id": "class-050",
+      "correct": true,
+      "predicted": "GAME",
+      "expected": "GAME",
+      "confidence": 0.95,
+      "latencyMs": 33027
+    }
+  ],
+  "identity": [
+    {
+      "id": "id-001",
+      "correct": true,
+      "predicted": "SAME_GAME",
+      "expected": "SAME_GAME",
+      "confidence": 1,
+      "latencyMs": 44553
+    },
+    {
+      "id": "id-002",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "SAME_GAME",
+      "confidence": 0,
+      "latencyMs": 180014,
+      "error": "Error: Ollama request timed out after 180000ms"
+    },
+    {
+      "id": "id-003",
+      "correct": true,
+      "predicted": "SAME_GAME",
+      "expected": "SAME_GAME",
+      "confidence": 1,
+      "latencyMs": 67531
+    },
+    {
+      "id": "id-004",
+      "correct": true,
+      "predicted": "RELATED_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 1,
+      "latencyMs": 127535
+    },
+    {
+      "id": "id-005",
+      "correct": true,
+      "predicted": "RELATED_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 1,
+      "latencyMs": 85124
+    },
+    {
+      "id": "id-006",
+      "correct": true,
+      "predicted": "SAME_GAME",
+      "expected": "SAME_GAME",
+      "confidence": 1,
+      "latencyMs": 177786
+    },
+    {
+      "id": "id-007",
+      "correct": false,
+      "predicted": "RELATED_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 0.95,
+      "latencyMs": 148937
+    },
+    {
+      "id": "id-008",
+      "correct": true,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 0.95,
+      "latencyMs": 126619
+    },
+    {
+      "id": "id-009",
+      "correct": true,
+      "predicted": "RELATED_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 0.95,
+      "latencyMs": 107590
+    },
+    {
+      "id": "id-010",
+      "correct": true,
+      "predicted": "SAME_GAME",
+      "expected": "SAME_GAME",
+      "confidence": 1,
+      "latencyMs": 82434
+    },
+    {
+      "id": "id-011",
+      "correct": true,
+      "predicted": "RELATED_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 0.95,
+      "latencyMs": 131616
+    },
+    {
+      "id": "id-012",
+      "correct": true,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 1,
+      "latencyMs": 76276
+    },
+    {
+      "id": "id-013",
+      "correct": true,
+      "predicted": "RELATED_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 0.95,
+      "latencyMs": 89906
+    },
+    {
+      "id": "id-014",
+      "correct": false,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 0.95,
+      "latencyMs": 66818
+    },
+    {
+      "id": "id-015",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "RELATED_GAME",
+      "confidence": 0,
+      "latencyMs": 180020,
+      "error": "Error: Ollama request timed out after 180000ms"
+    },
+    {
+      "id": "id-016",
+      "correct": false,
+      "predicted": "RELATED_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 1,
+      "latencyMs": 64703
+    },
+    {
+      "id": "id-017",
+      "correct": true,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 1,
+      "latencyMs": 57329
+    },
+    {
+      "id": "id-018",
+      "correct": false,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 0.95,
+      "latencyMs": 134694
+    },
+    {
+      "id": "id-019",
+      "correct": true,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 1,
+      "latencyMs": 70840
+    },
+    {
+      "id": "id-020",
+      "correct": false,
+      "predicted": "RELATED_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 1,
+      "latencyMs": 46696
+    },
+    {
+      "id": "id-021",
+      "correct": true,
+      "predicted": "RELATED_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 0.95,
+      "latencyMs": 74668
+    },
+    {
+      "id": "id-022",
+      "correct": true,
+      "predicted": "RELATED_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 0.95,
+      "latencyMs": 116553
+    },
+    {
+      "id": "id-023",
+      "correct": true,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 0.95,
+      "latencyMs": 55225
+    },
+    {
+      "id": "id-024",
+      "correct": true,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 0.95,
+      "latencyMs": 47599
+    },
+    {
+      "id": "id-025",
+      "correct": true,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 0.95,
+      "latencyMs": 122794
+    },
+    {
+      "id": "id-026",
+      "correct": true,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 0.95,
+      "latencyMs": 56471
+    },
+    {
+      "id": "id-027",
+      "correct": false,
+      "predicted": "SAME_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 1,
+      "latencyMs": 137204
+    },
+    {
+      "id": "id-028",
+      "correct": true,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 1,
+      "latencyMs": 116451
+    },
+    {
+      "id": "id-029",
+      "correct": true,
+      "predicted": "RELATED_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 0.95,
+      "latencyMs": 76948
+    },
+    {
+      "id": "id-030",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 0,
+      "latencyMs": 180052,
+      "error": "Error: Ollama request timed out after 180000ms"
+    },
+    {
+      "id": "id-031",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "RELATED_GAME",
+      "confidence": 0,
+      "latencyMs": 180002,
+      "error": "Error: Ollama request timed out after 180000ms"
+    },
+    {
+      "id": "id-032",
+      "correct": true,
+      "predicted": "RELATED_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 0.95,
+      "latencyMs": 68258
+    },
+    {
+      "id": "id-033",
+      "correct": true,
+      "predicted": "RELATED_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 0.95,
+      "latencyMs": 76623
+    },
+    {
+      "id": "id-034",
+      "correct": true,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 1,
+      "latencyMs": 111883
+    },
+    {
+      "id": "id-035",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 0,
+      "latencyMs": 180056,
+      "error": "Error: Ollama request timed out after 180000ms"
+    },
+    {
+      "id": "id-036",
+      "correct": true,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 1,
+      "latencyMs": 65049
+    },
+    {
+      "id": "id-037",
+      "correct": true,
+      "predicted": "RELATED_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 1,
+      "latencyMs": 80404
+    },
+    {
+      "id": "id-038",
+      "correct": true,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 1,
+      "latencyMs": 59484
+    },
+    {
+      "id": "id-039",
+      "correct": true,
+      "predicted": "RELATED_GAME",
+      "expected": "RELATED_GAME",
+      "confidence": 1,
+      "latencyMs": 70808
+    },
+    {
+      "id": "id-040",
+      "correct": false,
+      "predicted": "ERROR",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 0,
+      "latencyMs": 180002,
+      "error": "Error: Ollama request timed out after 180000ms"
+    },
+    {
+      "id": "id-041",
+      "correct": true,
+      "predicted": "SAME_GAME",
+      "expected": "SAME_GAME",
+      "confidence": 1,
+      "latencyMs": 46055
+    },
+    {
+      "id": "id-042",
+      "correct": true,
+      "predicted": "SAME_GAME",
+      "expected": "SAME_GAME",
+      "confidence": 1,
+      "latencyMs": 41675
+    },
+    {
+      "id": "id-043",
+      "correct": true,
+      "predicted": "SAME_GAME",
+      "expected": "SAME_GAME",
+      "confidence": 0.95,
+      "latencyMs": 108320
+    },
+    {
+      "id": "id-044",
+      "correct": true,
+      "predicted": "SAME_GAME",
+      "expected": "SAME_GAME",
+      "confidence": 0.95,
+      "latencyMs": 150765
+    },
+    {
+      "id": "id-045",
+      "correct": true,
+      "predicted": "DIFFERENT_GAME",
+      "expected": "DIFFERENT_GAME",
+      "confidence": 1,
+      "latencyMs": 74224
+    }
+  ],
+  "enrichment": []
+}

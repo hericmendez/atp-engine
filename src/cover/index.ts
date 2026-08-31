@@ -11,4 +11,4 @@ export {
   deduplicateCandidates,
   type CoverValidationResult,
 } from './cover-validate.js';
-export { rankCandidate, rankCandidates } from './cover-rank.js';
+export { rankCandidate, rankCandidates, filterByType } from './cover-rank.js';

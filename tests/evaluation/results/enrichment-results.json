@@ -1,0 +1,324 @@
+[
+  {
+    "id": "enr-001",
+    "correct": false,
+    "predicted": "Rockstar Games",
+    "expected": "Rockstar North",
+    "confidence": 0.85,
+    "latencyMs": 74445
+  },
+  {
+    "id": "enr-002",
+    "correct": true,
+    "predicted": "EA Sports",
+    "expected": "EA Sports",
+    "confidence": 0.8,
+    "latencyMs": 97382
+  },
+  {
+    "id": "enr-003",
+    "correct": true,
+    "predicted": "2023-10-20",
+    "expected": "2023-10-20",
+    "confidence": 0.95,
+    "latencyMs": 73700
+  },
+  {
+    "id": "enr-004",
+    "correct": false,
+    "predicted": "ERROR",
+    "expected": "Action-adventure",
+    "confidence": 0,
+    "latencyMs": 180015,
+    "error": "Error: Ollama request timed out after 180000ms"
+  },
+  {
+    "id": "enr-005",
+    "correct": true,
+    "predicted": "CD Projekt Red",
+    "expected": "CD Projekt Red",
+    "confidence": 0.95,
+    "latencyMs": 96131
+  },
+  {
+    "id": "enr-006",
+    "correct": true,
+    "predicted": "PC",
+    "expected": "PC",
+    "confidence": 0.85,
+    "latencyMs": 80161
+  },
+  {
+    "id": "enr-007",
+    "correct": false,
+    "predicted": "From Software",
+    "expected": "FromSoftware",
+    "confidence": 0.95,
+    "latencyMs": 115972
+  },
+  {
+    "id": "enr-008",
+    "correct": false,
+    "predicted": "ERROR",
+    "expected": "2022-02-25",
+    "confidence": 0,
+    "latencyMs": 180001,
+    "error": "Error: Ollama request timed out after 180000ms"
+  },
+  {
+    "id": "enr-009",
+    "correct": false,
+    "predicted": "Action RPG",
+    "expected": "Action role-playing",
+    "confidence": 0.9,
+    "latencyMs": 100098
+  },
+  {
+    "id": "enr-010",
+    "correct": true,
+    "predicted": "Nintendo EPD",
+    "expected": "Nintendo EPD",
+    "confidence": 0.95,
+    "latencyMs": 91541
+  },
+  {
+    "id": "enr-011",
+    "correct": true,
+    "predicted": "Unreal Engine 5",
+    "expected": "Unreal Engine 5",
+    "confidence": 0.95,
+    "latencyMs": 97674
+  },
+  {
+    "id": "enr-012",
+    "correct": false,
+    "predicted": "1",
+    "expected": "Single-player",
+    "confidence": 0.95,
+    "latencyMs": 77487
+  },
+  {
+    "id": "enr-013",
+    "correct": true,
+    "predicted": "Mojang Studios",
+    "expected": "Mojang Studios",
+    "confidence": 0.95,
+    "latencyMs": 85012
+  },
+  {
+    "id": "enr-014",
+    "correct": true,
+    "predicted": "2011-11-18",
+    "expected": "2011-11-18",
+    "confidence": 0.95,
+    "latencyMs": 87321
+  },
+  {
+    "id": "enr-015",
+    "correct": false,
+    "predicted": "Survival Horror",
+    "expected": "Survival horror",
+    "confidence": 0.95,
+    "latencyMs": 117889
+  },
+  {
+    "id": "enr-016",
+    "correct": true,
+    "predicted": "Santa Monica Studio",
+    "expected": "Santa Monica Studio",
+    "confidence": 0.95,
+    "latencyMs": 85509
+  },
+  {
+    "id": "enr-017",
+    "correct": true,
+    "predicted": "$59.99",
+    "expected": "$59.99",
+    "confidence": 0.8,
+    "latencyMs": 94522
+  },
+  {
+    "id": "enr-018",
+    "correct": true,
+    "predicted": "Bungie",
+    "expected": "Bungie",
+    "confidence": 0.95,
+    "latencyMs": 103358
+  },
+  {
+    "id": "enr-019",
+    "correct": true,
+    "predicted": "M for Mature",
+    "expected": "M for Mature",
+    "confidence": 0.95,
+    "latencyMs": 42673
+  },
+  {
+    "id": "enr-020",
+    "correct": true,
+    "predicted": "Naughty Dog",
+    "expected": "Naughty Dog",
+    "confidence": 0.95,
+    "latencyMs": 53606
+  },
+  {
+    "id": "enr-021",
+    "correct": true,
+    "predicted": "Roguelike",
+    "expected": "Roguelike",
+    "confidence": 0.7,
+    "latencyMs": 61235
+  },
+  {
+    "id": "enr-022",
+    "correct": true,
+    "predicted": "Larian Studios",
+    "expected": "Larian Studios",
+    "confidence": 0.95,
+    "latencyMs": 54681
+  },
+  {
+    "id": "enr-023",
+    "correct": true,
+    "predicted": "2023-08-03",
+    "expected": "2023-08-03",
+    "confidence": 0.95,
+    "latencyMs": 139761
+  },
+  {
+    "id": "enr-024",
+    "correct": true,
+    "predicted": "PlayStation 5",
+    "expected": "PlayStation 5",
+    "confidence": 0.9,
+    "latencyMs": 139929
+  },
+  {
+    "id": "enr-025",
+    "correct": true,
+    "predicted": "Blizzard Entertainment",
+    "expected": "Blizzard Entertainment",
+    "confidence": 0.95,
+    "latencyMs": 71640
+  },
+  {
+    "id": "enr-026",
+    "correct": true,
+    "predicted": "Metroidvania",
+    "expected": "Metroidvania",
+    "confidence": 0.95,
+    "latencyMs": 103882
+  },
+  {
+    "id": "enr-027",
+    "correct": false,
+    "predicted": "FromSoftware, Inc.",
+    "expected": "FromSoftware",
+    "confidence": 0.8,
+    "latencyMs": 132317
+  },
+  {
+    "id": "enr-028",
+    "correct": true,
+    "predicted": "2019-03-22",
+    "expected": "2019-03-22",
+    "confidence": 0.95,
+    "latencyMs": 108236
+  },
+  {
+    "id": "enr-029",
+    "correct": false,
+    "predicted": "RE ENGINE",
+    "expected": "RE Engine",
+    "confidence": 0.85,
+    "latencyMs": 107580
+  },
+  {
+    "id": "enr-030",
+    "correct": true,
+    "predicted": "Insomniac Games",
+    "expected": "Insomniac Games",
+    "confidence": 0.95,
+    "latencyMs": 101066
+  },
+  {
+    "id": "enr-031",
+    "correct": false,
+    "predicted": "Soulslike",
+    "expected": "Action RPG",
+    "confidence": 0.95,
+    "latencyMs": 80190
+  },
+  {
+    "id": "enr-032",
+    "correct": true,
+    "predicted": "Ubisoft Montreal",
+    "expected": "Ubisoft Montreal",
+    "confidence": 0.7,
+    "latencyMs": 179791
+  },
+  {
+    "id": "enr-033",
+    "correct": true,
+    "predicted": "Nintendo Switch",
+    "expected": "Nintendo Switch",
+    "confidence": 0.9,
+    "latencyMs": 119209
+  },
+  {
+    "id": "enr-034",
+    "correct": true,
+    "predicted": "2023-05-12",
+    "expected": "2023-05-12",
+    "confidence": 0.95,
+    "latencyMs": 112453
+  },
+  {
+    "id": "enr-035",
+    "correct": true,
+    "predicted": "Capcom",
+    "expected": "Capcom",
+    "confidence": 0.9,
+    "latencyMs": 161914
+  },
+  {
+    "id": "enr-036",
+    "correct": true,
+    "predicted": "T for Teen",
+    "expected": "T for Teen",
+    "confidence": 0.95,
+    "latencyMs": 84774
+  },
+  {
+    "id": "enr-037",
+    "correct": true,
+    "predicted": "Epic Games",
+    "expected": "Epic Games",
+    "confidence": 0.95,
+    "latencyMs": 99528
+  },
+  {
+    "id": "enr-038",
+    "correct": false,
+    "predicted": "Battle Royale",
+    "expected": "Battle royale",
+    "confidence": 0.95,
+    "latencyMs": 77236
+  },
+  {
+    "id": "enr-039",
+    "correct": true,
+    "predicted": "Rocksteady Studios",
+    "expected": "Rocksteady Studios",
+    "confidence": 0.95,
+    "latencyMs": 135472
+  },
+  {
+    "id": "enr-040",
+    "correct": true,
+    "predicted": "Xbox Series X|S",
+    "expected": "Xbox Series X|S",
+    "confidence": 0.8,
+    "latencyMs": 97723
+  }
+]

@@ -6,6 +6,9 @@ import { MongoGameRepository } from './infrastructure/persistence/mongodb/mongo-
 import { SourceRegistry } from './sources/source-registry.js';
 import { WikipediaAdapter } from './sources/wikipedia/wikipedia-adapter.js';
 import { SteamAdapter } from './sources/steam/steam-adapter.js';
+import { DiscoveryEngine } from './discovery/discovery-engine.js';
+import { DeterministicClassifier } from './classification/deterministic-classifier.js';
+import { DeterministicIdentityResolver } from './identity/deterministic-identity-resolver.js';
 import { loadConfig } from './infrastructure/config/config.js';
 import { logger } from './infrastructure/logger/logger.js';
 import { setLogLevel } from './infrastructure/logger/logger.js';
@@ -21,7 +24,6 @@ async function main(): Promise<void> {
   await connectDatabase();
 
   const gameRepository = new MongoGameRepository();
-  const catalogService = new CatalogService({ gameRepository });
 
   const sourceRegistry = new SourceRegistry();
   sourceRegistry.register(
@@ -30,6 +32,12 @@ async function main(): Promise<void> {
   sourceRegistry.register(
     new SteamAdapter({ source: 'steam', baseUrl: 'https://store.steampowered.com/api' }),
   );
+
+  const classifier = new DeterministicClassifier();
+  const identityResolver = new DeterministicIdentityResolver();
+  const discoveryEngine = new DiscoveryEngine(sourceRegistry, classifier, identityResolver);
+
+  const catalogService = new CatalogService({ gameRepository, discoveryEngine });
 
   const coverEngine = new CoverEngine({ sourceRegistry });
   const coverService = new CoverService({ gameRepository, coverEngine });

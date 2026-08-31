@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../../src/interfaces/http/app.js';
 import type { CatalogService } from '../../src/application/catalog-service.js';
-import type { GameQuery, PaginatedResult } from '../../src/domain/game/game-repository.js';
+import type { GameQuery } from '../../src/domain/game/game-repository.js';
 import type { Game } from '../../src/domain/game/game.js';
 import { createGameId } from '../../src/domain/shared/ids.js';
 import { createGameTitle } from '../../src/domain/shared/title.js';
@@ -92,7 +92,7 @@ describe('Games API', () => {
     ];
 
     mockCatalogService = {
-      listGames: async (query: GameQuery): Promise<PaginatedResult<Game>> => {
+      listGames: async (query: GameQuery) => {
         let filtered = [...mockGames];
 
         if (query.search) {
@@ -143,18 +143,21 @@ describe('Games API', () => {
         const paginated = filtered.slice(start, start + limit);
 
         return {
-          items: paginated,
-          total: filtered.length,
-          page,
-          limit,
-          totalPages: Math.ceil(filtered.length / limit),
+          data: {
+            items: paginated,
+            total: filtered.length,
+            page,
+            limit,
+            totalPages: Math.ceil(filtered.length / limit),
+          },
+          origin: 'database' as const,
         };
       },
 
       searchGames: async (
         searchQuery: string,
         options?: { page?: number; limit?: number; sort?: GameQuery['sort'] },
-      ): Promise<PaginatedResult<Game>> => {
+      ) => {
         const query: GameQuery = {
           search: searchQuery,
           page: options?.page,
@@ -164,12 +167,12 @@ describe('Games API', () => {
         return mockCatalogService.listGames(query);
       },
 
-      getGameById: async (id: string): Promise<Game> => {
+      getGameById: async (id: string) => {
         const game = mockGames.find((g) => g.id === id);
         if (!game) {
           throw new NotFoundError(`Game with ID ${id} not found`);
         }
-        return game;
+        return { data: game, origin: 'database' as const };
       },
     };
 

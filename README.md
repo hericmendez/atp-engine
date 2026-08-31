@@ -241,6 +241,566 @@ The exact API contract is defined in `docs/api.md`.
 
 ---
 
+# API Reference
+
+All endpoints are prefixed with `http://localhost:3000` (configurable via `PORT` env var).
+
+## Health Check
+
+### `GET /health`
+
+Returns server status.
+
+**curl**:
+
+```bash
+curl "http://localhost:3000/health"
+```
+
+**fetch**:
+
+```js
+const res = await fetch("http://localhost:3000/health");
+const data = await res.json();
+// { status: "ok", timestamp: "2026-08-30T01:00:00.000Z" }
+```
+
+**Response**:
+
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-08-30T01:00:00.000Z"
+}
+```
+
+---
+
+## Game Catalog
+
+### `GET /api/v1/games`
+
+List games with composable filters, pagination, and sorting.
+
+**Query Parameters**:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `search` | string | — | Regex match on titles, developers, publishers |
+| `title` | string | — | Regex match on titles only |
+| `platform` | string | — | Regex match on platform name (e.g., `Nintendo Switch`) |
+| `platformFamily` | string | — | Exact match on platform family |
+| `developer` | string | — | Regex match on developer name |
+| `publisher` | string | — | Regex match on publisher name |
+| `genre` | string | — | Regex match on genre name |
+| `classification` | enum | — | `GAME`, `DLC`, `EXPANSION`, `MOVIE`, `TV_SHOW`, `ANIME`, `SOUNDTRACK`, `BOOK`, `HARDWARE`, `PROMOTIONAL`, `CHARACTER`, `FRANCHISE`, `PERSON`, `EVENT`, `UNKNOWN` |
+| `completeness` | enum | — | `NOT_FOUND`, `FOUND_PARTIAL`, `FOUND_SUFFICIENT`, `FOUND_COMPLETE` |
+| `releaseYear` | int | — | 1950–2100 |
+| `page` | int | `1` | Page number (min 1) |
+| `limit` | int | `20` | Results per page (1–100) |
+| `sort` | enum | — | `title`, `createdAt`, `updatedAt`, `completeness` |
+| `order` | enum | `desc` | `asc` or `desc` |
+
+All filters are composable (AND logic).
+
+**curl — basic listing**:
+
+```bash
+curl "http://localhost:3000/api/v1/games"
+```
+
+**curl — filtered by platform and genre**:
+
+```bash
+curl "http://localhost:3000/api/v1/games?platform=Nintendo%20Switch&genre=Adventure"
+```
+
+**curl — filtered by developer and classification**:
+
+```bash
+curl "http://localhost:3000/api/v1/games?developer=Nintendo&classification=GAME"
+```
+
+**curl — filtered by release year and completeness**:
+
+```bash
+curl "http://localhost:3000/api/v1/games?releaseYear=2017&completeness=FOUND_COMPLETE"
+```
+
+**curl — paginated and sorted**:
+
+```bash
+curl "http://localhost:3000/api/v1/games?page=2&limit=10&sort=title&order=asc"
+```
+
+**curl — combined filters**:
+
+```bash
+curl "http://localhost:3000/api/v1/games?platformFamily=Nintendo&developer=Nintendo&genre=Adventure&releaseYear=2017&sort=title&order=asc&limit=5"
+```
+
+**fetch — filtered catalog**:
+
+```js
+const params = new URLSearchParams({
+  platform: "Nintendo Switch",
+  genre: "Adventure",
+  classification: "GAME",
+  sort: "title",
+  order: "asc",
+  limit: "10",
+});
+
+const res = await fetch(`http://localhost:3000/api/v1/games?${params}`);
+const { data, pagination } = await res.json();
+
+console.log(`Found ${pagination.total} games, showing page ${pagination.page}/${pagination.totalPages}`);
+data.forEach((game) => console.log(`- ${game.titles[0]?.value}`));
+```
+
+**Response**:
+
+```json
+{
+  "data": [
+    {
+      "id": "game-abc123",
+      "titles": [{ "value": "The Legend of Zelda: Breath of the Wild", "type": "primary" }],
+      "releases": [
+        {
+          "id": "rel-1",
+          "platform": { "name": "Nintendo Switch", "family": "Nintendo", "type": "console" },
+          "region": { "name": "Global" },
+          "releaseDate": { "year": 2017, "month": 3, "day": 3, "precision": "day" },
+          "version": null,
+          "edition": null,
+          "distributionChannels": [],
+          "launchers": []
+        }
+      ],
+      "developers": [{ "name": "Nintendo" }],
+      "publishers": [{ "name": "Nintendo" }],
+      "genres": [{ "name": "Adventure" }],
+      "externalIdentifiers": [{ "source": "wikipedia", "id": "12345" }],
+      "relationships": [],
+      "evidence": [],
+      "classification": "GAME",
+      "completeness": "FOUND_COMPLETE"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "totalPages": 8
+  }
+}
+```
+
+**Errors**:
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Invalid query parameters (bad page, bad sort field, bad classification) |
+| 500 | `PERSISTENCE_ERROR` | MongoDB connection or query failure |
+
+---
+
+## Game Search
+
+### `GET /api/v1/games/search`
+
+Search games by term. Matches against titles, developer names, and publisher names.
+
+**Query Parameters**:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `q` | string | **required** | Search term (min 1 char) |
+| `source` | string | — | Reserved (not yet used) |
+| `page` | int | `1` | Page number |
+| `limit` | int | `20` | Results per page (1–100) |
+| `sort` | enum | — | `title`, `createdAt`, `updatedAt`, `completeness` |
+| `order` | enum | `desc` | `asc` or `desc` |
+
+**Note**: `GET /api/v1/games/search?q=Doom` and `GET /api/v1/games?search=Doom` produce identical results.
+
+**curl — basic search**:
+
+```bash
+curl "http://localhost:3000/api/v1/games/search?q=Doom"
+```
+
+**curl — search with pagination**:
+
+```bash
+curl "http://localhost:3000/api/v1/games/search?q=Zelda&page=1&limit=5"
+```
+
+**curl — search sorted by title**:
+
+```bash
+curl "http://localhost:3000/api/v1/games/search?q=Final%20Fantasy&sort=title&order=asc"
+```
+
+**fetch — search and iterate**:
+
+```js
+const res = await fetch("http://localhost:3000/api/v1/games/search?q=Resident%20Evil&limit=5");
+const { data, pagination } = await res.json();
+
+data.forEach((game) => {
+  console.log(`${game.titles[0]?.value} (${game.classification})`);
+});
+```
+
+**Response**: Same structure as `GET /api/v1/games`.
+
+**Errors**:
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Missing `q` parameter |
+| 500 | `PERSISTENCE_ERROR` | MongoDB failure |
+
+---
+
+## Single Game
+
+### `GET /api/v1/games/:id`
+
+Retrieve a single game by its domain ID.
+
+**Path Parameters**:
+
+| Parameter | Description |
+|-----------|-------------|
+| `id` | Game domain ID (required, non-empty) |
+
+**How to get a valid ID**: Call `GET /api/v1/games?limit=1` and use the `id` field from the first result.
+
+**curl**:
+
+```bash
+curl "http://localhost:3000/api/v1/games/game-abc123"
+```
+
+**fetch**:
+
+```js
+const gameId = "game-abc123"; // obtained from /api/v1/games
+const res = await fetch(`http://localhost:3000/api/v1/games/${gameId}`);
+const { data } = await res.json();
+
+console.log(data.titles[0]?.value);
+console.log(`Classification: ${data.classification}`);
+console.log(`Releases: ${data.releases.length}`);
+data.releases.forEach((r) => {
+  console.log(`  - ${r.platform.name} (${r.region?.name ?? "Unknown"})`);
+});
+```
+
+**Response**:
+
+```json
+{
+  "data": {
+    "id": "game-abc123",
+    "titles": [
+      { "value": "The Legend of Zelda: Breath of the Wild", "type": "primary" }
+    ],
+    "releases": [...],
+    "developers": [{ "name": "Nintendo" }],
+    "publishers": [{ "name": "Nintendo" }],
+    "genres": [{ "name": "Adventure" }],
+    "externalIdentifiers": [...],
+    "relationships": [...],
+    "evidence": [...],
+    "classification": "GAME",
+    "completeness": "FOUND_COMPLETE"
+  }
+}
+```
+
+**Errors**:
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Empty or missing `id` |
+| 404 | `NOT_FOUND` | No game with that ID exists |
+| 500 | `PERSISTENCE_ERROR` | MongoDB failure |
+
+---
+
+## Cover Search
+
+### `GET /api/v1/covers/search`
+
+Search for cover images by query. Does not require an existing Game in the database.
+
+**Query Parameters**:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `q` | string | **required** | Search query (1–200 chars, trimmed) |
+| `type` | enum | `cover` | `cover`, `logo`, or `all` |
+| `limit` | int | `1` | Number of candidates to return (1–9) |
+| `source` | string | — | Filter to specific source (`wikipedia`, `steam`) |
+
+**Type semantics**:
+
+- `cover` — Returns `front_cover`, `box_art`, `poster`, `key_art`, and `unknown` candidates. Excludes logos and screenshots.
+- `logo` — Returns only `logo` candidates.
+- `all` — Returns all valid candidates regardless of type.
+
+**Limit semantics**: Limit is applied **after** ranking. `limit=3` means "the 3 best candidates," not "the first 3 returned."
+
+**curl — basic cover search**:
+
+```bash
+curl "http://localhost:3000/api/v1/covers/search?q=Doom%20Eternal"
+```
+
+**curl — get top 3 covers**:
+
+```bash
+curl "http://localhost:3000/api/v1/covers/search?q=Doom%20Eternal&type=cover&limit=3"
+```
+
+**curl — search for logos only**:
+
+```bash
+curl "http://localhost:3000/api/v1/covers/search?q=Nintendo&type=logo&limit=5"
+```
+
+**curl — search all types**:
+
+```bash
+curl "http://localhost:3000/api/v1/covers/search?q=Zelda&type=all&limit=9"
+```
+
+**curl — search from a specific source**:
+
+```bash
+curl "http://localhost:3000/api/v1/covers/search?q=Hollow%20Knight&source=wikipedia&limit=3"
+```
+
+**fetch — cover search with type filtering**:
+
+```js
+const params = new URLSearchParams({
+  q: "Hollow Knight",
+  type: "cover",
+  limit: "3",
+});
+
+const res = await fetch(`http://localhost:3000/api/v1/covers/search?${params}`);
+const { data } = await res.json();
+
+console.log(`Query: ${data.query}`);
+console.log(`Type: ${data.type}, Limit: ${data.limit}`);
+console.log(`Selected: ${data.selected?.url ?? "none"}`);
+data.candidates.forEach((c) => {
+  console.log(`  - ${c.url} (${c.source}, score: ${c.ranking.totalScore.toFixed(2)})`);
+});
+```
+
+**fetch — search for game logos**:
+
+```js
+const res = await fetch("http://localhost:3000/api/v1/covers/search?q=Final%20Fantasy&type=logo&limit=5");
+const { data } = await res.json();
+
+if (data.selected) {
+  console.log(`Best logo: ${data.selected.url}`);
+} else {
+  console.log("No logo found above threshold");
+}
+```
+
+**Response**:
+
+```json
+{
+  "data": {
+    "query": "Doom Eternal",
+    "type": "cover",
+    "limit": 3,
+    "selected": {
+      "url": "https://upload.wikimedia.org/wikipedia/en/8/86/Doom_Eternal_cover_art.jpg",
+      "source": "wikipedia",
+      "sourceId": "6509467",
+      "width": null,
+      "height": null,
+      "type": "front_cover"
+    },
+    "candidates": [
+      {
+        "url": "https://upload.wikimedia.org/wikipedia/en/8/86/Doom_Eternal_cover_art.jpg",
+        "source": "wikipedia",
+        "sourceId": "6509467",
+        "width": null,
+        "height": null,
+        "type": "front_cover",
+        "ranking": {
+          "relevanceScore": 0.95,
+          "sourceScore": 0.8,
+          "typeScore": 1.0,
+          "qualityScore": 0.5,
+          "aspectRatioScore": 1.0,
+          "totalScore": 0.9
+        }
+      }
+    ],
+    "errors": []
+  }
+}
+```
+
+`selected` is `null` when no candidates exceed the minimum selection score (0.55).
+
+**Errors**:
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Missing `q`, invalid `type`, `limit` out of range |
+| 500 | `INTERNAL_ERROR` | Unexpected failure |
+
+---
+
+## Game Cover
+
+### `GET /api/v1/games/:id/cover`
+
+Discover and return a cover for an existing game. If the game already has a cached cover, returns it immediately. Otherwise, queries external sources, ranks candidates, and persists the result.
+
+**Path Parameters**:
+
+| Parameter | Description |
+|-----------|-------------|
+| `id` | Game domain ID (required) |
+
+**How to get a valid ID**: Call `GET /api/v1/games?limit=1` and use the `id` field.
+
+**curl**:
+
+```bash
+curl "http://localhost:3000/api/v1/games/game-abc123/cover"
+```
+
+**fetch**:
+
+```js
+const gameId = "game-abc123";
+const res = await fetch(`http://localhost:3000/api/v1/games/${gameId}/cover`);
+const { data } = await res.json();
+
+console.log(`Game: ${data.gameId}`);
+console.log(`Selected: ${data.selected?.url ?? "none"}`);
+console.log(`Candidates: ${data.candidates.length}`);
+data.errors.forEach((e) => console.warn(`Source error: ${e.source} — ${e.message}`));
+```
+
+**Behavior**:
+
+1. If game does not exist → **404 Not Found**
+2. If game already has a `cover` field → returns cached cover (no external calls)
+3. If game has no cover → queries Wikipedia + Steam, ranks candidates, persists best match
+
+**Response (with cover)**:
+
+```json
+{
+  "data": {
+    "gameId": "game-abc123",
+    "query": "The Legend of Zelda: Breath of the Wild",
+    "type": "cover",
+    "limit": 1,
+    "selected": {
+      "url": "https://upload.wikimedia.org/wikipedia/en/c/c6/Breath_of_the_Wild.jpg",
+      "source": "wikipedia",
+      "sourceId": "42398765",
+      "width": null,
+      "height": null,
+      "type": "front_cover"
+    },
+    "candidates": [],
+    "errors": []
+  }
+}
+```
+
+**Response (no cover found)**:
+
+```json
+{
+  "data": {
+    "gameId": "game-abc123",
+    "query": "Obscure Game Title",
+    "type": "cover",
+    "limit": 1,
+    "selected": null,
+    "candidates": [],
+    "errors": []
+  }
+}
+```
+
+**Errors**:
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Empty or missing `id` |
+| 404 | `NOT_FOUND` | No game with that ID exists |
+| 500 | `INTERNAL_ERROR` | Unexpected failure |
+
+---
+
+# Quick Reference
+
+```bash
+# Health
+curl "http://localhost:3000/health"
+
+# List games (first page, 20 results)
+curl "http://localhost:3000/api/v1/games"
+
+# List games with filters
+curl "http://localhost:3000/api/v1/games?platform=Nintendo%20Switch&genre=Adventure&classification=GAME"
+
+# Search games
+curl "http://localhost:3000/api/v1/games/search?q=Doom"
+
+# Get single game (replace GAME_ID with real ID from catalog)
+curl "http://localhost:3000/api/v1/games/GAME_ID"
+
+# Cover search
+curl "http://localhost:3000/api/v1/covers/search?q=Doom%20Eternal&type=cover&limit=3"
+
+# Game cover (replace GAME_ID with real ID)
+curl "http://localhost:3000/api/v1/games/GAME_ID/cover"
+```
+
+---
+
+# Dependencies
+
+| Endpoint | MongoDB | External APIs | Writes |
+|----------|---------|---------------|--------|
+| `GET /health` | ❌ | ❌ | ❌ |
+| `GET /api/v1/games` | ✅ read | ❌ | ❌ |
+| `GET /api/v1/games/search` | ✅ read | ❌ | ❌ |
+| `GET /api/v1/games/:id` | ✅ read | ❌ | ❌ |
+| `GET /api/v1/covers/search` | ❌ | ✅ Wikipedia, Steam | ❌ |
+| `GET /api/v1/games/:id/cover` | ✅ read+write | ✅ Wikipedia, Steam | ✅ persists cover |
+
+**External source adapters**:
+
+- `WikipediaAdapter` — queries `en.wikipedia.org/w/api.php` for page images
+- `SteamAdapter` — queries `store.steampowered.com/api` for header capsules
+
+---
+
 # High-Level Architecture
 
 ```text

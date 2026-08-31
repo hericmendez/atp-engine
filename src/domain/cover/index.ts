@@ -1,5 +1,6 @@
 export {
   CoverType,
+  CoverSearchType,
   createCoverEvidence,
   createCoverCandidate,
   coverCandidateEquals,

@@ -1,0 +1,405 @@
+[
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-001",
+    "correct": true,
+    "predicted": "SAME_GAME",
+    "expected": "SAME_GAME",
+    "latencyMs": 44815
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-002",
+    "correct": false,
+    "predicted": "ERROR",
+    "expected": "SAME_GAME",
+    "latencyMs": 120007,
+    "error": "TIMEOUT"
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-003",
+    "correct": true,
+    "predicted": "SAME_GAME",
+    "expected": "SAME_GAME",
+    "latencyMs": 84408
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-004",
+    "correct": false,
+    "predicted": "DIFFERENT_GAME",
+    "expected": "RELATED_GAME",
+    "latencyMs": 78503
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-005",
+    "correct": true,
+    "predicted": "RELATED_GAME",
+    "expected": "RELATED_GAME",
+    "latencyMs": 48512
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-006",
+    "correct": true,
+    "predicted": "SAME_GAME",
+    "expected": "SAME_GAME",
+    "latencyMs": 112225
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-007",
+    "correct": false,
+    "predicted": "SAME_GAME",
+    "expected": "DIFFERENT_GAME",
+    "latencyMs": 112140
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-008",
+    "correct": true,
+    "predicted": "DIFFERENT_GAME",
+    "expected": "DIFFERENT_GAME",
+    "latencyMs": 63027
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-011",
+    "correct": false,
+    "predicted": "DIFFERENT_GAME",
+    "expected": "RELATED_GAME",
+    "latencyMs": 52869
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-016",
+    "correct": true,
+    "predicted": "DIFFERENT_GAME",
+    "expected": "DIFFERENT_GAME",
+    "latencyMs": 51506
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-021",
+    "correct": false,
+    "predicted": "SAME_GAME",
+    "expected": "RELATED_GAME",
+    "latencyMs": 77524
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-026",
+    "correct": false,
+    "predicted": "RELATED_GAME",
+    "expected": "DIFFERENT_GAME",
+    "latencyMs": 52909
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-031",
+    "correct": true,
+    "predicted": "RELATED_GAME",
+    "expected": "RELATED_GAME",
+    "latencyMs": 95668
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-036",
+    "correct": false,
+    "predicted": "RELATED_GAME",
+    "expected": "DIFFERENT_GAME",
+    "latencyMs": 63317
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-041",
+    "correct": true,
+    "predicted": "SAME_GAME",
+    "expected": "SAME_GAME",
+    "latencyMs": 40856
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "identity",
+    "caseId": "id-045",
+    "correct": false,
+    "predicted": "RELATED_GAME",
+    "expected": "DIFFERENT_GAME",
+    "latencyMs": 53238
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "enrichment",
+    "caseId": "enr-001",
+    "correct": false,
+    "predicted": "ERROR",
+    "expected": "Rockstar North",
+    "latencyMs": 120004,
+    "error": "TIMEOUT"
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "enrichment",
+    "caseId": "enr-002",
+    "correct": true,
+    "predicted": "EA Sports",
+    "expected": "EA Sports",
+    "latencyMs": 47389
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "enrichment",
+    "caseId": "enr-003",
+    "correct": true,
+    "predicted": "2023-10-20",
+    "expected": "2023-10-20",
+    "latencyMs": 65899
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "enrichment",
+    "caseId": "enr-004",
+    "correct": false,
+    "predicted": "Action-Adventure",
+    "expected": "Action-adventure",
+    "latencyMs": 80050
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "enrichment",
+    "caseId": "enr-006",
+    "correct": true,
+    "predicted": "PC",
+    "expected": "PC",
+    "latencyMs": 62978
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "enrichment",
+    "caseId": "enr-009",
+    "correct": false,
+    "predicted": "Action RPG",
+    "expected": "Action role-playing",
+    "latencyMs": 87525
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "enrichment",
+    "caseId": "enr-011",
+    "correct": false,
+    "predicted": "ERROR",
+    "expected": "Unreal Engine 5",
+    "latencyMs": 120013,
+    "error": "TIMEOUT"
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "enrichment",
+    "caseId": "enr-016",
+    "correct": true,
+    "predicted": "Santa Monica Studio",
+    "expected": "Santa Monica Studio",
+    "latencyMs": 68508
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "enrichment",
+    "caseId": "enr-021",
+    "correct": false,
+    "predicted": "Roguelite",
+    "expected": "Roguelike",
+    "latencyMs": 107668
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "enrichment",
+    "caseId": "enr-026",
+    "correct": true,
+    "predicted": "Metroidvania",
+    "expected": "Metroidvania",
+    "latencyMs": 68036
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "enrichment",
+    "caseId": "enr-031",
+    "correct": false,
+    "predicted": "Soulslike",
+    "expected": "Action RPG",
+    "latencyMs": 53909
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "enrichment",
+    "caseId": "enr-036",
+    "correct": true,
+    "predicted": "T for Teen",
+    "expected": "T for Teen",
+    "latencyMs": 102165
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "enrichment",
+    "caseId": "enr-040",
+    "correct": true,
+    "predicted": "Xbox Series X|S",
+    "expected": "Xbox Series X|S",
+    "latencyMs": 83073
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "classification",
+    "caseId": "class-001",
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 36181
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "classification",
+    "caseId": "class-002",
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 33304
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "classification",
+    "caseId": "class-003",
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 39730
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "classification",
+    "caseId": "class-004",
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 34785
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "classification",
+    "caseId": "class-006",
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 30697
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "classification",
+    "caseId": "class-011",
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 40107
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "classification",
+    "caseId": "class-016",
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 86405
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "classification",
+    "caseId": "class-021",
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 38726
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "classification",
+    "caseId": "class-031",
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 37528
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "classification",
+    "caseId": "class-041",
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 51167
+  },
+  {
+    "model": "qwen3:8b",
+    "thinkEnabled": true,
+    "operation": "classification",
+    "caseId": "class-050",
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 27687
+  }
+]

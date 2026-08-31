@@ -26,7 +26,10 @@ export function gamesRouter(deps: GamesRouterDependencies): Router {
         sort,
       });
 
-      res.json(toPaginatedResponse(result, toGameResponse));
+      res.json({
+        ...toPaginatedResponse(result.data, toGameResponse),
+        origin: result.origin,
+      });
     } catch (error) {
       next(error);
     }
@@ -35,9 +38,12 @@ export function gamesRouter(deps: GamesRouterDependencies): Router {
   router.get('/games/:id', async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = GameIdParamSchema.parse(req.params);
-      const game = await catalogService.getGameById(id);
+      const result = await catalogService.getGameById(id);
 
-      res.json({ data: toGameResponse(game) });
+      res.json({
+        data: toGameResponse(result.data),
+        origin: result.origin,
+      });
     } catch (error) {
       next(error);
     }
@@ -67,7 +73,10 @@ export function gamesRouter(deps: GamesRouterDependencies): Router {
 
       const result = await catalogService.listGames(gameQuery);
 
-      res.json(toPaginatedResponse(result, toGameResponse));
+      res.json({
+        ...toPaginatedResponse(result.data, toGameResponse),
+        origin: result.origin,
+      });
     } catch (error) {
       next(error);
     }

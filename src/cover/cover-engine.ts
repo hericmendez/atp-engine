@@ -7,10 +7,10 @@ import type {
   CoverResult,
   CoverSourceError,
 } from '../domain/cover/cover-candidate.js';
-import { CoverType } from '../domain/cover/cover-candidate.js';
+import { CoverType, CoverSearchType } from '../domain/cover/cover-candidate.js';
 import { normalizeCandidate, type RawCandidateInput } from '../normalization/normalize.js';
 import { filterValidCandidates, deduplicateCandidates } from './cover-validate.js';
-import { rankCandidates } from './cover-rank.js';
+import { rankCandidates, filterByType } from './cover-rank.js';
 import { SourceError } from '../sources/source-errors.js';
 
 export interface CoverEngineDependencies {
@@ -18,8 +18,9 @@ export interface CoverEngineDependencies {
 }
 
 export interface CoverSearchOptions {
-  readonly sourceFilter?: readonly string[];
+  readonly type?: CoverSearchType;
   readonly limit?: number;
+  readonly sourceFilter?: readonly string[];
 }
 
 function inferCoverType(url: string): CoverType {
@@ -27,6 +28,21 @@ function inferCoverType(url: string): CoverType {
   if (lower.includes('header') || lower.includes('capsule')) return CoverType.FRONT_COVER;
   if (lower.includes('screenshot')) return CoverType.SCREENSHOT;
   if (lower.includes('poster') || lower.includes('keyart')) return CoverType.KEY_ART;
+  if (lower.endsWith('.svg')) return CoverType.LOGO;
+  if (lower.includes('/logo') || lower.includes('_logo') || lower.includes('-logo')) {
+    return CoverType.LOGO;
+  }
+  if (lower.includes('/icon') || lower.includes('_icon') || lower.includes('-icon')) {
+    return CoverType.LOGO;
+  }
+  if (
+    lower.includes('/symbol') ||
+    lower.includes('_symbol') ||
+    lower.includes('-symbol') ||
+    lower.includes('/emblem')
+  ) {
+    return CoverType.LOGO;
+  }
   return CoverType.UNKNOWN;
 }
 
@@ -36,12 +52,14 @@ function candidatesFromObservation(obs: {
   candidate: NormalizedCandidate;
 }): CoverCandidate[] {
   const candidates: CoverCandidate[] = [];
+  const candidateTitle = obs.candidate.titles[0]?.value ?? null;
 
   for (const url of obs.candidate.coverUrls) {
     const input: CoverCandidateInput = {
       url,
       source: obs.source,
       sourceId: obs.sourceId,
+      title: candidateTitle ?? undefined,
       type: inferCoverType(url),
     };
 
@@ -49,6 +67,7 @@ function candidatesFromObservation(obs: {
       url: input.url,
       source: input.source,
       sourceId: input.sourceId,
+      title: input.title ?? null,
       width: input.width ?? null,
       height: input.height ?? null,
       type: input.type ?? CoverType.UNKNOWN,
@@ -63,14 +82,20 @@ function candidatesFromObservation(obs: {
   return candidates;
 }
 
+export const DEFAULT_COVER_SEARCH_TYPE = CoverSearchType.COVER;
+export const DEFAULT_COVER_LIMIT = 1;
+export const MIN_COVER_SELECTION_SCORE = 0.55;
+
 export class CoverEngine {
   constructor(private readonly deps: CoverEngineDependencies) {}
 
   async searchCovers(query: string, options?: CoverSearchOptions): Promise<CoverResult> {
     const trimmedQuery = query.trim();
+    const searchType = options?.type ?? DEFAULT_COVER_SEARCH_TYPE;
+    const limit = options?.limit ?? DEFAULT_COVER_LIMIT;
     const sources = this.selectCoverSources(options?.sourceFilter);
-    const limit = options?.limit ?? 5;
-    const sourceResults = await this.querySources(sources, trimmedQuery, limit);
+    const sourceLimit = Math.max(limit, 5);
+    const sourceResults = await this.querySources(sources, trimmedQuery, sourceLimit);
 
     const allCandidates: CoverCandidate[] = [];
     const errors: CoverSourceError[] = [];
@@ -86,13 +111,21 @@ export class CoverEngine {
 
     const validCandidates = filterValidCandidates(allCandidates);
     const deduplicated = deduplicateCandidates(validCandidates);
-    const ranked = rankCandidates(deduplicated, trimmedQuery);
+    const typeFiltered = filterByType(deduplicated, searchType);
+    const ranked = rankCandidates(typeFiltered, trimmedQuery);
+    const limited = ranked.slice(0, limit);
 
-    const selected = ranked.length > 0 ? ranked[0].candidate : null;
+    const bestCandidate = limited.length > 0 ? limited[0] : null;
+    const selected =
+      bestCandidate && bestCandidate.ranking.totalScore >= MIN_COVER_SELECTION_SCORE
+        ? bestCandidate.candidate
+        : null;
 
     return {
       query: trimmedQuery,
       gameId: null,
+      type: searchType,
+      limit,
       selected: selected
         ? {
             url: selected.url,
@@ -103,7 +136,7 @@ export class CoverEngine {
             type: selected.type,
           }
         : null,
-      candidates: ranked,
+      candidates: limited,
       errors,
     };
   }
@@ -113,7 +146,11 @@ export class CoverEngine {
     query: string,
     sourceFilter?: readonly string[],
   ): Promise<CoverResult> {
-    const result = await this.searchCovers(query, { sourceFilter });
+    const result = await this.searchCovers(query, {
+      sourceFilter,
+      type: CoverSearchType.COVER,
+      limit: 1,
+    });
     return { ...result, gameId };
   }
 
@@ -140,7 +177,7 @@ export class CoverEngine {
       const candidates = result.candidates;
 
       if (candidates.length === 0) {
-        throw new SourceError(adapter.source, 'not_found', 'No results found');
+        return [];
       }
 
       const observations: {

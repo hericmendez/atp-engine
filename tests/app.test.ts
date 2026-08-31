@@ -3,30 +3,34 @@ import request from 'supertest';
 import { createApp } from '../src/interfaces/http/app.js';
 import type { CatalogService } from '../src/application/catalog-service.js';
 import type { CoverService } from '../src/application/cover-service.js';
-import type { GameQuery, PaginatedResult } from '../src/domain/game/game-repository.js';
-import type { Game } from '../src/domain/game/game.js';
-import type { CoverResult } from '../src/domain/cover/cover-candidate.js';
+import type { GameQuery } from '../src/domain/game/game-repository.js';
 
 function createMockCatalogService(): CatalogService {
   return {
-    listGames: async (_query: GameQuery): Promise<PaginatedResult<Game>> => ({
-      items: [],
-      total: 0,
-      page: 1,
-      limit: 20,
-      totalPages: 0,
+    listGames: async (_query: GameQuery) => ({
+      data: {
+        items: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        totalPages: 0,
+      },
+      origin: 'database' as const,
     }),
     searchGames: async (
       _query: string,
       _options?: { page?: number; limit?: number; sort?: GameQuery['sort'] },
-    ): Promise<PaginatedResult<Game>> => ({
-      items: [],
-      total: 0,
-      page: 1,
-      limit: 20,
-      totalPages: 0,
+    ) => ({
+      data: {
+        items: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        totalPages: 0,
+      },
+      origin: 'database' as const,
     }),
-    getGameById: async (_id: string): Promise<Game> => {
+    getGameById: async (_id: string) => {
       throw new Error('Not implemented');
     },
   };
@@ -34,19 +38,29 @@ function createMockCatalogService(): CatalogService {
 
 function createMockCoverService(): CoverService {
   return {
-    searchCovers: async (_query: string): Promise<CoverResult> => ({
-      query: _query,
-      gameId: null,
-      selected: null,
-      candidates: [],
-      errors: [],
+    searchCovers: async (_query: string) => ({
+      data: {
+        query: _query,
+        gameId: null,
+        type: 'cover' as const,
+        limit: 1,
+        selected: null,
+        candidates: [],
+        errors: [],
+      },
+      origin: 'scraper' as const,
     }),
-    getGameCover: async (_gameId: string): Promise<CoverResult> => ({
-      query: '',
-      gameId: _gameId,
-      selected: null,
-      candidates: [],
-      errors: [],
+    getGameCover: async (_gameId: string) => ({
+      data: {
+        query: '',
+        gameId: _gameId,
+        type: 'cover' as const,
+        limit: 1,
+        selected: null,
+        candidates: [],
+        errors: [],
+      },
+      origin: 'database' as const,
     }),
   } as CoverService;
 }

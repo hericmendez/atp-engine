@@ -102,27 +102,112 @@ The endpoint queries the database using partial/case-insensitive matching on tit
 
 Supports pagination via `page` and `limit` query parameters.
 
+### Origin Behavior
+
+Search follows a **database-first, scraper-fallback** strategy:
+
+1. Query the database for matching games.
+2. If database results are non-empty, return them directly (`origin: "database"`).
+3. If the database returns empty or the query fails, fall back to external source discovery via the source registry.
+4. Discovered candidates are normalized and returned (`origin: "scraper"`).
+
+Results from external sources are **not persisted** during search — this is a discovery operation.
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "game-123",
+      "title": "The Legend of Zelda: Breath of the Wild",
+      "origin": "database",
+      "..."
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+
+When results come from external sources:
+
+```json
+{
+  "data": [
+    {
+      "title": "Zelda: Twilight Princess",
+      "origin": "scraper",
+      "platforms": ["Wii", "GameCube"],
+      "..."
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+
 ---
 
 # 7. Search Behavior
 
-Search should support:
+Search supports:
 
 - partial title matching;
 - alternate titles;
-- source discovery;
+- database-first lookup with scraper fallback;
 - classification;
 - deduplication;
 - ranking;
 - pagination.
 
+### Origin Field
+
+Every result object includes an `origin` field indicating where the data came from:
+
+| Value | Meaning |
+|-------|---------|
+| `"database"` | Result came from the canonical database |
+| `"scraper"` | Result came from external source discovery (scraper fallback) |
+
+The `origin` field allows consumers to distinguish persisted catalog data from freshly discovered candidates.
+
 ---
 
 # 8. Database-First Search
 
-Where applicable, ATP should consult the canonical database before external sources.
+Search follows a strict database-first strategy:
 
-If the database already contains sufficient results, unnecessary external requests should be avoided.
+```text
+Request
+  ↓
+Database query (partial/case-insensitive)
+  ↓
+Results non-empty?
+ ├── YES → Return with origin: "database"
+ └── NO (empty or failure)
+       ↓
+     External source discovery (scraper fallback)
+       ↓
+     Normalize candidates
+       ↓
+     Return with origin: "scraper"
+```
+
+The database is always consulted first. External scraping only occurs when the database returns no results or the query fails.
+
+This ensures:
+- fast responses for known games;
+- no unnecessary external requests;
+- identity-safe behavior (no arbitrary scraping for known entities).
 
 ---
 
@@ -219,35 +304,47 @@ The endpoint queries the database and returns the canonical Game.
 
 Returns 404 if the game is not found.
 
+### Origin Behavior
+
+Single game retrieval is **database-only** and **identity-safe**:
+
+- The database is the sole source for game identity resolution by ID.
+- No external scraping is triggered on failure — a missing game returns 404.
+- This prevents arbitrary scraping based on user-supplied identifiers.
+
+### Response
+
+```json
+{
+  "data": {
+    "id": "game-123",
+    "title": "The Legend of Zelda: Breath of the Wild",
+    "origin": "database",
+    "platforms": [...],
+    "developers": [...],
+    "publishers": [...],
+    "genres": [...]
+  }
+}
+```
+
 ---
 
-# 14. Database-First Metadata Retrieval
+# 14. Database-Only Metadata Retrieval
 
-Individual game retrieval must follow:
+Individual game retrieval by ID follows a **database-only** strategy:
 
 ```text
-Request
- ↓
-Database
- ↓
-Complete?
- ├── YES → Return
- └── NO
-       ↓
-External sources
-       ↓
-Normalize
-       ↓
-Classify
-       ↓
-Resolve identity
-       ↓
-Enrich
-       ↓
-Persist
-       ↓
-Return
+Request (by game ID)
+  ↓
+Database lookup
+  ↓
+Found?
+ ├── YES → Return with origin: "database"
+ └── NO  → 404 Not Found
 ```
+
+External sources are **not** consulted for arbitrary ID-based lookups. This is an intentional identity-safety boundary — scraping must not be triggered by user-supplied identifiers.
 
 ---
 
@@ -261,14 +358,30 @@ Example:
 
 ```text
 GET /api/v1/covers/search?q=Doom%20Eternal
+GET /api/v1/covers/search?q=Doom%20Eternal&type=cover&limit=3
+GET /api/v1/covers/search?q=Doom%20Eternal&type=logo
+GET /api/v1/covers/search?q=Doom%20Eternal&type=all&limit=9
 ```
 
 ### Query Parameters
 
-| Parameter | Required | Description |
-|-----------|----------|-------------|
-| `q` | yes | Search query (1–200 chars, trimmed) |
-| `source` | no | Filter to specific source (e.g., `wikipedia`, `steam`) |
+| Parameter | Required | Default | Description |
+|-----------|----------|---------|-------------|
+| `q` | yes | — | Search query (1–200 chars, trimmed) |
+| `type` | no | `cover` | `cover`, `logo`, or `all` |
+| `limit` | no | `1` | Number of candidates to return (1–9) |
+| `source` | no | — | Filter to specific source (e.g., `wikipedia`, `steam`) |
+
+### Type Semantics
+
+- `type=cover` — Returns `front_cover`, `box_art`, `poster`, `key_art`, and `unknown` candidates. Excludes `logo` and `screenshot`.
+- `type=logo` — Returns only `logo` candidates.
+- `type=all` — Returns all valid candidates regardless of type.
+
+### Limit Semantics
+
+- `limit` is applied **after** ranking. It returns the N highest-ranked candidates.
+- `limit=3` means "give me the 3 best matching candidates," not "give me the first 3 candidates returned by sources."
 
 ### Response
 
@@ -276,13 +389,16 @@ GET /api/v1/covers/search?q=Doom%20Eternal
 {
   "data": {
     "query": "Doom Eternal",
+    "type": "cover",
+    "limit": 3,
     "selected": {
       "url": "https://example.com/cover.jpg",
       "source": "wikipedia",
       "sourceId": "wp-123",
       "width": 600,
       "height": 900,
-      "type": "front_cover"
+      "type": "front_cover",
+      "origin": "scraper"
     },
     "candidates": [
       {
@@ -292,6 +408,7 @@ GET /api/v1/covers/search?q=Doom%20Eternal
         "width": 600,
         "height": 900,
         "type": "front_cover",
+        "origin": "scraper",
         "ranking": {
           "relevanceScore": 0.9,
           "sourceScore": 0.8,
@@ -307,6 +424,14 @@ GET /api/v1/covers/search?q=Doom%20Eternal
 }
 ```
 
+### Origin Behavior
+
+Cover search is **always scraper-origin**:
+
+- Covers are discovered from external sources (Wikipedia, Steam, etc.) at request time.
+- There is no persisted cover database to consult — results are always freshly sourced.
+- The `origin` field is always `"scraper"` for cover search results.
+
 ### Behavior
 
 - Queries all sources with `searchCovers` capability.
@@ -314,6 +439,17 @@ GET /api/v1/covers/search?q=Doom%20Eternal
 - Failed sources are isolated — partial success is valid.
 - Returns 200 with `selected: null` when no covers found (not an error).
 - Does NOT persist results. This is a discovery operation.
+- Filter is applied before ranking. Limit is applied after ranking.
+
+### Default Behavior
+
+The existing request:
+
+```text
+GET /api/v1/covers/search?q=Doom%20Eternal
+```
+
+behaves as `type=cover`, `limit=1`. Existing consumers do not need to change.
 
 ---
 
@@ -350,13 +486,22 @@ GET /api/v1/games/game-123/cover
       "sourceId": "wp-123",
       "width": 600,
       "height": 900,
-      "type": "front_cover"
+      "type": "front_cover",
+      "origin": "scraper"
     },
     "candidates": [...],
     "errors": []
   }
 }
 ```
+
+### Origin Behavior
+
+Game cover retrieval is **scraper-origin**:
+
+- If a persisted cover exists on the game record, it is returned immediately (still marked `origin: "scraper"` since the cover itself was sourced from an external provider).
+- If no cover exists, external sources are queried and the selected cover is persisted.
+- The `origin` field on cover objects is always `"scraper"` — covers are inherently source-derived.
 
 ---
 
@@ -431,6 +576,37 @@ releaseYear
 ```
 
 Additional filters may be introduced later.
+
+### Origin Behavior
+
+Catalog filtering is **database-only**:
+
+- All filters operate against the canonical database.
+- No external scraping is triggered on empty results or failures.
+- An empty result set returns an empty array with `origin: "database"`.
+- This ensures predictable, identity-safe catalog queries.
+
+### Response
+
+```json
+{
+  "data": [
+    {
+      "id": "game-123",
+      "title": "The Legend of Zelda: Breath of the Wild",
+      "origin": "database",
+      "platforms": ["Nintendo Switch", "Wii U"],
+      "..."
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
 
 ---
 
@@ -888,13 +1064,17 @@ External sources and AI providers should be mocked in normal API tests.
 3. Domain logic does not depend on Express.
 4. Collection endpoints support pagination.
 5. Filters are composable.
-6. Database-first behavior is preserved where applicable.
-7. Source failures are isolated.
-8. AI is optional.
-9. AI implementation details are hidden behind application contracts.
-10. API responses use stable contracts.
-11. Infrastructure details are not leaked.
-12. Canonical data is never blindly overwritten by source data.
+6. Database-first behavior is preserved for search.
+7. Catalog filtering is database-only.
+8. Single game retrieval is database-only and identity-safe.
+9. Cover results are always scraper-origin.
+10. Source failures are isolated.
+11. AI is optional.
+12. AI implementation details are hidden behind application contracts.
+13. API responses use stable contracts.
+14. Infrastructure details are not leaked.
+15. Canonical data is never blindly overwritten by source data.
+16. Every response object includes an `origin` field indicating data provenance.
 
 ---
 

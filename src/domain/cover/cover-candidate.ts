@@ -4,6 +4,7 @@ export const CoverType = {
   POSTER: 'poster',
   KEY_ART: 'key_art',
   SCREENSHOT: 'screenshot',
+  LOGO: 'logo',
   UNKNOWN: 'unknown',
 } as const;
 
@@ -33,6 +34,7 @@ export interface CoverCandidate {
   readonly url: string;
   readonly source: string;
   readonly sourceId: string;
+  readonly title: string | null;
   readonly width: number | null;
   readonly height: number | null;
   readonly type: CoverType;
@@ -43,6 +45,7 @@ export interface CoverCandidateInput {
   readonly url: string;
   readonly source: string;
   readonly sourceId: string;
+  readonly title?: string;
   readonly width?: number;
   readonly height?: number;
   readonly type?: CoverType;
@@ -63,6 +66,7 @@ export function createCoverCandidate(input: CoverCandidateInput): CoverCandidate
     url: input.url.trim(),
     source: input.source.trim(),
     sourceId: input.sourceId.trim(),
+    title: input.title?.trim() ?? null,
     width: input.width ?? null,
     height: input.height ?? null,
     type: input.type ?? CoverType.UNKNOWN,
@@ -115,9 +119,19 @@ export interface CoverSourceError {
   readonly retryable: boolean;
 }
 
+export const CoverSearchType = {
+  COVER: 'cover',
+  LOGO: 'logo',
+  ALL: 'all',
+} as const;
+
+export type CoverSearchType = (typeof CoverSearchType)[keyof typeof CoverSearchType];
+
 export interface CoverResult {
   readonly query: string;
   readonly gameId: string | null;
+  readonly type: CoverSearchType;
+  readonly limit: number;
   readonly selected: Cover | null;
   readonly candidates: readonly RankedCoverCandidate[];
   readonly errors: readonly CoverSourceError[];

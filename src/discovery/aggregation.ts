@@ -117,11 +117,11 @@ function calculateRankingScore(
   };
 }
 
-function areSameGame(
+async function areSameGame(
   obsA: DiscoverySourceObservation,
   obsB: DiscoverySourceObservation,
   resolver: IdentityResolver,
-): boolean {
+): Promise<boolean> {
   const fakeGame: Game = {
     id: 'temp' as GameId,
     titles: obsA.candidate.titles.map((t) => ({ value: t.value, type: t.type })),
@@ -137,15 +137,15 @@ function areSameGame(
     cover: null,
   };
 
-  const resolution = resolver.resolve(obsB.candidate, fakeGame);
+  const resolution = await resolver.resolve(obsB.candidate, fakeGame);
   return resolution.outcome === 'SAME_GAME';
 }
 
-export function aggregateAndDeduplicate(
+export async function aggregateAndDeduplicate(
   observations: readonly DiscoverySourceObservation[],
   identityResolver: IdentityResolver,
   query: string,
-): readonly DiscoveryGroupResult[] {
+): Promise<readonly DiscoveryGroupResult[]> {
   if (observations.length === 0) return [];
 
   const used = new Set<number>();
@@ -160,7 +160,7 @@ export function aggregateAndDeduplicate(
     for (let j = i + 1; j < observations.length; j++) {
       if (used.has(j)) continue;
 
-      if (areSameGame(observations[i], observations[j], identityResolver)) {
+      if (await areSameGame(observations[i], observations[j], identityResolver)) {
         groupObservations.push(observations[j]);
         used.add(j);
       }

@@ -32,10 +32,13 @@ function createTestGame(id: string, title: string, hasCover = false): Game {
 function createMockGameRepository(games: Game[]): GameRepository {
   return {
     findById: vi.fn(async (id) => games.find((g) => g.id === id) ?? null),
-    findByExternalId: vi.fn(async () => null),
+    findByExternalIdentifier: vi.fn(async () => null),
+    existsByExternalIdentifier: vi.fn(async () => false),
+    existsById: vi.fn(async (id) => games.some((g) => g.id === id)),
     findMany: vi.fn(async () => ({ items: [], total: 0, page: 1, limit: 20, totalPages: 0 })),
     save: vi.fn(async () => {}),
     update: vi.fn(async () => {}),
+    deleteById: vi.fn(async () => {}),
   } as unknown as GameRepository;
 }
 
@@ -48,11 +51,13 @@ function createMockCoverEngine(coverResult: CoverResult) {
 
 describe('CoverService', () => {
   describe('searchCovers', () => {
-    it('delegates to cover engine searchCovers', async () => {
+    it('delegates to cover engine and returns scraper origin', async () => {
       const repo = createMockGameRepository([]);
       const engine = createMockCoverEngine({
         query: 'Doom Eternal',
         gameId: null,
+        type: 'cover',
+        limit: 1,
         selected: {
           url: 'https://example.com/doom.jpg',
           source: 'wikipedia',
@@ -69,9 +74,10 @@ describe('CoverService', () => {
       const result = await service.searchCovers('Doom Eternal');
 
       expect(engine.searchCovers).toHaveBeenCalledWith('Doom Eternal', undefined);
-      expect(result.query).toBe('Doom Eternal');
-      expect(result.gameId).toBeNull();
-      expect(result.selected?.url).toBe('https://example.com/doom.jpg');
+      expect(result.origin).toBe('scraper');
+      expect(result.data.query).toBe('Doom Eternal');
+      expect(result.data.gameId).toBeNull();
+      expect(result.data.selected?.url).toBe('https://example.com/doom.jpg');
     });
 
     it('passes options to cover engine', async () => {
@@ -79,15 +85,21 @@ describe('CoverService', () => {
       const engine = createMockCoverEngine({
         query: 'Doom',
         gameId: null,
+        type: 'logo',
+        limit: 3,
         selected: null,
         candidates: [],
         errors: [],
       });
       const service = new CoverService({ gameRepository: repo, coverEngine: engine });
 
-      await service.searchCovers('Doom', { sourceFilter: ['wikipedia'] });
+      await service.searchCovers('Doom', { type: 'logo', limit: 3, sourceFilter: ['wikipedia'] });
 
-      expect(engine.searchCovers).toHaveBeenCalledWith('Doom', { sourceFilter: ['wikipedia'] });
+      expect(engine.searchCovers).toHaveBeenCalledWith('Doom', {
+        type: 'logo',
+        limit: 3,
+        sourceFilter: ['wikipedia'],
+      });
     });
 
     it('does not require a game to exist', async () => {
@@ -95,6 +107,8 @@ describe('CoverService', () => {
       const engine = createMockCoverEngine({
         query: 'Doom Eternal',
         gameId: null,
+        type: 'cover',
+        limit: 1,
         selected: null,
         candidates: [],
         errors: [],
@@ -103,7 +117,7 @@ describe('CoverService', () => {
 
       const result = await service.searchCovers('Doom Eternal');
 
-      expect(result.gameId).toBeNull();
+      expect(result.data.gameId).toBeNull();
       expect(repo.findById).not.toHaveBeenCalled();
     });
   });
@@ -114,6 +128,8 @@ describe('CoverService', () => {
       const engine = createMockCoverEngine({
         query: '',
         gameId: 'missing',
+        type: 'cover',
+        limit: 1,
         selected: null,
         candidates: [],
         errors: [],
@@ -123,12 +139,14 @@ describe('CoverService', () => {
       await expect(service.getGameCover('missing')).rejects.toThrow(NotFoundError);
     });
 
-    it('returns cached cover if game already has one', async () => {
+    it('returns cached cover with database origin', async () => {
       const game = createTestGame('game-1', 'Test Game', true);
       const repo = createMockGameRepository([game]);
       const engine = createMockCoverEngine({
         query: '',
         gameId: 'game-1',
+        type: 'cover',
+        limit: 1,
         selected: null,
         candidates: [],
         errors: [],
@@ -137,18 +155,23 @@ describe('CoverService', () => {
 
       const result = await service.getGameCover('game-1');
 
-      expect(result.selected).not.toBeNull();
-      expect(result.selected?.url).toBe('https://example.com/cached.jpg');
-      expect(result.candidates).toHaveLength(0);
+      expect(result.origin).toBe('database');
+      expect(result.data.selected).not.toBeNull();
+      expect(result.data.selected?.url).toBe('https://example.com/cached.jpg');
+      expect(result.data.candidates).toHaveLength(0);
+      expect(result.data.type).toBe('cover');
+      expect(result.data.limit).toBe(1);
       expect(engine.discoverCovers).not.toHaveBeenCalled();
     });
 
-    it('calls cover engine discoverCovers when game has no cover', async () => {
+    it('calls cover engine discoverCovers with scraper origin when game has no cover', async () => {
       const game = createTestGame('game-1', 'Test Game', false);
       const repo = createMockGameRepository([game]);
       const engine = createMockCoverEngine({
         query: 'Test Game',
         gameId: 'game-1',
+        type: 'cover',
+        limit: 1,
         selected: {
           url: 'https://example.com/new.jpg',
           source: 'wikipedia',
@@ -164,9 +187,10 @@ describe('CoverService', () => {
 
       const result = await service.getGameCover('game-1');
 
+      expect(result.origin).toBe('scraper');
       expect(engine.discoverCovers).toHaveBeenCalledWith('game-1', 'Test Game');
-      expect(result.selected).not.toBeNull();
-      expect(result.selected?.url).toBe('https://example.com/new.jpg');
+      expect(result.data.selected).not.toBeNull();
+      expect(result.data.selected?.url).toBe('https://example.com/new.jpg');
     });
 
     it('persists cover to game repository when found', async () => {
@@ -175,6 +199,8 @@ describe('CoverService', () => {
       const engine = createMockCoverEngine({
         query: 'Test Game',
         gameId: 'game-1',
+        type: 'cover',
+        limit: 1,
         selected: {
           url: 'https://example.com/new.jpg',
           source: 'wikipedia',
@@ -202,6 +228,8 @@ describe('CoverService', () => {
       const engine = createMockCoverEngine({
         query: 'Test Game',
         gameId: 'game-1',
+        type: 'cover',
+        limit: 1,
         selected: null,
         candidates: [],
         errors: [],
@@ -219,6 +247,8 @@ describe('CoverService', () => {
       const engine = createMockCoverEngine({
         query: 'Test Game',
         gameId: 'game-1',
+        type: 'cover',
+        limit: 1,
         selected: null,
         candidates: [],
         errors: [
@@ -229,8 +259,8 @@ describe('CoverService', () => {
 
       const result = await service.getGameCover('game-1');
 
-      expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].source).toBe('steam');
+      expect(result.data.errors).toHaveLength(1);
+      expect(result.data.errors[0].source).toBe('steam');
     });
   });
 });

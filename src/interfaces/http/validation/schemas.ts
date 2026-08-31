@@ -57,7 +57,7 @@ export const SearchQuerySchema = PaginationSchema.extend({
 }).merge(GameSortSchema);
 
 export const GameIdParamSchema = z.object({
-  id: z.string().min(1, 'Game ID is required'),
+  id: z.string().min(1, 'Game ID is required').trim().min(1, 'Game ID must not be empty'),
 });
 
 export const CoverSearchQuerySchema = z.object({
@@ -66,6 +66,13 @@ export const CoverSearchQuerySchema = z.object({
     .min(1, 'Search query is required')
     .max(200, 'Search query too long')
     .transform((val) => val.trim()),
+  type: z.enum(['cover', 'logo', 'all']).default('cover'),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1, 'Limit must be at least 1')
+    .max(9, 'Limit must be at most 9')
+    .default(1),
   source: z.string().optional(),
 });
 

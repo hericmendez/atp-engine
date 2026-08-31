@@ -1,0 +1,502 @@
+[
+  {
+    "id": "class-001",
+    "title": "The Legend of Zelda: Breath of the Wild",
+    "description": "An action-adventure game for Nintendo Switch",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Adventure", "Action"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Obvious game, should be trivial"
+  },
+  {
+    "id": "class-002",
+    "title": "Grand Theft Auto V",
+    "description": "Open-world action-adventure game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Action", "Adventure"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major AAA game"
+  },
+  {
+    "id": "class-003",
+    "title": "Minecraft",
+    "description": "A sandbox video game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Sandbox", "Survival"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Most popular game ever"
+  },
+  {
+    "id": "class-004",
+    "title": "Fortnite Battle Royale",
+    "description": "Free-to-play battle royale game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Battle Royale", "Shooter"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Popular multiplayer game"
+  },
+  {
+    "id": "class-005",
+    "title": "Red Dead Redemption 2",
+    "description": "Western-themed action-adventure game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Action", "Adventure"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major Rockstar game"
+  },
+  {
+    "id": "class-006",
+    "title": "Hollow Knight",
+    "description": "Metroidvania action-adventure game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Action", "Adventure", "Indie"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Popular indie game"
+  },
+  {
+    "id": "class-007",
+    "title": "Celeste",
+    "description": "Platformer video game about climbing a mountain",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Platformer", "Indie"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Award-winning indie platformer"
+  },
+  {
+    "id": "class-008",
+    "title": "Hades",
+    "description": "Roguelike dungeon crawler video game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Roguelike", "Action"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Popular roguelike"
+  },
+  {
+    "id": "class-009",
+    "title": "Elden Ring",
+    "description": "Action RPG developed by FromSoftware",
+    "sourceHints": ["GAME"],
+    "genreHints": ["RPG", "Action"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major FromSoftware game"
+  },
+  {
+    "id": "class-010",
+    "title": "Baldur's Gate 3",
+    "description": "CRPG developed by Larian Studios",
+    "sourceHints": ["GAME"],
+    "genreHints": ["RPG", "Strategy"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major CRPG"
+  },
+  {
+    "id": "class-011",
+    "title": "The Witcher 3: Wild Hunt",
+    "description": "Action RPG based on fantasy novels",
+    "sourceHints": ["GAME"],
+    "genreHints": ["RPG", "Action"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major RPG"
+  },
+  {
+    "id": "class-012",
+    "title": "Dark Souls",
+    "description": "Action RPG known for difficulty",
+    "sourceHints": ["GAME"],
+    "genreHints": ["RPG", "Action"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "FromSoftware classic"
+  },
+  {
+    "id": "class-013",
+    "title": "Super Mario Odyssey",
+    "description": "3D platformer for Nintendo Switch",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Platformer", "Adventure"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major Nintendo game"
+  },
+  {
+    "id": "class-014",
+    "title": "Animal Crossing: New Horizons",
+    "description": "Life simulation game for Nintendo Switch",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Simulation", "Social"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Popular Nintendo game"
+  },
+  {
+    "id": "class-015",
+    "title": "Portal 2",
+    "description": "Puzzle-platformer video game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Puzzle", "Platformer"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Valve classic"
+  },
+  {
+    "id": "class-016",
+    "title": "Half-Life 3",
+    "description": "Announced first-person shooter sequel",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Shooter", "Action"],
+    "groundTruth": "GAME",
+    "difficulty": "medium",
+    "notes": "Unreleased but clearly a game concept"
+  },
+  {
+    "id": "class-017",
+    "title": "The Last of Us Part II",
+    "description": "Action-adventure survival horror game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Action", "Adventure", "Horror"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major Sony game"
+  },
+  {
+    "id": "class-018",
+    "title": "God of War Ragnarok",
+    "description": "Action-adventure game based on Norse mythology",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Action", "Adventure"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major Sony game"
+  },
+  {
+    "id": "class-019",
+    "title": "Cyberpunk 2077",
+    "description": "Open-world action-adventure RPG",
+    "sourceHints": ["GAME"],
+    "genreHints": ["RPG", "Action"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major CD Projekt Red game"
+  },
+  {
+    "id": "class-020",
+    "title": "Destiny 2",
+    "description": "Online-only multiplayer first-person shooter",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Shooter", "MMO"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Popular online game"
+  },
+  {
+    "id": "class-021",
+    "title": "Minecraft Dungeons",
+    "description": "Action-adventure game set in Minecraft universe",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Action", "RPG"],
+    "groundTruth": "GAME",
+    "difficulty": "medium",
+    "notes": "Spin-off, could be confused with DLC"
+  },
+  {
+    "id": "class-022",
+    "title": "Minecraft: Java Edition",
+    "description": "Original version of Minecraft for PC",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Sandbox", "Survival"],
+    "groundTruth": "GAME",
+    "difficulty": "medium",
+    "notes": "Specific edition, not DLC"
+  },
+  {
+    "id": "class-023",
+    "title": "Pokemon Sword and Shield Expansion Pass",
+    "description": "Downloadable content for Pokemon Sword and Shield",
+    "sourceHints": ["DLC"],
+    "genreHints": ["RPG", "Adventure"],
+    "groundTruth": "DLC",
+    "difficulty": "easy",
+    "notes": "Explicitly DLC"
+  },
+  {
+    "id": "class-024",
+    "title": "The Witcher 3: Blood and Wine",
+    "description": "Major expansion for The Witcher 3",
+    "sourceHints": ["EXPANSION"],
+    "genreHints": ["RPG", "Adventure"],
+    "groundTruth": "EXPANSION",
+    "difficulty": "easy",
+    "notes": "Major expansion"
+  },
+  {
+    "id": "class-025",
+    "title": "Horizon Forbidden West: Burning Shores",
+    "description": "Story expansion for Horizon Forbidden West",
+    "sourceHints": ["DLC"],
+    "genreHints": ["Action", "Adventure"],
+    "groundTruth": "DLC",
+    "difficulty": "easy",
+    "notes": "Story DLC"
+  },
+  {
+    "id": "class-026",
+    "title": "Super Smash Bros. Fighters Pass Vol. 2",
+    "description": "DLC pass adding new fighters to Super Smash Bros. Ultimate",
+    "sourceHints": ["DLC"],
+    "genreHints": ["Fighting", "Action"],
+    "groundTruth": "DLC",
+    "difficulty": "easy",
+    "notes": "DLC pass"
+  },
+  {
+    "id": "class-027",
+    "title": "Elden Ring: Shadow of the Erdtree",
+    "description": "Major expansion for Elden Ring",
+    "sourceHints": ["EXPANSION"],
+    "genreHints": ["RPG", "Action"],
+    "groundTruth": "EXPANSION",
+    "difficulty": "easy",
+    "notes": "Major expansion"
+  },
+  {
+    "id": "class-028",
+    "title": "Final Fantasy VII Remake Intergrade",
+    "description": "Enhanced version of Final Fantasy VII Remake for PS5",
+    "sourceHints": ["GAME"],
+    "genreHints": ["RPG", "Action"],
+    "groundTruth": "GAME",
+    "difficulty": "medium",
+    "notes": "Enhanced port, not DLC"
+  },
+  {
+    "id": "class-029",
+    "title": "The Legend of Zelda: Ocarina of Time 3D",
+    "description": "3D remake of the classic N64 game for Nintendo 3DS",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Action", "Adventure"],
+    "groundTruth": "GAME",
+    "difficulty": "medium",
+    "notes": "Remake, not DLC"
+  },
+  {
+    "id": "class-030",
+    "title": "Resident Evil 4 Remake",
+    "description": "Remake of the 2005 survival horror game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Horror", "Action"],
+    "groundTruth": "GAME",
+    "difficulty": "medium",
+    "notes": "Remake, not DLC"
+  },
+  {
+    "id": "class-031",
+    "title": "Demon's Souls",
+    "description": "Action RPG, PlayStation 5 remake of the 2009 original",
+    "sourceHints": ["GAME"],
+    "genreHints": ["RPG", "Action"],
+    "groundTruth": "GAME",
+    "difficulty": "medium",
+    "notes": "Remake, not DLC"
+  },
+  {
+    "id": "class-032",
+    "title": "Dead Space Remake",
+    "description": "Remake of the 2008 survival horror game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Horror", "Action"],
+    "groundTruth": "GAME",
+    "difficulty": "medium",
+    "notes": "Remake, not DLC"
+  },
+  {
+    "id": "class-033",
+    "title": "Metroid Dread",
+    "description": "Side-scrolling action-adventure game for Nintendo Switch",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Action", "Adventure"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major Nintendo game"
+  },
+  {
+    "id": "class-034",
+    "title": "Xenoblade Chronicles 3",
+    "description": "JRPG for Nintendo Switch",
+    "sourceHints": ["GAME"],
+    "genreHints": ["RPG", "JRPG"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major Nintendo RPG"
+  },
+  {
+    "id": "class-035",
+    "title": "Persona 5 Royal",
+    "description": "Enhanced version of Persona 5 JRPG",
+    "sourceHints": ["GAME"],
+    "genreHints": ["RPG", "JRPG"],
+    "groundTruth": "GAME",
+    "difficulty": "medium",
+    "notes": "Enhanced version, could be confused with DLC"
+  },
+  {
+    "id": "class-036",
+    "title": "Final Fantasy XVI",
+    "description": "Action RPG in the Final Fantasy series",
+    "sourceHints": ["GAME"],
+    "genreHints": ["RPG", "Action"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major Square Enix game"
+  },
+  {
+    "id": "class-037",
+    "title": "Starfield",
+    "description": "Open-world space RPG by Bethesda",
+    "sourceHints": ["GAME"],
+    "genreHints": ["RPG", "Open World"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major Bethesda game"
+  },
+  {
+    "id": "class-038",
+    "title": "Diablo IV",
+    "description": "Action RPG dungeon crawler",
+    "sourceHints": ["GAME"],
+    "genreHints": ["RPG", "Action"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major Blizzard game"
+  },
+  {
+    "id": "class-039",
+    "title": "Overwatch 2",
+    "description": "Team-based multiplayer first-person shooter",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Shooter", "Multiplayer"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major Blizzard game"
+  },
+  {
+    "id": "class-040",
+    "title": "Counter-Strike 2",
+    "description": "Competitive multiplayer first-person shooter",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Shooter", "Multiplayer"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Valve's major competitive game"
+  },
+  {
+    "id": "class-041",
+    "title": "Among Us",
+    "description": "Multiplayer social deduction game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Social Deduction", "Multiplayer"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Popular indie game"
+  },
+  {
+    "id": "class-042",
+    "title": "Fall Guys",
+    "description": "Multiplayer party game with obstacle courses",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Party", "Multiplayer"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Popular party game"
+  },
+  {
+    "id": "class-043",
+    "title": "Rocket League",
+    "description": "Vehicular soccer video game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Sports", "Racing"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Unique genre blend"
+  },
+  {
+    "id": "class-044",
+    "title": "FIFA 24",
+    "description": "Association football simulation game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Sports", "Simulation"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Annual sports game"
+  },
+  {
+    "id": "class-045",
+    "title": "NBA 2K24",
+    "description": "Basketball simulation game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Sports", "Simulation"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Annual sports game"
+  },
+  {
+    "id": "class-046",
+    "title": "Gran Turismo 7",
+    "description": "Racing simulation game for PlayStation",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Racing", "Simulation"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major racing game"
+  },
+  {
+    "id": "class-047",
+    "title": "Forza Horizon 5",
+    "description": "Open-world racing game set in Mexico",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Racing", "Open World"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major racing game"
+  },
+  {
+    "id": "class-048",
+    "title": "The Sims 4",
+    "description": "Life simulation video game",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Simulation", "Life"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Major simulation game"
+  },
+  {
+    "id": "class-049",
+    "title": "Stardew Valley",
+    "description": "Farming simulation RPG",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Simulation", "RPG"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Popular indie farming game"
+  },
+  {
+    "id": "class-050",
+    "title": "Terraria",
+    "description": "Sandbox adventure game with crafting and exploration",
+    "sourceHints": ["GAME"],
+    "genreHints": ["Sandbox", "Adventure"],
+    "groundTruth": "GAME",
+    "difficulty": "easy",
+    "notes": "Popular indie sandbox"
+  }
+]

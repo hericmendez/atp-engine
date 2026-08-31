@@ -14,7 +14,7 @@ interface WeightedCategory {
 }
 
 export class DeterministicClassifier implements Classifier {
-  classify(candidate: NormalizedCandidate): ClassificationResult {
+  async classify(candidate: NormalizedCandidate): Promise<ClassificationResult> {
     const signals: ClassificationSignal[] = [];
 
     this.collectSourceSignals(candidate, signals);

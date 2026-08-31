@@ -32,14 +32,14 @@ export class DiscoveryEngine {
 
     for (const result of sourceResults) {
       if (result.status === 'fulfilled') {
-        const observations = this.processSourceResults(result.value);
+        const observations = await this.processSourceResults(result.value);
         allObservations.push(...observations);
       } else {
         sourceErrors.push(this.extractSourceError(result.reason));
       }
     }
 
-    const groups = aggregateAndDeduplicate(allObservations, this.identityResolver, query);
+    const groups = await aggregateAndDeduplicate(allObservations, this.identityResolver, query);
     const rankedGroups = rankGroups(groups);
 
     const paginatedGroups = rankedGroups.slice(offset, offset + limit);
@@ -80,14 +80,14 @@ export class DiscoveryEngine {
     return Promise.allSettled(promises);
   }
 
-  private processSourceResults(result: {
+  private async processSourceResults(result: {
     source: string;
     candidates: readonly NormalizedCandidate[];
-  }): DiscoverySourceObservation[] {
+  }): Promise<DiscoverySourceObservation[]> {
     const observations: DiscoverySourceObservation[] = [];
 
     for (const candidate of result.candidates) {
-      const classification = this.classifier.classify(candidate);
+      const classification = await this.classifier.classify(candidate);
       observations.push({
         source: result.source,
         sourceId: candidate.provenance.sourceId,

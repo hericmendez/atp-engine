@@ -76,6 +76,16 @@ await coverEngine.discoverCovers("game-1", "Doom Eternal")
 
 ## 4. Domain Types
 
+### Origin
+
+All cover results include an `origin` field indicating the data source:
+
+| Value | Meaning |
+|-------|---------|
+| `"scraper"` | Result came from external source discovery (Wikipedia, Steam, etc.) |
+
+Cover search is **always scraper-origin**. There is no persisted cover database — results are always freshly discovered from external sources at request time.
+
 ### CoverType
 
 ```typescript
@@ -85,9 +95,30 @@ const CoverType = {
   POSTER: 'poster',
   KEY_ART: 'key_art',
   SCREENSHOT: 'screenshot',
+  LOGO: 'logo',
   UNKNOWN: 'unknown',
 } as const;
 ```
+
+### CoverSearchType
+
+```typescript
+const CoverSearchType = {
+  COVER: 'cover',
+  LOGO: 'logo',
+  ALL: 'all',
+} as const;
+```
+
+`CoverSearchType` is a **filter** that controls which `CoverType` values are eligible for ranking and selection. It does not classify candidates — it filters them.
+
+| Search Type | Accepted CoverTypes |
+|-------------|---------------------|
+| `cover` | front_cover, box_art, poster, key_art, unknown |
+| `logo` | logo |
+| `all` | all types |
+
+`UNKNOWN` is included in `cover` searches because it may represent a valid cover whose type could not be inferred from the URL alone.
 
 ### CoverResult
 
@@ -95,11 +126,15 @@ const CoverType = {
 interface CoverResult {
   query: string;           // the search query used
   gameId: string | null;   // null for query-based, set for game-based
+  type: CoverSearchType;   // the search type filter applied
+  limit: number;           // the max candidates returned
   selected: Cover | null;
   candidates: readonly RankedCoverCandidate[];
   errors: readonly CoverSourceError[];
 }
 ```
+
+All `Cover` and `RankedCoverCandidate` objects include an `origin: "scraper"` field, since cover results are always sourced from external providers.
 
 ### CoverRankingBreakdown
 
@@ -253,17 +288,68 @@ Identity Resolution is Phase 6 responsibility.
 
 Independent cover search. No Game required.
 
+**Query Parameters**:
+
+| Parameter | Required | Default | Description |
+|-----------|----------|---------|-------------|
+| `q` | yes | — | Search query (1–200 chars, trimmed) |
+| `type` | no | `cover` | `cover`, `logo`, or `all` |
+| `limit` | no | `1` | Number of candidates to return (1–9) |
+| `source` | no | — | Filter to specific source |
+
+**Type Semantics**:
+
+- `type=cover` — Returns front_cover, box_art, poster, key_art, and unknown candidates. Excludes logos and screenshots.
+- `type=logo` — Returns only logo candidates. Excludes all other types.
+- `type=all` — Returns all valid candidates regardless of type.
+
+**Limit Semantics**:
+
+- `limit` is applied **after** ranking. It returns the N highest-ranked candidates.
+- `limit=3` means "give me the 3 best matching candidates," not "give me the first 3 candidates returned by sources."
+
 **Response**:
+
 ```json
 {
   "data": {
     "query": "Doom Eternal",
-    "selected": { "url": "...", "source": "...", "..." },
-    "candidates": [...],
+    "type": "cover",
+    "limit": 3,
+    "selected": {
+      "url": "https://example.com/cover.jpg",
+      "source": "wikipedia",
+      "sourceId": "wp-123",
+      "width": 600,
+      "height": 900,
+      "type": "front_cover",
+      "origin": "scraper"
+    },
+    "candidates": [
+      {
+        "url": "https://example.com/cover.jpg",
+        "source": "wikipedia",
+        "sourceId": "wp-123",
+        "width": 600,
+        "height": 900,
+        "type": "front_cover",
+        "origin": "scraper",
+        "ranking": { "..." }
+      }
+    ],
     "errors": []
   }
 }
 ```
+
+**Behavior**:
+
+- Queries all sources with `searchCovers` capability.
+- Sources without `searchCovers` are silently skipped.
+- Failed sources are isolated — partial success is valid.
+- Returns 200 with `selected: null` when no covers found (not an error).
+- Does NOT persist results. This is a discovery operation.
+- Filter is applied before ranking. Limit is applied after ranking.
 
 ### GET /api/v1/games/:id/cover
 
@@ -275,7 +361,15 @@ Cover for an existing Game. Persists selection.
   "data": {
     "gameId": "game-1",
     "query": "Doom Eternal",
-    "selected": { "url": "...", "source": "...", "..." },
+    "selected": {
+      "url": "https://example.com/cover.jpg",
+      "source": "wikipedia",
+      "sourceId": "wp-123",
+      "width": 600,
+      "height": 900,
+      "type": "front_cover",
+      "origin": "scraper"
+    },
     "candidates": [...],
     "errors": []
   }
@@ -296,3 +390,4 @@ Cover for an existing Game. Persists selection.
 8. **Game-based discovery persists** — via `CoverService.getGameCover()`
 9. **CoverCandidate ≠ Canonical Cover** — only persisted covers are canonical
 10. **Cover Engine does not create/merge Games** — identity is separate
+11. **Cover results are always scraper-origin** — `origin: "scraper"` on all cover objects

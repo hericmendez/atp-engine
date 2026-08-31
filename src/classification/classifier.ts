@@ -2,5 +2,5 @@ import type { NormalizedCandidate } from '../normalization/normalized-candidate.
 import type { ClassificationResult } from './classification-result.js';
 
 export interface Classifier {
-  classify(candidate: NormalizedCandidate): ClassificationResult;
+  classify(candidate: NormalizedCandidate): Promise<ClassificationResult>;
 }

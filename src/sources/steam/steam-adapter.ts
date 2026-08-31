@@ -144,15 +144,20 @@ export class SteamAdapter extends BaseAdapter {
       return this.appListCache;
     }
 
-    const url = 'https://store.steampowered.com/api/applist';
-    const response = await this.fetchJson<SteamAppListResponse>(url);
+    try {
+      const url = 'https://store.steampowered.com/api/applist';
+      const response = await this.fetchJson<SteamAppListResponse>(url);
 
-    this.appListCache = new Map();
-    for (const app of response.applist.apps) {
-      this.appListCache.set(app.appid, app.name);
+      this.appListCache = new Map();
+      for (const app of response.applist.apps) {
+        this.appListCache.set(app.appid, app.name);
+      }
+
+      return this.appListCache;
+    } catch {
+      this.appListCache = new Map();
+      return this.appListCache;
     }
-
-    return this.appListCache;
   }
 
   private extractPlatforms(platforms?: {

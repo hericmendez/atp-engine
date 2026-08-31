@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { rankCandidate, rankCandidates } from '../../src/cover/cover-rank.js';
-import { CoverType } from '../../src/domain/cover/cover-candidate.js';
+import { rankCandidate, rankCandidates, filterByType } from '../../src/cover/cover-rank.js';
+import { CoverType, CoverSearchType } from '../../src/domain/cover/cover-candidate.js';
 
 function makeCandidate(overrides: {
   url?: string;
@@ -15,6 +15,7 @@ function makeCandidate(overrides: {
     url: overrides.url ?? 'https://example.com/cover.jpg',
     source: overrides.source ?? 'wikipedia',
     sourceId: overrides.sourceId ?? 'test-id',
+    title: overrides.title ?? null,
     width: overrides.width ?? null,
     height: overrides.height ?? null,
     type: overrides.type ?? CoverType.UNKNOWN,
@@ -263,6 +264,188 @@ describe('cover-rank', () => {
       expect(first.map((r) => r.ranking.totalScore)).toEqual(
         second.map((r) => r.ranking.totalScore),
       );
+    });
+  });
+
+  describe('franchise vs game disambiguation', () => {
+    it('Doom Eternal query: exact match ranks above franchise "Doom"', () => {
+      const exactMatch = rankCandidate(
+        makeCandidate({ title: 'Doom Eternal', url: 'https://example.com/doom-eternal.jpg' }),
+        'Doom Eternal',
+      );
+      const franchise = rankCandidate(
+        makeCandidate({ title: 'Doom', url: 'https://example.com/doom-logo.svg' }),
+        'Doom Eternal',
+      );
+
+      expect(exactMatch.ranking.relevanceScore).toBe(1.0);
+      expect(franchise.ranking.relevanceScore).toBe(0.5);
+      expect(exactMatch.ranking.totalScore).toBeGreaterThan(franchise.ranking.totalScore);
+    });
+
+    it('The Witcher 3 query: exact match ranks above "The Witcher"', () => {
+      const exactMatch = rankCandidate(
+        makeCandidate({ title: 'The Witcher 3: Wild Hunt' }),
+        'The Witcher 3',
+      );
+      const franchise = rankCandidate(makeCandidate({ title: 'The Witcher' }), 'The Witcher 3');
+
+      expect(exactMatch.ranking.relevanceScore).toBeGreaterThanOrEqual(
+        franchise.ranking.relevanceScore,
+      );
+    });
+
+    it('Resident Evil 4 query: exact match ranks above "Resident Evil"', () => {
+      const exactMatch = rankCandidate(
+        makeCandidate({ title: 'Resident Evil 4' }),
+        'Resident Evil 4',
+      );
+      const franchise = rankCandidate(makeCandidate({ title: 'Resident Evil' }), 'Resident Evil 4');
+
+      expect(exactMatch.ranking.relevanceScore).toBe(1.0);
+      expect(franchise.ranking.relevanceScore).toBe(0.5);
+    });
+
+    it('Final Fantasy VII query: exact match ranks above "Final Fantasy"', () => {
+      const exactMatch = rankCandidate(
+        makeCandidate({ title: 'Final Fantasy VII' }),
+        'Final Fantasy VII',
+      );
+      const franchise = rankCandidate(
+        makeCandidate({ title: 'Final Fantasy' }),
+        'Final Fantasy VII',
+      );
+
+      expect(exactMatch.ranking.relevanceScore).toBe(1.0);
+      expect(franchise.ranking.relevanceScore).toBe(0.5);
+    });
+
+    it('Super Mario World query: franchise "Super Mario" gets low relevance', () => {
+      const exactMatch = rankCandidate(
+        makeCandidate({ title: 'Super Mario World' }),
+        'Super Mario World',
+      );
+      const franchise = rankCandidate(makeCandidate({ title: 'Super Mario' }), 'Super Mario World');
+
+      expect(exactMatch.ranking.relevanceScore).toBe(1.0);
+      expect(franchise.ranking.relevanceScore).toBe(0.5);
+    });
+
+    it('query prefix of title: "Doom" matching "Doom Eternal" gets moderate relevance', () => {
+      const ranked = rankCandidate(makeCandidate({ title: 'Doom Eternal' }), 'Doom');
+
+      expect(ranked.ranking.relevanceScore).toBe(0.9);
+    });
+
+    it('franchise title shorter than query always loses to exact match', () => {
+      const queries = [
+        'Doom Eternal',
+        'The Witcher 3',
+        'Resident Evil 4',
+        'Final Fantasy VII',
+        'Super Mario World',
+      ];
+
+      for (const query of queries) {
+        const franchiseName = query.split(' ').slice(0, -1).join(' ');
+        if (!franchiseName) continue;
+
+        const exact = rankCandidate(makeCandidate({ title: query }), query);
+        const franchise = rankCandidate(makeCandidate({ title: franchiseName }), query);
+
+        expect(exact.ranking.relevanceScore).toBeGreaterThan(franchise.ranking.relevanceScore);
+      }
+    });
+  });
+
+  describe('filterByType', () => {
+    const frontCover = makeCandidate({ type: CoverType.FRONT_COVER, title: 'Game A' });
+    const boxArt = makeCandidate({ type: CoverType.BOX_ART, title: 'Game B' });
+    const poster = makeCandidate({ type: CoverType.POSTER, title: 'Game C' });
+    const keyArt = makeCandidate({ type: CoverType.KEY_ART, title: 'Game D' });
+    const screenshot = makeCandidate({ type: CoverType.SCREENSHOT, title: 'Game E' });
+    const logo = makeCandidate({ type: CoverType.LOGO, title: 'Franchise' });
+    const unknown = makeCandidate({ type: CoverType.UNKNOWN, title: 'Game F' });
+
+    const allCandidates = [frontCover, boxArt, poster, keyArt, screenshot, logo, unknown];
+
+    it('type=cover returns front_cover, box_art, poster, key_art, and unknown', () => {
+      const result = filterByType(allCandidates, CoverSearchType.COVER);
+
+      expect(result).toHaveLength(5);
+      expect(result.map((c) => c.type)).toContain(CoverType.FRONT_COVER);
+      expect(result.map((c) => c.type)).toContain(CoverType.BOX_ART);
+      expect(result.map((c) => c.type)).toContain(CoverType.POSTER);
+      expect(result.map((c) => c.type)).toContain(CoverType.KEY_ART);
+      expect(result.map((c) => c.type)).toContain(CoverType.UNKNOWN);
+      expect(result.map((c) => c.type)).not.toContain(CoverType.LOGO);
+      expect(result.map((c) => c.type)).not.toContain(CoverType.SCREENSHOT);
+    });
+
+    it('type=cover excludes logo', () => {
+      const result = filterByType([logo], CoverSearchType.COVER);
+
+      expect(result).toHaveLength(0);
+    });
+
+    it('type=cover excludes screenshot', () => {
+      const result = filterByType([screenshot], CoverSearchType.COVER);
+
+      expect(result).toHaveLength(0);
+    });
+
+    it('type=logo returns only logo', () => {
+      const result = filterByType(allCandidates, CoverSearchType.LOGO);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].type).toBe(CoverType.LOGO);
+    });
+
+    it('type=logo excludes normal covers', () => {
+      const result = filterByType([frontCover, boxArt, poster, keyArt], CoverSearchType.LOGO);
+
+      expect(result).toHaveLength(0);
+    });
+
+    it('type=logo excludes screenshot', () => {
+      const result = filterByType([screenshot], CoverSearchType.LOGO);
+
+      expect(result).toHaveLength(0);
+    });
+
+    it('type=all returns all candidates', () => {
+      const result = filterByType(allCandidates, CoverSearchType.ALL);
+
+      expect(result).toHaveLength(7);
+    });
+
+    it('type=all includes logo and screenshot', () => {
+      const result = filterByType([logo, screenshot, frontCover], CoverSearchType.ALL);
+
+      expect(result).toHaveLength(3);
+    });
+
+    it('returns empty array for empty input', () => {
+      expect(filterByType([], CoverSearchType.COVER)).toHaveLength(0);
+      expect(filterByType([], CoverSearchType.LOGO)).toHaveLength(0);
+      expect(filterByType([], CoverSearchType.ALL)).toHaveLength(0);
+    });
+
+    it('preserves candidate order', () => {
+      const candidates = [logo, frontCover, screenshot];
+      const result = filterByType(candidates, CoverSearchType.ALL);
+
+      expect(result).toHaveLength(3);
+      expect(result[0].type).toBe(CoverType.LOGO);
+      expect(result[1].type).toBe(CoverType.FRONT_COVER);
+      expect(result[2].type).toBe(CoverType.SCREENSHOT);
+    });
+
+    it('UNKNOWN type is included in cover search', () => {
+      const result = filterByType([unknown], CoverSearchType.COVER);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].type).toBe(CoverType.UNKNOWN);
     });
   });
 });

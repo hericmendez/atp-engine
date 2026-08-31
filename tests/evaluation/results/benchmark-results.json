@@ -1,0 +1,349 @@
+[
+  {
+    "id": "class-easy",
+    "operation": "classification",
+    "thinkEnabled": true,
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 35934,
+    "responseLength": 301
+  },
+  {
+    "id": "class-dlc",
+    "operation": "classification",
+    "thinkEnabled": true,
+    "correct": true,
+    "predicted": "DLC",
+    "expected": "DLC",
+    "latencyMs": 41957,
+    "responseLength": 379
+  },
+  {
+    "id": "class-ambiguous",
+    "operation": "classification",
+    "thinkEnabled": true,
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 57206,
+    "responseLength": 304
+  },
+  {
+    "id": "class-regression-25",
+    "operation": "classification",
+    "thinkEnabled": true,
+    "correct": true,
+    "predicted": "DLC",
+    "expected": "DLC",
+    "latencyMs": 40715,
+    "responseLength": 184
+  },
+  {
+    "id": "class-regression-35",
+    "operation": "classification",
+    "thinkEnabled": true,
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 42577,
+    "responseLength": 352
+  },
+  {
+    "id": "id-alias",
+    "operation": "identity",
+    "thinkEnabled": true,
+    "correct": true,
+    "predicted": "SAME_GAME",
+    "expected": "SAME_GAME",
+    "latencyMs": 45855,
+    "responseLength": 310
+  },
+  {
+    "id": "id-abbreviation",
+    "operation": "identity",
+    "thinkEnabled": true,
+    "correct": false,
+    "predicted": "ERROR",
+    "expected": "SAME_GAME",
+    "latencyMs": 60001,
+    "responseLength": 0,
+    "error": "TIMEOUT"
+  },
+  {
+    "id": "id-remake",
+    "operation": "identity",
+    "thinkEnabled": true,
+    "correct": true,
+    "predicted": "RELATED_GAME",
+    "expected": "RELATED_GAME",
+    "latencyMs": 59321,
+    "responseLength": 322
+  },
+  {
+    "id": "id-enhanced",
+    "operation": "identity",
+    "thinkEnabled": true,
+    "correct": true,
+    "predicted": "RELATED_GAME",
+    "expected": "RELATED_GAME",
+    "latencyMs": 44519,
+    "responseLength": 301
+  },
+  {
+    "id": "id-different",
+    "operation": "identity",
+    "thinkEnabled": true,
+    "correct": false,
+    "predicted": "SAME_GAME",
+    "expected": "DIFFERENT_GAME",
+    "latencyMs": 42570,
+    "responseLength": 405
+  },
+  {
+    "id": "id-timeout-1",
+    "operation": "identity",
+    "thinkEnabled": true,
+    "correct": false,
+    "predicted": "ERROR",
+    "expected": "SAME_GAME",
+    "latencyMs": 60003,
+    "responseLength": 0,
+    "error": "TIMEOUT"
+  },
+  {
+    "id": "id-timeout-2",
+    "operation": "identity",
+    "thinkEnabled": true,
+    "correct": false,
+    "predicted": "ERROR",
+    "expected": "RELATED_GAME",
+    "latencyMs": 60002,
+    "responseLength": 0,
+    "error": "TIMEOUT"
+  },
+  {
+    "id": "enr-developer",
+    "operation": "enrichment",
+    "thinkEnabled": true,
+    "correct": false,
+    "predicted": "ERROR",
+    "expected": "Rockstar North",
+    "latencyMs": 60003,
+    "responseLength": 0,
+    "error": "TIMEOUT"
+  },
+  {
+    "id": "enr-platform",
+    "operation": "enrichment",
+    "thinkEnabled": true,
+    "correct": false,
+    "predicted": "ERROR",
+    "expected": "PlayStation 5",
+    "latencyMs": 60001,
+    "responseLength": 0,
+    "error": "TIMEOUT"
+  },
+  {
+    "id": "enr-date",
+    "operation": "enrichment",
+    "thinkEnabled": true,
+    "correct": false,
+    "predicted": "ERROR",
+    "expected": "2022-02-25",
+    "latencyMs": 60003,
+    "responseLength": 0,
+    "error": "TIMEOUT"
+  },
+  {
+    "id": "enr-genre",
+    "operation": "enrichment",
+    "thinkEnabled": true,
+    "correct": true,
+    "predicted": "Metroidvania",
+    "expected": "Metroidvania",
+    "latencyMs": 53700,
+    "responseLength": 418
+  },
+  {
+    "id": "enr-developer-specific",
+    "operation": "enrichment",
+    "thinkEnabled": true,
+    "correct": false,
+    "predicted": "ERROR",
+    "expected": "FromSoftware",
+    "latencyMs": 60001,
+    "responseLength": 0,
+    "error": "TIMEOUT"
+  },
+  {
+    "id": "class-easy",
+    "operation": "classification",
+    "thinkEnabled": false,
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 6454,
+    "responseLength": 179
+  },
+  {
+    "id": "class-dlc",
+    "operation": "classification",
+    "thinkEnabled": false,
+    "correct": true,
+    "predicted": "DLC",
+    "expected": "DLC",
+    "latencyMs": 7240,
+    "responseLength": 180
+  },
+  {
+    "id": "class-ambiguous",
+    "operation": "classification",
+    "thinkEnabled": false,
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 11475,
+    "responseLength": 287
+  },
+  {
+    "id": "class-regression-25",
+    "operation": "classification",
+    "thinkEnabled": false,
+    "correct": true,
+    "predicted": "DLC",
+    "expected": "DLC",
+    "latencyMs": 7860,
+    "responseLength": 200
+  },
+  {
+    "id": "class-regression-35",
+    "operation": "classification",
+    "thinkEnabled": false,
+    "correct": true,
+    "predicted": "GAME",
+    "expected": "GAME",
+    "latencyMs": 10705,
+    "responseLength": 276
+  },
+  {
+    "id": "id-alias",
+    "operation": "identity",
+    "thinkEnabled": false,
+    "correct": true,
+    "predicted": "SAME_GAME",
+    "expected": "SAME_GAME",
+    "latencyMs": 8900,
+    "responseLength": 236
+  },
+  {
+    "id": "id-abbreviation",
+    "operation": "identity",
+    "thinkEnabled": false,
+    "correct": false,
+    "predicted": "UNRESOLVED",
+    "expected": "SAME_GAME",
+    "latencyMs": 5835,
+    "responseLength": 98
+  },
+  {
+    "id": "id-remake",
+    "operation": "identity",
+    "thinkEnabled": false,
+    "correct": false,
+    "predicted": "SAME_GAME",
+    "expected": "RELATED_GAME",
+    "latencyMs": 11216,
+    "responseLength": 290
+  },
+  {
+    "id": "id-enhanced",
+    "operation": "identity",
+    "thinkEnabled": false,
+    "correct": false,
+    "predicted": "SAME_GAME",
+    "expected": "RELATED_GAME",
+    "latencyMs": 9014,
+    "responseLength": 254
+  },
+  {
+    "id": "id-different",
+    "operation": "identity",
+    "thinkEnabled": false,
+    "correct": true,
+    "predicted": "DIFFERENT_GAME",
+    "expected": "DIFFERENT_GAME",
+    "latencyMs": 12586,
+    "responseLength": 359
+  },
+  {
+    "id": "id-timeout-1",
+    "operation": "identity",
+    "thinkEnabled": false,
+    "correct": true,
+    "predicted": "SAME_GAME",
+    "expected": "SAME_GAME",
+    "latencyMs": 16306,
+    "responseLength": 404
+  },
+  {
+    "id": "id-timeout-2",
+    "operation": "identity",
+    "thinkEnabled": false,
+    "correct": false,
+    "predicted": "UNRESOLVED",
+    "expected": "RELATED_GAME",
+    "latencyMs": 6789,
+    "responseLength": 140
+  },
+  {
+    "id": "enr-developer",
+    "operation": "enrichment",
+    "thinkEnabled": false,
+    "correct": false,
+    "predicted": "Rockstar Games",
+    "expected": "Rockstar North",
+    "latencyMs": 9873,
+    "responseLength": 265
+  },
+  {
+    "id": "enr-platform",
+    "operation": "enrichment",
+    "thinkEnabled": false,
+    "correct": true,
+    "predicted": "PlayStation 5",
+    "expected": "PlayStation 5",
+    "latencyMs": 8781,
+    "responseLength": 247
+  },
+  {
+    "id": "enr-date",
+    "operation": "enrichment",
+    "thinkEnabled": false,
+    "correct": true,
+    "predicted": "2022-02-25",
+    "expected": "2022-02-25",
+    "latencyMs": 9075,
+    "responseLength": 228
+  },
+  {
+    "id": "enr-genre",
+    "operation": "enrichment",
+    "thinkEnabled": false,
+    "correct": true,
+    "predicted": "Metroidvania",
+    "expected": "Metroidvania",
+    "latencyMs": 8650,
+    "responseLength": 269
+  },
+  {
+    "id": "enr-developer-specific",
+    "operation": "enrichment",
+    "thinkEnabled": false,
+    "correct": true,
+    "predicted": "FromSoftware",
+    "expected": "FromSoftware",
+    "latencyMs": 7146,
+    "responseLength": 181
+  }
+]

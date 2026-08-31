@@ -243,7 +243,10 @@ function determineOutcome(
 }
 
 export class DeterministicIdentityResolver implements IdentityResolver {
-  resolve(candidate: NormalizedCandidate, existingGame: Game | null): IdentityResolutionResult {
+  async resolve(
+    candidate: NormalizedCandidate,
+    existingGame: Game | null,
+  ): Promise<IdentityResolutionResult> {
     const signals: IdentitySignal[] = [];
 
     if (existingGame === null) {

@@ -1,0 +1,50 @@
+[
+  {
+    "model": "qwen3:1.7b",
+    "thinkEnabled": false,
+    "operation": "identity",
+    "totalCases": 45,
+    "correct": 9,
+    "accuracy": 20,
+    "errors": 0,
+    "timeouts": 0,
+    "avgLatencyMs": 9303.955555555556,
+    "medianLatencyMs": 8722,
+    "p95LatencyMs": 15271,
+    "p99LatencyMs": 19282,
+    "maxLatencyMs": 19282,
+    "minLatencyMs": 3037
+  },
+  {
+    "model": "qwen3:1.7b",
+    "thinkEnabled": false,
+    "operation": "enrichment",
+    "totalCases": 40,
+    "correct": 23,
+    "accuracy": 57.49999999999999,
+    "errors": 0,
+    "timeouts": 0,
+    "avgLatencyMs": 6594.975,
+    "medianLatencyMs": 6056,
+    "p95LatencyMs": 9774,
+    "p99LatencyMs": 20060,
+    "maxLatencyMs": 20060,
+    "minLatencyMs": 2700
+  },
+  {
+    "model": "qwen3:1.7b",
+    "thinkEnabled": false,
+    "operation": "classification",
+    "totalCases": 50,
+    "correct": 50,
+    "accuracy": 100,
+    "errors": 0,
+    "timeouts": 0,
+    "avgLatencyMs": 5563.54,
+    "medianLatencyMs": 4784,
+    "p95LatencyMs": 8773,
+    "p99LatencyMs": 11450,
+    "maxLatencyMs": 11450,
+    "minLatencyMs": 3157
+  }
+]
