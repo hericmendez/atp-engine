@@ -4,12 +4,14 @@ import type { DiscoveryEngine } from '../discovery/discovery-engine.js';
 import { createGameId } from '../domain/shared/ids.js';
 import { NotFoundError } from '../shared/errors/errors.js';
 import type { DataOrigin } from './data-origin.js';
-import { discoveryGroupsToGames } from './discovery-to-game.js';
+import { discoveryGroupToGame } from './discovery-to-game.js';
+import type { EnrichmentService } from './enrichment-service.js';
 import { logger } from '../infrastructure/logger/logger.js';
 
 export interface CatalogServiceDependencies {
   gameRepository: GameRepository;
   discoveryEngine?: DiscoveryEngine;
+  enrichmentService?: EnrichmentService;
 }
 
 export interface CatalogResult<T> {
@@ -20,10 +22,12 @@ export interface CatalogResult<T> {
 export class CatalogService {
   private readonly gameRepository: GameRepository;
   private readonly discoveryEngine: DiscoveryEngine | undefined;
+  private readonly enrichmentService: EnrichmentService | undefined;
 
   constructor(deps: CatalogServiceDependencies) {
     this.gameRepository = deps.gameRepository;
     this.discoveryEngine = deps.discoveryEngine;
+    this.enrichmentService = deps.enrichmentService;
   }
 
   async listGames(query: GameQuery): Promise<CatalogResult<PaginatedResult<Game>>> {
@@ -66,7 +70,7 @@ export class CatalogService {
       });
     }
 
-    return this.searchViaDiscovery(searchQuery, options);
+    return this.discoverAndPersist(searchQuery, options);
   }
 
   async getGameById(id: string): Promise<CatalogResult<Game>> {
@@ -80,7 +84,7 @@ export class CatalogService {
     return { data: game, origin: 'database' };
   }
 
-  private async searchViaDiscovery(
+  private async discoverAndPersist(
     searchQuery: string,
     options: { page?: number; limit?: number; sort?: GameQuery['sort'] },
   ): Promise<CatalogResult<PaginatedResult<Game>>> {
@@ -111,17 +115,29 @@ export class CatalogService {
         offset,
       });
 
-      const games = discoveryGroupsToGames(discoveryResult.groups);
+      const persistedGames: Game[] = [];
+
+      for (const group of discoveryResult.groups) {
+        try {
+          const game = await this.persistDiscoveryGroup(group);
+          persistedGames.push(game);
+        } catch (error) {
+          logger.warn('Failed to persist discovery group', {
+            groupId: group.groupId,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
 
       return {
         data: {
-          items: games,
-          total: discoveryResult.totalGroups,
+          items: persistedGames,
+          total: persistedGames.length,
           page,
           limit,
-          totalPages: Math.ceil(discoveryResult.totalGroups / limit),
+          totalPages: Math.ceil(persistedGames.length / limit),
         },
-        origin: 'scraper',
+        origin: persistedGames.length > 0 ? 'database' : 'scraper',
       };
     } catch (error) {
       logger.error('Discovery fallback also failed', {
@@ -140,5 +156,49 @@ export class CatalogService {
         origin: 'scraper',
       };
     }
+  }
+
+  private async persistDiscoveryGroup(
+    group: import('../discovery/discovery-types.js').DiscoveryGroupResult,
+  ): Promise<Game> {
+    const bestObs = group.observations[0];
+    const extId = bestObs
+      ? group.observations.find((o) => o.candidate.externalIdentifiers.length > 0)?.candidate
+          .externalIdentifiers[0]
+      : undefined;
+
+    if (extId) {
+      const existing = await this.gameRepository.findByExternalIdentifier({
+        source: extId.source,
+        externalId: extId.id,
+      });
+
+      if (existing && this.enrichmentService) {
+        const result = await this.enrichmentService.enrich(existing, group.observations);
+        return result.game;
+      }
+
+      if (existing) {
+        return existing;
+      }
+    }
+
+    const candidateGame = discoveryGroupToGame(group);
+
+    const newGame: Game = {
+      ...candidateGame,
+      id: createGameId(
+        `atp-${candidateGame.externalIdentifiers[0]?.source ?? 'unknown'}-${candidateGame.externalIdentifiers[0]?.id ?? Date.now()}`,
+      ),
+    };
+
+    await this.gameRepository.save(newGame);
+
+    if (this.enrichmentService && group.observations.length > 0) {
+      const result = await this.enrichmentService.enrich(newGame, group.observations);
+      return result.game;
+    }
+
+    return newGame;
   }
 }

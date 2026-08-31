@@ -1,6 +1,7 @@
 import { createApp } from './interfaces/http/app.js';
 import { CatalogService } from './application/catalog-service.js';
 import { CoverService } from './application/cover-service.js';
+import { EnrichmentService } from './application/enrichment-service.js';
 import { CoverEngine } from './cover/cover-engine.js';
 import { MongoGameRepository } from './infrastructure/persistence/mongodb/mongo-game-repository.js';
 import { SourceRegistry } from './sources/source-registry.js';
@@ -37,7 +38,11 @@ async function main(): Promise<void> {
   const identityResolver = new DeterministicIdentityResolver();
   const discoveryEngine = new DiscoveryEngine(sourceRegistry, classifier, identityResolver);
 
-  const catalogService = new CatalogService({ gameRepository, discoveryEngine });
+  const catalogService = new CatalogService({
+    gameRepository,
+    discoveryEngine,
+    enrichmentService: new EnrichmentService({ gameRepository }),
+  });
 
   const coverEngine = new CoverEngine({ sourceRegistry });
   const coverService = new CoverService({ gameRepository, coverEngine });

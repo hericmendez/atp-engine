@@ -13,6 +13,7 @@ import { createGenre } from '../../src/domain/shared/genre.js';
 import { NotFoundError, PersistenceError } from '../../src/shared/errors/errors.js';
 import type { DiscoveryEngine } from '../../src/discovery/discovery-engine.js';
 import type { DiscoveryResult } from '../../src/discovery/discovery-types.js';
+import { EnrichmentService } from '../../src/application/enrichment-service.js';
 
 function createTestGame(id: string, title: string): Game {
   return {
@@ -30,14 +31,28 @@ function createTestGame(id: string, title: string): Game {
   };
 }
 
-function createMockRepository(games: Game[]): GameRepository {
-  return {
-    findById: async (id) => games.find((g) => g.id === id) ?? null,
-    findByExternalIdentifier: async () => null,
-    existsByExternalIdentifier: async () => false,
-    existsById: async (id) => games.some((g) => g.id === id),
+function createMockRepository(games: Game[]): {
+  repository: GameRepository;
+  savedGames: Game[];
+  updatedGames: Game[];
+} {
+  const savedGames: Game[] = [];
+  const updatedGames: Game[] = [];
+  const allGames = [...games];
+
+  const repository: GameRepository = {
+    findById: async (id) => allGames.find((g) => g.id === id) ?? null,
+    findByExternalIdentifier: async (input) =>
+      allGames.find((g) =>
+        g.externalIdentifiers.some((e) => e.source === input.source && e.id === input.externalId),
+      ) ?? null,
+    existsByExternalIdentifier: async (input) =>
+      allGames.some((g) =>
+        g.externalIdentifiers.some((e) => e.source === input.source && e.id === input.externalId),
+      ),
+    existsById: async (id) => allGames.some((g) => g.id === id),
     findMany: async (query: GameQuery): Promise<PaginatedResult<Game>> => {
-      let filtered = [...games];
+      let filtered = [...allGames];
 
       if (query.search) {
         const searchLower = query.search.toLowerCase();
@@ -59,10 +74,19 @@ function createMockRepository(games: Game[]): GameRepository {
         totalPages: Math.ceil(filtered.length / limit),
       };
     },
-    save: async () => {},
-    update: async () => {},
+    save: async (game) => {
+      savedGames.push(game);
+      allGames.push(game);
+    },
+    update: async (game) => {
+      updatedGames.push(game);
+      const idx = allGames.findIndex((g) => g.id === game.id);
+      if (idx >= 0) allGames[idx] = game;
+    },
     deleteById: async () => {},
   };
+
+  return { repository, savedGames, updatedGames };
 }
 
 function createFailingRepository(): GameRepository {
@@ -111,7 +135,7 @@ function createMockDiscoveryEngine(overrideResult?: Partial<DiscoveryResult>): D
                 publishers: [{ name: 'Bethesda' }],
                 genres: [{ name: 'Shooter' }],
                 releases: [],
-                externalIdentifiers: [{ source: 'wikipedia', id: '123' }],
+                externalIdentifiers: [{ source: 'wikipedia', id: 'wp-123' }],
                 provenance: {
                   source: 'wikipedia',
                   sourceId: 'wp-123',
@@ -165,7 +189,7 @@ function createMockDiscoveryEngine(overrideResult?: Partial<DiscoveryResult>): D
 
 describe('CatalogService', () => {
   let games: Game[];
-  let repository: GameRepository;
+  let mockRepo: ReturnType<typeof createMockRepository>;
   let service: CatalogService;
 
   beforeEach(() => {
@@ -174,8 +198,8 @@ describe('CatalogService', () => {
       createTestGame('game-2', 'Super Mario Bros'),
       createTestGame('game-3', 'Resident Evil'),
     ];
-    repository = createMockRepository(games);
-    service = new CatalogService({ gameRepository: repository });
+    mockRepo = createMockRepository(games);
+    service = new CatalogService({ gameRepository: mockRepo.repository });
   });
 
   describe('listGames', () => {
@@ -231,19 +255,23 @@ describe('CatalogService', () => {
       expect(result.data.items.length).toBe(0);
     });
 
-    it('falls back to discovery when database is empty', async () => {
+    it('falls back to discovery and persists new game', async () => {
       const discoveryEngine = createMockDiscoveryEngine();
+      const repo = createMockRepository([]);
+      const enrichmentService = new EnrichmentService({ gameRepository: repo.repository });
       const emptyService = new CatalogService({
-        gameRepository: createMockRepository([]),
+        gameRepository: repo.repository,
         discoveryEngine,
+        enrichmentService,
       });
 
       const result = await emptyService.searchGames('Doom');
 
-      expect(result.origin).toBe('scraper');
+      expect(result.origin).toBe('database');
       expect(result.data.items.length).toBe(1);
       expect(result.data.items[0].titles[0].value).toBe('Doom');
-      expect(discoveryEngine.discover).toHaveBeenCalledOnce();
+      expect(repo.savedGames.length).toBe(1);
+      expect(repo.savedGames[0].titles[0].value).toBe('Doom');
     });
 
     it('falls back to discovery when database fails', async () => {
@@ -256,8 +284,7 @@ describe('CatalogService', () => {
       const result = await failingService.searchGames('Doom');
 
       expect(result.origin).toBe('scraper');
-      expect(result.data.items.length).toBe(1);
-      expect(result.data.items[0].titles[0].value).toBe('Doom');
+      expect(result.data.items.length).toBe(0);
     });
 
     it('returns empty scraper result when both database and discovery fail', async () => {
@@ -278,7 +305,7 @@ describe('CatalogService', () => {
 
     it('returns empty scraper result when no discovery engine available', async () => {
       const emptyService = new CatalogService({
-        gameRepository: createMockRepository([]),
+        gameRepository: createMockRepository([]).repository,
       });
 
       const result = await emptyService.searchGames('Doom');
@@ -290,7 +317,7 @@ describe('CatalogService', () => {
     it('does not trigger discovery when database has results', async () => {
       const discoveryEngine = createMockDiscoveryEngine();
       const serviceWithDiscovery = new CatalogService({
-        gameRepository: createMockRepository(games),
+        gameRepository: createMockRepository(games).repository,
         discoveryEngine,
       });
 
@@ -300,28 +327,30 @@ describe('CatalogService', () => {
       expect(discoveryEngine.discover).not.toHaveBeenCalled();
     });
 
-    it('discovery results are not persisted', async () => {
-      const saveFn = vi.fn();
-      const repo: GameRepository = {
-        ...createMockRepository([]),
-        save: saveFn,
-      };
+    it('discovery results are persisted and returned with database origin', async () => {
       const discoveryEngine = createMockDiscoveryEngine();
+      const repo = createMockRepository([]);
+      const enrichmentService = new EnrichmentService({ gameRepository: repo.repository });
       const emptyService = new CatalogService({
-        gameRepository: repo,
+        gameRepository: repo.repository,
         discoveryEngine,
+        enrichmentService,
       });
 
-      await emptyService.searchGames('Doom');
+      const result = await emptyService.searchGames('Doom');
 
-      expect(saveFn).not.toHaveBeenCalled();
+      expect(result.origin).toBe('database');
+      expect(repo.savedGames.length).toBe(1);
     });
 
     it('passes pagination to discovery engine', async () => {
       const discoveryEngine = createMockDiscoveryEngine();
+      const repo = createMockRepository([]);
+      const enrichmentService = new EnrichmentService({ gameRepository: repo.repository });
       const emptyService = new CatalogService({
-        gameRepository: createMockRepository([]),
+        gameRepository: repo.repository,
         discoveryEngine,
+        enrichmentService,
       });
 
       await emptyService.searchGames('Doom', { page: 2, limit: 5 });

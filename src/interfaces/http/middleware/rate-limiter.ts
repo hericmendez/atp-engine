@@ -24,16 +24,18 @@ export function rateLimiterMiddleware(options?: Partial<RateLimiterOptions>) {
 
   const store = new Map<string, RateLimitEntry>();
 
-  setInterval(() => {
+  function purgeExpired(): void {
     const now = Date.now();
     for (const [key, entry] of store.entries()) {
       if (now > entry.resetTime) {
         store.delete(key);
       }
     }
-  }, windowMs);
+  }
 
   return (req: Request, res: Response, next: NextFunction): void => {
+    purgeExpired();
+
     const key = keyGenerator(req);
     const now = Date.now();
 

@@ -203,53 +203,28 @@ The engine must represent their relationship instead of blindly merging them.
 
 ---
 
-# Search Capabilities
-
-ATP should support:
-
-### Game search
-
-```text
-GET /games/search?q=zelda
-```
-
-### Catalog filtering
-
-By:
-
-- terms;
-- titles;
-- release year/date;
-- platforms;
-- developers;
-- publishers;
-- genres.
-
-### Individual game lookup
-
-```text
-GET /games/:id
-```
-
-### Cover search
-
-```text
-GET /covers/search?q=zelda
-```
-
-The exact API contract is defined in `docs/api.md`.
-
----
-
-# API Reference
+# API Endpoints
 
 All endpoints are prefixed with `http://localhost:3000` (configurable via `PORT` env var).
+
+## Endpoint Summary
+
+| Method | Path | Description | Category |
+|--------|------|-------------|----------|
+| `GET` | `/health` | Server health status | Health |
+| `GET` | `/api/v1/games` | List games with filters | Catalog |
+| `GET` | `/api/v1/games/search` | Search games by term | Search |
+| `GET` | `/api/v1/games/:id` | Retrieve single game | Catalog |
+| `GET` | `/api/v1/covers/search` | Search cover images | Covers |
+| `GET` | `/api/v1/games/:id/cover` | Get cover for a game | Covers |
+
+---
 
 ## Health Check
 
 ### `GET /health`
 
-Returns server status.
+Returns server status, dependency health, and uptime.
 
 **curl**:
 
@@ -257,22 +232,36 @@ Returns server status.
 curl "http://localhost:3000/health"
 ```
 
-**fetch**:
-
-```js
-const res = await fetch("http://localhost:3000/health");
-const data = await res.json();
-// { status: "ok", timestamp: "2026-08-30T01:00:00.000Z" }
-```
-
 **Response**:
 
 ```json
 {
   "status": "ok",
-  "timestamp": "2026-08-30T01:00:00.000Z"
+  "timestamp": "2026-08-31T01:00:00.000Z",
+  "version": "0.1.0",
+  "dependencies": {
+    "database": "connected",
+    "ai": "configured"
+  },
+  "uptime": 12345.678
 }
 ```
+
+**Status values**:
+
+| `status` | Meaning |
+|----------|---------|
+| `ok` | Database connected |
+| `degraded` | Database disconnected (AI status informational only) |
+
+**Dependencies**:
+
+| Field | Values | Meaning |
+|-------|--------|---------|
+| `database` | `connected` / `disconnected` | MongoDB connection state |
+| `ai` | `configured` / `not_configured` | OLLAMA_URL env var presence |
+
+**No external dependencies. No writes.**
 
 ---
 
@@ -280,19 +269,19 @@ const data = await res.json();
 
 ### `GET /api/v1/games`
 
-List games with composable filters, pagination, and sorting.
+List games with composable filters, pagination, and sorting. Database-only — no external scraping.
 
 **Query Parameters**:
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `search` | string | — | Regex match on titles, developers, publishers |
-| `title` | string | — | Regex match on titles only |
-| `platform` | string | — | Regex match on platform name (e.g., `Nintendo Switch`) |
+| `search` | string | — | Partial match on titles, developers, publishers |
+| `title` | string | — | Partial match on titles only |
+| `platform` | string | — | Partial match on platform name (e.g., `Nintendo Switch`) |
 | `platformFamily` | string | — | Exact match on platform family |
-| `developer` | string | — | Regex match on developer name |
-| `publisher` | string | — | Regex match on publisher name |
-| `genre` | string | — | Regex match on genre name |
+| `developer` | string | — | Partial match on developer name |
+| `publisher` | string | — | Partial match on publisher name |
+| `genre` | string | — | Partial match on genre name |
 | `classification` | enum | — | `GAME`, `DLC`, `EXPANSION`, `MOVIE`, `TV_SHOW`, `ANIME`, `SOUNDTRACK`, `BOOK`, `HARDWARE`, `PROMOTIONAL`, `CHARACTER`, `FRANCHISE`, `PERSON`, `EVENT`, `UNKNOWN` |
 | `completeness` | enum | — | `NOT_FOUND`, `FOUND_PARTIAL`, `FOUND_SUFFICIENT`, `FOUND_COMPLETE` |
 | `releaseYear` | int | — | 1950–2100 |
@@ -339,25 +328,6 @@ curl "http://localhost:3000/api/v1/games?page=2&limit=10&sort=title&order=asc"
 curl "http://localhost:3000/api/v1/games?platformFamily=Nintendo&developer=Nintendo&genre=Adventure&releaseYear=2017&sort=title&order=asc&limit=5"
 ```
 
-**fetch — filtered catalog**:
-
-```js
-const params = new URLSearchParams({
-  platform: "Nintendo Switch",
-  genre: "Adventure",
-  classification: "GAME",
-  sort: "title",
-  order: "asc",
-  limit: "10",
-});
-
-const res = await fetch(`http://localhost:3000/api/v1/games?${params}`);
-const { data, pagination } = await res.json();
-
-console.log(`Found ${pagination.total} games, showing page ${pagination.page}/${pagination.totalPages}`);
-data.forEach((game) => console.log(`- ${game.titles[0]?.value}`));
-```
-
 **Response**:
 
 ```json
@@ -369,7 +339,7 @@ data.forEach((game) => console.log(`- ${game.titles[0]?.value}`));
       "releases": [
         {
           "id": "rel-1",
-          "platform": { "name": "Nintendo Switch", "family": "Nintendo", "type": "console" },
+          "platform": { "name": "Nintendo Switch", "family": "Nintendo", "type": "handheld" },
           "region": { "name": "Global" },
           "releaseDate": { "year": 2017, "month": 3, "day": 3, "precision": "day" },
           "version": null,
@@ -378,9 +348,9 @@ data.forEach((game) => console.log(`- ${game.titles[0]?.value}`));
           "launchers": []
         }
       ],
-      "developers": [{ "name": "Nintendo" }],
+      "developers": [{ "name": "Nintendo EPD" }],
       "publishers": [{ "name": "Nintendo" }],
-      "genres": [{ "name": "Adventure" }],
+      "genres": [{ "name": "Action" }, { "name": "Adventure" }],
       "externalIdentifiers": [{ "source": "wikipedia", "id": "12345" }],
       "relationships": [],
       "evidence": [],
@@ -393,7 +363,8 @@ data.forEach((game) => console.log(`- ${game.titles[0]?.value}`));
     "limit": 20,
     "total": 150,
     "totalPages": 8
-  }
+  },
+  "origin": "database"
 }
 ```
 
@@ -401,8 +372,10 @@ data.forEach((game) => console.log(`- ${game.titles[0]?.value}`));
 
 | Status | Code | When |
 |--------|------|------|
-| 400 | `VALIDATION_ERROR` | Invalid query parameters (bad page, bad sort field, bad classification) |
+| 400 | `VALIDATION_ERROR` | Invalid query parameters |
 | 500 | `PERSISTENCE_ERROR` | MongoDB connection or query failure |
+
+**Dependencies**: MongoDB (read-only). No external APIs. No writes.
 
 ---
 
@@ -410,7 +383,7 @@ data.forEach((game) => console.log(`- ${game.titles[0]?.value}`));
 
 ### `GET /api/v1/games/search`
 
-Search games by term. Matches against titles, developer names, and publisher names.
+Search games by term. Database-first with discovery fallback — if no DB matches exist, discovers from external sources and persists results.
 
 **Query Parameters**:
 
@@ -424,6 +397,26 @@ Search games by term. Matches against titles, developer names, and publisher nam
 | `order` | enum | `desc` | `asc` or `desc` |
 
 **Note**: `GET /api/v1/games/search?q=Doom` and `GET /api/v1/games?search=Doom` produce identical results.
+
+**Search flow**:
+
+```text
+Query database for matching games
+  ↓
+Results found? → YES → return with origin: "database"
+  ↓ NO
+Discover from external sources (Wikipedia, Steam)
+  ↓
+Classify candidates
+  ↓
+Resolve identity (deduplicate by external ID)
+  ↓
+Persist discovered games
+  ↓
+Enrich if existing game found
+  ↓
+Return with origin: "database"
+```
 
 **curl — basic search**:
 
@@ -443,18 +436,16 @@ curl "http://localhost:3000/api/v1/games/search?q=Zelda&page=1&limit=5"
 curl "http://localhost:3000/api/v1/games/search?q=Final%20Fantasy&sort=title&order=asc"
 ```
 
-**fetch — search and iterate**:
-
-```js
-const res = await fetch("http://localhost:3000/api/v1/games/search?q=Resident%20Evil&limit=5");
-const { data, pagination } = await res.json();
-
-data.forEach((game) => {
-  console.log(`${game.titles[0]?.value} (${game.classification})`);
-});
-```
-
 **Response**: Same structure as `GET /api/v1/games`.
+
+**Origin behavior**:
+
+| Scenario | `origin` | Description |
+|----------|----------|-------------|
+| DB has matches | `database` | Returned directly from catalog |
+| DB empty, discovery succeeds | `database` | Discovered games persisted and returned |
+| DB empty, discovery fails | `scraper` | Empty results (no external data cached) |
+| DB fails | `scraper` | Fallback to discovery |
 
 **Errors**:
 
@@ -463,13 +454,15 @@ data.forEach((game) => {
 | 400 | `VALIDATION_ERROR` | Missing `q` parameter |
 | 500 | `PERSISTENCE_ERROR` | MongoDB failure |
 
+**Dependencies**: MongoDB (read+write). Wikipedia, Steam (on empty DB). Writes discovered games.
+
 ---
 
 ## Single Game
 
 ### `GET /api/v1/games/:id`
 
-Retrieve a single game by its domain ID.
+Retrieve a single game by its domain ID. Database-only — no external scraping.
 
 **Path Parameters**:
 
@@ -485,21 +478,6 @@ Retrieve a single game by its domain ID.
 curl "http://localhost:3000/api/v1/games/game-abc123"
 ```
 
-**fetch**:
-
-```js
-const gameId = "game-abc123"; // obtained from /api/v1/games
-const res = await fetch(`http://localhost:3000/api/v1/games/${gameId}`);
-const { data } = await res.json();
-
-console.log(data.titles[0]?.value);
-console.log(`Classification: ${data.classification}`);
-console.log(`Releases: ${data.releases.length}`);
-data.releases.forEach((r) => {
-  console.log(`  - ${r.platform.name} (${r.region?.name ?? "Unknown"})`);
-});
-```
-
 **Response**:
 
 ```json
@@ -510,15 +488,16 @@ data.releases.forEach((r) => {
       { "value": "The Legend of Zelda: Breath of the Wild", "type": "primary" }
     ],
     "releases": [...],
-    "developers": [{ "name": "Nintendo" }],
+    "developers": [{ "name": "Nintendo EPD" }],
     "publishers": [{ "name": "Nintendo" }],
-    "genres": [{ "name": "Adventure" }],
+    "genres": [{ "name": "Action" }, { "name": "Adventure" }],
     "externalIdentifiers": [...],
     "relationships": [...],
     "evidence": [...],
     "classification": "GAME",
     "completeness": "FOUND_COMPLETE"
-  }
+  },
+  "origin": "database"
 }
 ```
 
@@ -529,6 +508,8 @@ data.releases.forEach((r) => {
 | 400 | `VALIDATION_ERROR` | Empty or missing `id` |
 | 404 | `NOT_FOUND` | No game with that ID exists |
 | 500 | `PERSISTENCE_ERROR` | MongoDB failure |
+
+**Dependencies**: MongoDB (read-only). No external APIs. No writes.
 
 ---
 
@@ -585,39 +566,6 @@ curl "http://localhost:3000/api/v1/covers/search?q=Zelda&type=all&limit=9"
 curl "http://localhost:3000/api/v1/covers/search?q=Hollow%20Knight&source=wikipedia&limit=3"
 ```
 
-**fetch — cover search with type filtering**:
-
-```js
-const params = new URLSearchParams({
-  q: "Hollow Knight",
-  type: "cover",
-  limit: "3",
-});
-
-const res = await fetch(`http://localhost:3000/api/v1/covers/search?${params}`);
-const { data } = await res.json();
-
-console.log(`Query: ${data.query}`);
-console.log(`Type: ${data.type}, Limit: ${data.limit}`);
-console.log(`Selected: ${data.selected?.url ?? "none"}`);
-data.candidates.forEach((c) => {
-  console.log(`  - ${c.url} (${c.source}, score: ${c.ranking.totalScore.toFixed(2)})`);
-});
-```
-
-**fetch — search for game logos**:
-
-```js
-const res = await fetch("http://localhost:3000/api/v1/covers/search?q=Final%20Fantasy&type=logo&limit=5");
-const { data } = await res.json();
-
-if (data.selected) {
-  console.log(`Best logo: ${data.selected.url}`);
-} else {
-  console.log("No logo found above threshold");
-}
-```
-
 **Response**:
 
 ```json
@@ -666,6 +614,8 @@ if (data.selected) {
 | 400 | `VALIDATION_ERROR` | Missing `q`, invalid `type`, `limit` out of range |
 | 500 | `INTERNAL_ERROR` | Unexpected failure |
 
+**Dependencies**: Wikipedia, Steam (external APIs). No MongoDB. No writes.
+
 ---
 
 ## Game Cover
@@ -686,19 +636,6 @@ Discover and return a cover for an existing game. If the game already has a cach
 
 ```bash
 curl "http://localhost:3000/api/v1/games/game-abc123/cover"
-```
-
-**fetch**:
-
-```js
-const gameId = "game-abc123";
-const res = await fetch(`http://localhost:3000/api/v1/games/${gameId}/cover`);
-const { data } = await res.json();
-
-console.log(`Game: ${data.gameId}`);
-console.log(`Selected: ${data.selected?.url ?? "none"}`);
-console.log(`Candidates: ${data.candidates.length}`);
-data.errors.forEach((e) => console.warn(`Source error: ${e.source} — ${e.message}`));
 ```
 
 **Behavior**:
@@ -726,7 +663,8 @@ data.errors.forEach((e) => console.warn(`Source error: ${e.source} — ${e.messa
     },
     "candidates": [],
     "errors": []
-  }
+  },
+  "origin": "database"
 }
 ```
 
@@ -742,7 +680,8 @@ data.errors.forEach((e) => console.warn(`Source error: ${e.source} — ${e.messa
     "selected": null,
     "candidates": [],
     "errors": []
-  }
+  },
+  "origin": "scraper"
 }
 ```
 
@@ -753,6 +692,8 @@ data.errors.forEach((e) => console.warn(`Source error: ${e.source} — ${e.messa
 | 400 | `VALIDATION_ERROR` | Empty or missing `id` |
 | 404 | `NOT_FOUND` | No game with that ID exists |
 | 500 | `INTERNAL_ERROR` | Unexpected failure |
+
+**Dependencies**: MongoDB (read+write). Wikipedia, Steam. Writes cover to game record.
 
 ---
 
@@ -789,7 +730,7 @@ curl "http://localhost:3000/api/v1/games/GAME_ID/cover"
 |----------|---------|---------------|--------|
 | `GET /health` | ❌ | ❌ | ❌ |
 | `GET /api/v1/games` | ✅ read | ❌ | ❌ |
-| `GET /api/v1/games/search` | ✅ read | ❌ | ❌ |
+| `GET /api/v1/games/search` | ✅ read+write | ✅ Wikipedia, Steam (on empty DB) | ✅ persists discovered games |
 | `GET /api/v1/games/:id` | ✅ read | ❌ | ❌ |
 | `GET /api/v1/covers/search` | ❌ | ✅ Wikipedia, Steam | ❌ |
 | `GET /api/v1/games/:id/cover` | ✅ read+write | ✅ Wikipedia, Steam | ✅ persists cover |
@@ -798,6 +739,44 @@ curl "http://localhost:3000/api/v1/games/GAME_ID/cover"
 
 - `WikipediaAdapter` — queries `en.wikipedia.org/w/api.php` for page images
 - `SteamAdapter` — queries `store.steampowered.com/api` for header capsules
+
+---
+
+# Error Responses
+
+All error responses follow a consistent structure:
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable description",
+    "requestId": "abc-123"
+  }
+}
+```
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Invalid request data (Zod validation failure) |
+| 404 | `NOT_FOUND` | Resource not found |
+| 500 | `PERSISTENCE_ERROR` | MongoDB connection or query failure |
+| 500 | `INTERNAL_ERROR` | Unexpected failure |
+| 502 | `SOURCE_ERROR` | External source failure |
+| 502 | `AI_ERROR` | AI provider failure |
+
+---
+
+# Middleware
+
+The following middleware is applied to all requests (in order):
+
+1. **Body Parser** — `express.json()` (100kb limit)
+2. **Request ID** — Generates unique ID, sets `X-Request-Id` header
+3. **Request Logger** — Logs method, path, status, duration
+4. **Request Timeout** — 30s timeout (configurable)
+5. **Rate Limiter** — 100 requests per 60s window (configurable)
+6. **Error Handler** — Translates errors to consistent JSON responses
 
 ---
 

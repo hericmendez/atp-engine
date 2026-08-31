@@ -125,6 +125,10 @@ describe('requestTimeoutMiddleware', () => {
 });
 
 describe('rateLimiterMiddleware', () => {
+  beforeEach(() => {
+    vi.useRealTimers();
+  });
+
   it('should allow requests under limit', () => {
     const req = createMockRequest();
     const res = createMockResponse();
@@ -156,5 +160,79 @@ describe('rateLimiterMiddleware', () => {
         message: 'Too many requests',
       },
     });
+  });
+
+  it('should lazily remove expired entries on next request', () => {
+    vi.useFakeTimers();
+
+    const res = createMockResponse();
+    const next = vi.fn();
+
+    const middleware = rateLimiterMiddleware({ windowMs: 1000, maxRequests: 2 });
+
+    const req1 = createMockRequest({ ip: '10.0.0.1' });
+    middleware(req1, res, next);
+    middleware(req1, res, next);
+
+    vi.advanceTimersByTime(1001);
+
+    const req2 = createMockRequest({ ip: '10.0.0.1' });
+    middleware(req2, res, next);
+
+    expect(next).toHaveBeenCalledTimes(3);
+    expect(res.status).not.toHaveBeenCalledWith(429);
+
+    vi.useRealTimers();
+  });
+
+  it('should reset window after expiry', () => {
+    vi.useFakeTimers();
+
+    const res = createMockResponse();
+    const next = vi.fn();
+
+    const middleware = rateLimiterMiddleware({ windowMs: 500, maxRequests: 1 });
+
+    const req = createMockRequest({ ip: '10.0.0.2' });
+    middleware(req, res, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+
+    middleware(req, res, next);
+    expect(res.status).toHaveBeenCalledWith(429);
+
+    vi.advanceTimersByTime(501);
+
+    const reqAfter = createMockRequest({ ip: '10.0.0.2' });
+    middleware(reqAfter, res, next);
+
+    expect(next).toHaveBeenCalledTimes(2);
+    expect(res.status).toHaveBeenCalledTimes(1);
+
+    vi.useRealTimers();
+  });
+
+  it('should keep clients independent after expiry', () => {
+    vi.useFakeTimers();
+
+    const res = createMockResponse();
+    const next = vi.fn();
+
+    const middleware = rateLimiterMiddleware({ windowMs: 1000, maxRequests: 1 });
+
+    const reqA = createMockRequest({ ip: '10.0.0.3' });
+    middleware(reqA, res, next);
+    expect(next).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(1001);
+
+    const reqB = createMockRequest({ ip: '10.0.0.4' });
+    middleware(reqB, res, next);
+    expect(next).toHaveBeenCalledTimes(2);
+
+    middleware(reqA, res, next);
+    expect(next).toHaveBeenCalledTimes(3);
+
+    vi.useRealTimers();
   });
 });

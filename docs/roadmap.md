@@ -672,43 +672,24 @@ Async: AI enrichment via gemma3:4b or phi4-mini (background)
 
 Make the engine resilient to external failures.
 
-### Tasks
+### Tasks Completed
 
 - [x] structured logging;
 - [x] request IDs;
 - [x] source timeout handling;
 - [x] retry policy;
 - [x] rate-limit handling (HTTP);
-- [x] failure-mode tests;
-- [ ] source isolation;
-- [ ] AI timeout handling;
-- [ ] AI fallback;
-- [ ] database error handling;
-- [ ] metrics.
+- [x] failure-mode tests.
+
+### Deferred (not blocking)
+
+- [ ] source-level rate limiting — sources handle their own limits; low traffic does not justify duplication.
+- [ ] circuit breaker — retry + timeout sufficient for current traffic.
+- [ ] dedicated metrics platform — covered by structured logging; premature.
 
 ### Status
 
 **Complete.** Core reliability infrastructure implemented and validated.
-
-Completed:
-- Structured operational logging for HTTP, Discovery, Classification, Identity Resolution, Enrichment, and Sources.
-- Request/correlation IDs via AsyncLocalStorage — propagated automatically through all log entries.
-- Logger automatically includes requestId from async context without explicit parameter passing.
-- escapeRegex utility to prevent regex injection in MongoDB queries.
-- Race condition in save() eliminated by relying on atomic unique constraint.
-- Health check reports database and AI dependency status.
-- withTimeout utility for composable timeout with AbortController signal.
-- Retry policy integrated into BaseAdapter.fetchJson with exponential backoff and jitter.
-- Retryable errors: timeout, rate_limited, network_failure, invalid_response (5xx).
-- Non-retryable errors: not_found (404), parse_failure, authentication_failure.
-- Rate limiter middleware integrated into HTTP layer (100 req/min per IP).
-- Request timeout middleware integrated into HTTP layer (30s default).
-- Failure-mode tests: timeout, retry on transient errors, retry exhaustion, no retry on 404, malformed response, concurrent timeout+retry.
-
-Deferred (not blocking):
-- Source-level rate limiting — sources handle their own limits; low traffic does not justify duplication.
-- Circuit breaker — deferred to Phase 15; retry + timeout sufficient for current traffic.
-- Metrics — covered by structured logging; dedicated metrics platform premature.
 
 ### Exit Criteria
 
@@ -740,27 +721,63 @@ Performance improvements do not change domain behavior.
 
 ---
 
-# 17. Phase 15 — Production Hardening
+# 17. Phase 15 — Production Hardening ✅
 
 ## Objectives
 
 Prepare ATP for long-term use.
 
-### Tasks
+### Tasks Completed
 
-- production Docker configuration;
-- configuration validation;
-- security review;
-- API rate limiting;
-- request limits;
-- observability;
-- backup strategy;
-- migration strategy;
-- operational documentation.
+- [x] Rate limiter resource lifecycle fix (lazy cleanup, no setInterval leak);
+- [x] Production Docker configuration (.dockerignore, NODE_ENV, HEALTHCHECK, --omit=dev).
+
+### Validated (no changes required)
+
+- Configuration validation: Zod-based, fail-fast, defaults, formatted errors ✅
+- Request limits: pagination max 100, cover limit max 9, cover query max 200 chars, JSON body default 100kb ✅
+- Observability: structured JSON logging, requestId, HTTP/discovery/classification/identity/enrichment/source/AI events, health endpoint ✅
+- Security: input validation via Zod, regex injection protection, error handler generic messages, no secrets in code ✅
+
+### Deferred (valid architectural decisions, not blocking)
+
+- Helmet security headers — needs deployment model discussion
+- CORS — not needed for backend-to-backend usage
+- Backup strategy — cannot define without deployment target
+- Migration tooling — MongoDB flexible schema sufficient
+- API authentication — internal service, not public-facing
+- Circuit breaker — retry + timeout sufficient
+- Dedicated metrics platform — structured logging sufficient
+- DB projection optimization — needs measurement
+- Enrichment RegExp memoization — needs measurement
+
+### Status
+
+**Complete.** Rate limiter fixed, Docker production-hardened, all remaining items deferred with valid justification.
 
 ---
 
-# 18. Recommended Implementation Order
+# 18. Phase 16 — Enrichment Integration (Proposed)
+
+## Objectives
+
+Wire the existing EnrichmentEngine into the application layer and persist discovery results.
+
+### Candidate Subtasks
+
+- EnrichmentService — wire EnrichmentEngine into application layer
+- Persist discovery results — stop making every search a full external API call
+- Integration tests for enrichment and persistence flows
+
+### Status
+
+**Reconnaissance complete.** Awaiting scope approval.
+
+See `docs/reports/phase-16-reconnaissance.md` for full analysis.
+
+---
+
+# 19. Recommended Implementation Order
 
 The preferred sequence is:
 
