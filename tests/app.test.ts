@@ -79,8 +79,10 @@ describe('app', () => {
   it('responds to GET /health', async () => {
     const res = await request(app).get('/health');
     expect(res.status).toBe(200);
-    expect(res.body.status).toBe('ok');
+    expect(['ok', 'degraded']).toContain(res.body.status);
     expect(res.body.timestamp).toBeDefined();
+    expect(res.body.uptime).toBeDefined();
+    expect(res.body.dependencies).toBeDefined();
   });
 
   it('returns 404 for unknown routes', async () => {

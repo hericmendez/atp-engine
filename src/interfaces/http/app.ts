@@ -3,6 +3,10 @@ import { healthRouter } from './routes/health.js';
 import { gamesRouter, type GamesRouterDependencies } from './routes/games.js';
 import { coverRouter, type CoverRouterDependencies } from './routes/cover.js';
 import { errorHandler } from './middleware/error-handler.js';
+import { requestIdMiddleware } from './middleware/request-id.js';
+import { requestLoggerMiddleware } from './middleware/request-logger.js';
+import { requestTimeoutMiddleware } from './middleware/request-timeout.js';
+import { rateLimiterMiddleware } from './middleware/rate-limiter.js';
 import { NotFoundError } from '../../shared/errors/errors.js';
 
 export interface AppDependencies {
@@ -14,6 +18,10 @@ export function createApp(deps: AppDependencies): express.Express {
   const app = express();
 
   app.use(express.json());
+  app.use(requestIdMiddleware);
+  app.use(requestLoggerMiddleware);
+  app.use(requestTimeoutMiddleware({ timeoutMs: 30000 }));
+  app.use(rateLimiterMiddleware({ windowMs: 60000, maxRequests: 100 }));
   app.use(healthRouter());
 
   const apiV1 = express.Router();
