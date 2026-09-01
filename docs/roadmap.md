@@ -892,7 +892,38 @@ Progressively improve catalog quality by enriching `FOUND_PARTIAL` games in the 
 
 ---
 
-# 22. Recommended Implementation Order
+# 22. Phase 20 — IGDB Source ✅
+
+## Objectives
+
+Add IGDB as a third source adapter to improve discovery coverage for games beyond Wikipedia and Steam (retro, indie, non-PC).
+
+### Tasks
+
+- Created `IgdbAdapter` implementing `SourceAdapter` with Twitch OAuth2 authentication
+- Added IGDB config env vars (`IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET`) — optional, adapter only registered when both present
+- Implemented platform and genre ID-to-name mapping (200+ platforms, 30+ genres)
+- Implemented cover image URL generation from IGDB `image_id`
+- Added IGDB adapter to source registry (conditional registration)
+- Updated sources barrel exports and added IGDB fixtures
+- 28 new tests covering search, getById, OAuth token management, platform/genre mapping, date handling, error scenarios
+
+### Exit Criteria
+
+- IGDB adapter registered when credentials provided
+- IGDB adapter not registered when credentials missing (graceful degradation)
+- Discovery queries all registered sources (Wikipedia + Steam + IGDB)
+- IGDB failures isolated from other sources
+- All 939 tests pass
+- Build, lint, format validation passes
+
+### Status
+
+**Complete.** IGDB adapter with OAuth2 token management, 939 tests passing.
+
+---
+
+# 23. Recommended Implementation Order
 
 The preferred sequence is:
 

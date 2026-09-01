@@ -25,3 +25,5 @@ export {
 export { WikipediaAdapter, type WikipediaAdapterConfig } from './wikipedia/index.js';
 
 export { SteamAdapter, type SteamAdapterConfig } from './steam/index.js';
+
+export { IgdbAdapter, type IgdbAdapterConfig } from './igdb/index.js';

@@ -11,6 +11,7 @@ import { MongoPlatformCatalogRepository } from './infrastructure/persistence/mon
 import { SourceRegistry } from './sources/source-registry.js';
 import { WikipediaAdapter } from './sources/wikipedia/wikipedia-adapter.js';
 import { SteamAdapter } from './sources/steam/steam-adapter.js';
+import { IgdbAdapter } from './sources/igdb/igdb-adapter.js';
 import { DiscoveryEngine } from './discovery/discovery-engine.js';
 import { DeterministicClassifier } from './classification/deterministic-classifier.js';
 import { DeterministicIdentityResolver } from './identity/deterministic-identity-resolver.js';
@@ -49,6 +50,19 @@ async function main(): Promise<void> {
   sourceRegistry.register(
     new SteamAdapter({ source: 'steam', baseUrl: 'https://store.steampowered.com/api' }),
   );
+
+  if (config.IGDB_CLIENT_ID && config.IGDB_CLIENT_SECRET) {
+    sourceRegistry.register(
+      new IgdbAdapter({
+        source: 'igdb',
+        clientId: config.IGDB_CLIENT_ID,
+        clientSecret: config.IGDB_CLIENT_SECRET,
+      }),
+    );
+    logger.info('IGDB adapter registered');
+  } else {
+    logger.info('IGDB adapter not registered (missing IGDB_CLIENT_ID or IGDB_CLIENT_SECRET)');
+  }
 
   const classifier = new DeterministicClassifier();
   const identityResolver = new DeterministicIdentityResolver();

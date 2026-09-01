@@ -14,6 +14,8 @@ const envSchema = z.object({
   AI_TIMEOUT_MS: z.coerce.number().int().positive().default(10000),
   SOURCE_TIMEOUT: z.coerce.number().int().positive().default(10000),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  IGDB_CLIENT_ID: z.string().optional().default(''),
+  IGDB_CLIENT_SECRET: z.string().optional().default(''),
 });
 
 export type Env = z.infer<typeof envSchema>;

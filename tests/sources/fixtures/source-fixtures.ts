@@ -125,3 +125,84 @@ export const STEAM_MULTI_PLATFORM_RESPONSE = {
     },
   },
 };
+
+// IGDB Fixtures
+
+export const IGDB_OAUTH_TOKEN_RESPONSE = {
+  access_token: 'test-access-token-igdb',
+  expires_in: 5587808,
+  token_type: 'bearer',
+};
+
+export const IGDB_SEARCH_RESPONSE = [
+  {
+    id: 1942,
+    name: 'The Witcher 3: Wild Hunt',
+    slug: 'the-witcher-3-wild-hunt',
+    summary:
+      'The Witcher 3: Wild Hunt is a 2015 action role-playing game developed and published by CD Projekt.',
+    first_release_date: 1431993600,
+    genres: [12, 31],
+    platforms: [6, 48, 49, 130],
+    involved_companies: [100],
+    cover: {
+      id: 'co1vkf',
+      url: '/uploads/co1vkf.jpg',
+      image_id: 'co1vkf',
+    },
+    screenshots: [{ id: 'sc1abc', url: '/uploads/sc1abc.jpg', image_id: 'sc1abc' }],
+    themes: [1],
+  },
+  {
+    id: 1020,
+    name: 'Resident Evil 4',
+    slug: 'resident-evil-4',
+    summary: 'Resident Evil 4 is a 2005 survival horror game developed and published by Capcom.',
+    first_release_date: 1130217600,
+    genres: [5, 31],
+    platforms: [6, 48],
+    involved_companies: [101],
+    cover: {
+      id: 'co2def',
+      url: '/uploads/co2def.jpg',
+      image_id: 'co2def',
+    },
+    screenshots: [],
+    themes: [1],
+  },
+];
+
+export const IGDB_GAME_DETAIL_RESPONSE = [
+  {
+    id: 1942,
+    name: 'The Witcher 3: Wild Hunt',
+    slug: 'the-witcher-3-wild-hunt',
+    summary:
+      'The Witcher 3: Wild Hunt is a 2015 action role-playing game developed and published by CD Projekt.',
+    first_release_date: 1431993600,
+    genres: [12, 31],
+    platforms: [6, 48, 49, 130],
+    involved_companies: [100],
+    cover: {
+      id: 'co1vkf',
+      url: '/uploads/co1vkf.jpg',
+      image_id: 'co1vkf',
+    },
+    screenshots: [{ id: 'sc1abc', url: '/uploads/sc1abc.jpg', image_id: 'sc1abc' }],
+    themes: [1],
+  },
+];
+
+export const IGDB_COMPANIES_RESPONSE = [
+  {
+    id: 100,
+    name: 'CD Projekt Red',
+  },
+];
+
+export const IGDB_COMPANIES_MULTI_RESPONSE = [
+  {
+    id: 101,
+    name: 'Capcom',
+  },
+];
