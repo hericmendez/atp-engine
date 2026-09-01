@@ -3,6 +3,7 @@ import { CatalogService } from './application/catalog-service.js';
 import { CoverService } from './application/cover-service.js';
 import { EnrichmentService } from './application/enrichment-service.js';
 import { EnrichmentRunner } from './application/enrichment-runner.js';
+import { CatalogSyncService } from './application/catalog-sync-service.js';
 import { PlatformCatalogService } from './application/platform-catalog-service.js';
 import { PlatformSeedService } from './application/platform-seed-service.js';
 import { CoverEngine } from './cover/cover-engine.js';
@@ -81,6 +82,13 @@ async function main(): Promise<void> {
 
   const platformCatalogService = new PlatformCatalogService({ platformCatalogRepository });
 
+  const catalogSyncService = new CatalogSyncService({
+    gameRepository,
+    platformCatalogRepository,
+    discoveryEngine,
+    enrichmentService,
+  });
+
   const enrichmentRunner = new EnrichmentRunner(
     { gameRepository, sourceRegistry },
     { batchSize: 10, concurrency: 2, itemTimeoutMs: 15_000, cooldownMs: 60_000 },
@@ -94,6 +102,7 @@ async function main(): Promise<void> {
     games: { catalogService },
     cover: { coverService },
     platforms: { platformCatalogService },
+    catalogSync: { catalogSyncService },
   });
 
   const server = app.listen(config.PORT, () => {

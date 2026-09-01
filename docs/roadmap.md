@@ -923,7 +923,48 @@ Add IGDB as a third source adapter to improve discovery coverage for games beyon
 
 ---
 
-# 23. Recommended Implementation Order
+# 23. Phase 21 — Catalog Synchronization Engine ✅
+
+## Objectives
+
+Implement a manual catalog synchronization endpoint that reconciles platform-specific game catalogs by querying all registered discovery sources, filtering by platform relevance, deduplicating via identity resolution, and persisting new or enriched games.
+
+### Tasks
+
+- Created `CatalogSyncService` (application layer) with `sync()` method orchestrating platform resolution, query construction, discovery, platform filtering, classification, identity resolution, persistence, and enrichment
+- Created `catalog-sync-types.ts` with `SyncRequest`, `SyncResult`, `PlatformSyncResult`, `SyncTotals`, `ResolvedPlatform` types
+- Added `CatalogSyncRequestSchema` Zod validation (platforms array or activeOnly, from/to dates, date order constraint)
+- Created `POST /api/v1/catalog/sync` route with structured JSON response
+- Updated `AppDependencies` and `createApp` to include catalogSync router
+- Wired `CatalogSyncService` in `server.ts` with GameRepository, PlatformCatalogRepository, DiscoveryEngine, EnrichmentService
+- Platform resolution supports explicit platform IDs, activeOnly mode, and deduplication
+- Query construction builds platform-specific search strings (e.g., "Nintendo Switch games 2025")
+- Platform relevance filtering checks releases[].platform, titles, and description
+- Classification filtering rejects non-GAME candidates (FRANCHISE, DLC, etc.)
+- Dry run mode returns structured results without persisting or enriching
+- Platform failure isolation — one platform failure does not block others
+- 22 new tests covering sync service (unit) and API route (integration): empty platforms, single sync, activeOnly, dry run, classification rejection, external ID dedup, enrichment updates, platform filtering, multi-platform aggregation, error handling, partial failures, validation cases
+
+### Exit Criteria
+
+- `POST /api/v1/catalog/sync` accepts valid sync requests
+- Validation rejects missing platforms+activeOnly, invalid dates, from>to
+- Single platform sync constructs correct query and persists results
+- activeOnly mode resolves all active platforms
+- Dry run returns results without database writes
+- Existing games enriched when discovered via external ID
+- Platform failures isolated — partial status reported
+- Non-GAME candidates rejected
+- 961 tests pass
+- Build, lint, format validation passes
+
+### Status
+
+**Complete.** Catalog synchronization engine with 961 tests passing.
+
+---
+
+# 24. Recommended Implementation Order
 
 The preferred sequence is:
 
@@ -965,7 +1006,7 @@ Do not invert this order merely to reach a visible feature faster.
 
 ---
 
-# 19. AI Implementation Rule
+# 25. AI Implementation Rule
 
 AI must not be implemented before the native pipeline is capable of producing a valid result.
 
@@ -975,7 +1016,7 @@ AI exists to improve ambiguous cases.
 
 ---
 
-# 20. MVP Definition
+# 26. MVP Definition
 
 The first meaningful MVP should be capable of:
 
@@ -1002,7 +1043,7 @@ AI may be added after these capabilities are stable.
 
 ---
 
-# 21. Post-MVP AI
+# 27. Post-MVP AI
 
 After the deterministic MVP is stable, AI should initially target only ambiguous cases.
 
@@ -1019,7 +1060,7 @@ Identity resolution should receive the highest priority because incorrect merges
 
 ---
 
-# 22. Future Features
+# 28. Future Features
 
 Possible future capabilities include:
 
@@ -1041,7 +1082,7 @@ These are not required for the initial implementation.
 
 ---
 
-# 23. Scope Control
+# 29. Scope Control
 
 A feature should not be implemented merely because it could be useful.
 
@@ -1054,7 +1095,7 @@ Before adding functionality, verify:
 
 ---
 
-# 24. Roadmap Invariants
+# 30. Roadmap Invariants
 
 1. Correctness precedes optimization.
 2. Native logic precedes AI.
@@ -1067,7 +1108,7 @@ Before adding functionality, verify:
 
 ---
 
-# 25. Final Goal
+# 31. Final Goal
 
 ATP should evolve from:
 

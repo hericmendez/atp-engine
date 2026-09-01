@@ -454,6 +454,24 @@ describe('Phase 17 — Platform Catalog & Advanced Game Queries', () => {
         } as never,
       },
       platforms: { platformCatalogService: mockPlatformCatalogService },
+      catalogSync: {
+        catalogSyncService: {
+          sync: async () => ({
+            status: 'completed',
+            platforms: [],
+            totals: {
+              candidatesFound: 0,
+              newGames: 0,
+              existingGames: 0,
+              updatedGames: 0,
+              rejected: 0,
+              errors: 0,
+            },
+            dryRun: false,
+            durationMs: 0,
+          }),
+        } as never,
+      },
     });
   });
 

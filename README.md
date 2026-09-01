@@ -219,6 +219,7 @@ All endpoints are prefixed with `http://localhost:3000` (configurable via `PORT`
 | `GET` | `/api/v1/games/:id/cover` | Get cover for a game | Covers |
 | `GET` | `/api/v1/platforms/summary` | List platforms with filters | Platform Catalog |
 | `GET` | `/api/v1/platforms/:platformId` | Retrieve single platform | Platform Catalog |
+| `POST` | `/api/v1/catalog/sync` | Synchronize catalog for platforms | Catalog Sync |
 
 ---
 
@@ -860,6 +861,90 @@ curl "http://localhost:3000/api/v1/platforms/nintendo-switch"
 
 ---
 
+## Catalog Sync
+
+### `POST /api/v1/catalog/sync`
+
+Synchronize the game catalog for one or more platforms by querying all registered discovery sources, filtering by platform relevance, and persisting new or enriched games.
+
+**Request body**:
+
+```json
+{
+  "platforms": ["nintendo-switch"],
+  "activeOnly": false,
+  "from": "2025-01-01",
+  "to": "2025-12-31",
+  "dryRun": true
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `platforms` | `string[]` | Yes (unless `activeOnly`) | Platform IDs to sync |
+| `activeOnly` | `boolean` | No | Sync all active platforms (default: `false`) |
+| `from` | `string` | Yes | Start date (ISO format) |
+| `to` | `string` | Yes | End date (ISO format) |
+| `dryRun` | `boolean` | No | Return results without persisting (default: `false`) |
+
+**Response**:
+
+```json
+{
+  "data": {
+    "status": "completed",
+    "platforms": [
+      {
+        "platformId": "nintendo-switch",
+        "platformName": "Nintendo Switch",
+        "candidatesFound": 12,
+        "newGames": 8,
+        "existingGames": 2,
+        "updatedGames": 1,
+        "rejected": 1,
+        "errors": 0,
+        "status": "completed"
+      }
+    ],
+    "totals": {
+      "candidatesFound": 12,
+      "newGames": 8,
+      "existingGames": 2,
+      "updatedGames": 1,
+      "rejected": 1,
+      "errors": 0
+    },
+    "dryRun": true,
+    "durationMs": 3421
+  }
+}
+```
+
+**Examples**:
+
+```bash
+# Dry run sync for Nintendo Switch
+curl -X POST http://localhost:3000/api/v1/catalog/sync \
+  -H 'Content-Type: application/json' \
+  -d '{"platforms":["nintendo-switch"],"from":"2025-01-01","to":"2025-12-31","dryRun":true}'
+
+# Sync all active platforms
+curl -X POST http://localhost:3000/api/v1/catalog/sync \
+  -H 'Content-Type: application/json' \
+  -d '{"activeOnly":true,"from":"2025-01-01","to":"2025-12-31"}'
+```
+
+**Errors**:
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Missing platforms+activeOnly, invalid dates, from>to |
+| 500 | `PERSISTENCE_ERROR` | MongoDB failure |
+
+**Dependencies**: MongoDB (read/write). Discovery sources (Wikipedia, Steam, optionally IGDB). No AI dependency.
+
+---
+
 # Quick Reference
 
 ```bash
@@ -898,6 +983,11 @@ curl "http://localhost:3000/api/v1/platforms/summary?companyName=Nintendo"
 
 # Single platform (replace PLATFORM_ID)
 curl "http://localhost:3000/api/v1/platforms/PLATFORM_ID"
+
+# Catalog sync (dry run)
+curl -X POST http://localhost:3000/api/v1/catalog/sync \
+  -H 'Content-Type: application/json' \
+  -d '{"platforms":["nintendo-switch"],"from":"2025-01-01","to":"2025-12-31","dryRun":true}'
 ```
 
 ---
@@ -914,6 +1004,7 @@ curl "http://localhost:3000/api/v1/platforms/PLATFORM_ID"
 | `GET /api/v1/games/:id/cover` | ✅ read+write | ✅ Wikipedia, Steam | ✅ persists cover |
 | `GET /api/v1/platforms/summary` | ✅ read | ❌ | ❌ |
 | `GET /api/v1/platforms/:platformId` | ✅ read | ❌ | ❌ |
+| `POST /api/v1/catalog/sync` | ✅ read+write | ✅ Wikipedia, Steam, IGDB | ✅ persists discovered games |
 
 **External source adapters**:
 

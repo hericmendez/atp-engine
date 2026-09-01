@@ -151,6 +151,46 @@ export const PlatformCatalogQuerySchema = PaginationSchema.extend({
     };
   });
 
+export const CatalogSyncRequestSchema = z
+  .object({
+    platforms: z
+      .array(z.string().min(1, 'Platform ID must not be empty'))
+      .min(1, 'At least one platform is required when activeOnly is not set')
+      .optional(),
+    activeOnly: z.boolean().optional().default(false),
+    from: z
+      .string()
+      .min(1, 'From date is required')
+      .refine((val) => !isNaN(new Date(val).getTime()), 'Invalid from date'),
+    to: z
+      .string()
+      .min(1, 'To date is required')
+      .refine((val) => !isNaN(new Date(val).getTime()), 'Invalid to date'),
+    dryRun: z.boolean().optional().default(false),
+  })
+  .refine(
+    (val) => {
+      if (val.platforms && val.platforms.length > 0) return true;
+      if (val.activeOnly) return true;
+      return false;
+    },
+    {
+      message: 'Either platforms array or activeOnly=true is required',
+    },
+  )
+  .refine(
+    (val) => {
+      const fromDate = new Date(val.from);
+      const toDate = new Date(val.to);
+      return fromDate <= toDate;
+    },
+    {
+      message: 'From date must be before or equal to To date',
+    },
+  );
+
+export type CatalogSyncRequestInput = z.infer<typeof CatalogSyncRequestSchema>;
+
 export const PlatformIdParamSchema = z.object({
   platformId: z
     .string()

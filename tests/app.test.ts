@@ -84,11 +84,31 @@ function createMockPlatformCatalogService(): PlatformCatalogService {
   } as PlatformCatalogService;
 }
 
+function createMockCatalogSyncService() {
+  return {
+    sync: async () => ({
+      status: 'completed',
+      platforms: [],
+      totals: {
+        candidatesFound: 0,
+        newGames: 0,
+        existingGames: 0,
+        updatedGames: 0,
+        rejected: 0,
+        errors: 0,
+      },
+      dryRun: false,
+      durationMs: 0,
+    }),
+  };
+}
+
 describe('app', () => {
   const app = createApp({
     games: { catalogService: createMockCatalogService() },
     cover: { coverService: createMockCoverService() },
     platforms: { platformCatalogService: createMockPlatformCatalogService() },
+    catalogSync: { catalogSyncService: createMockCatalogSyncService() },
   });
 
   it('creates an express application', () => {
