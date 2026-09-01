@@ -35,6 +35,17 @@ describe('Cover API', () => {
     app = createApp({
       games: { catalogService: createMockCatalogService() },
       cover: { coverService: mockCoverService },
+      platforms: {
+        platformCatalogService: {
+          listPlatforms: async () => ({
+            data: { items: [], total: 0, page: 1, limit: 20, totalPages: 0 },
+            origin: 'database' as const,
+          }),
+          getPlatformById: async () => {
+            throw new Error('Not implemented');
+          },
+        } as never,
+      },
     });
   });
 

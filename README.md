@@ -217,6 +217,8 @@ All endpoints are prefixed with `http://localhost:3000` (configurable via `PORT`
 | `GET` | `/api/v1/games/:id` | Retrieve single game | Catalog |
 | `GET` | `/api/v1/covers/search` | Search cover images | Covers |
 | `GET` | `/api/v1/games/:id/cover` | Get cover for a game | Covers |
+| `GET` | `/api/v1/platforms/summary` | List platforms with filters | Platform Catalog |
+| `GET` | `/api/v1/platforms/:platformId` | Retrieve single platform | Platform Catalog |
 
 ---
 
@@ -277,20 +279,22 @@ List games with composable filters, pagination, and sorting. Database-only — n
 |-----------|------|---------|-------------|
 | `search` | string | — | Partial match on titles, developers, publishers |
 | `title` | string | — | Partial match on titles only |
-| `platform` | string | — | Partial match on platform name (e.g., `Nintendo Switch`) |
+| `platform` | string | — | Partial match on platform name (e.g., `Nintendo Switch`). Supports comma-separated values for OR semantics (e.g., `Nintendo Switch,PlayStation 5`) |
 | `platformFamily` | string | — | Exact match on platform family |
-| `developer` | string | — | Partial match on developer name |
-| `publisher` | string | — | Partial match on publisher name |
-| `genre` | string | — | Partial match on genre name |
+| `developer` | string | — | Partial match on developer name. Supports comma-separated values |
+| `publisher` | string | — | Partial match on publisher name. Supports comma-separated values |
+| `genre` | string | — | Partial match on genre name. Supports comma-separated values |
 | `classification` | enum | — | `GAME`, `DLC`, `EXPANSION`, `MOVIE`, `TV_SHOW`, `ANIME`, `SOUNDTRACK`, `BOOK`, `HARDWARE`, `PROMOTIONAL`, `CHARACTER`, `FRANCHISE`, `PERSON`, `EVENT`, `UNKNOWN` |
 | `completeness` | enum | — | `NOT_FOUND`, `FOUND_PARTIAL`, `FOUND_SUFFICIENT`, `FOUND_COMPLETE` |
-| `releaseYear` | int | — | 1950–2100 |
+| `releaseYear` | int | — | Exact year match (1950–2100) |
+| `releaseYearFrom` | int | — | Minimum release year (inclusive, 1950–2100) |
+| `releaseYearTo` | int | — | Maximum release year (inclusive, 1950–2100) |
 | `page` | int | `1` | Page number (min 1) |
 | `limit` | int | `20` | Results per page (1–100) |
-| `sort` | enum | — | `title`, `createdAt`, `updatedAt`, `completeness` |
+| `sort` | enum | — | `title`, `name`, `createdAt`, `updatedAt`, `completeness`, `releaseDate` |
 | `order` | enum | `desc` | `asc` or `desc` |
 
-All filters are composable (AND logic).
+All filters are composable (AND logic). Multiple values within the same filter use OR semantics (e.g., `platform=Nintendo Switch,PlayStation 5` returns games on either platform).
 
 **curl — basic listing**:
 
@@ -326,6 +330,24 @@ curl "http://localhost:3000/api/v1/games?page=2&limit=10&sort=title&order=asc"
 
 ```bash
 curl "http://localhost:3000/api/v1/games?platformFamily=Nintendo&developer=Nintendo&genre=Adventure&releaseYear=2017&sort=title&order=asc&limit=5"
+```
+
+**curl — multiple platforms (OR)**:
+
+```bash
+curl "http://localhost:3000/api/v1/games?platform=Nintendo%20Switch,PlayStation%205&classification=GAME"
+```
+
+**curl — multiple genres (OR)**:
+
+```bash
+curl "http://localhost:3000/api/v1/games?genre=RPG,Action&developer=Square%20Enix"
+```
+
+**curl — release year range**:
+
+```bash
+curl "http://localhost:3000/api/v1/games?releaseYearFrom=2017&releaseYearTo=2023&sort=releaseDate&order=asc"
 ```
 
 **Response**:
@@ -697,6 +719,145 @@ curl "http://localhost:3000/api/v1/games/game-abc123/cover"
 
 ---
 
+## Platform Catalog Summary
+
+### `GET /api/v1/platforms/summary`
+
+List platforms from the catalog with composable filters, pagination, and sorting. Returns game counts per platform.
+
+**Query Parameters**:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `companyName` | string | — | Partial match on company name (e.g., `Nintendo`, `Sony`) |
+| `platformStatus` | enum | — | `active`, `inactive`, `discontinued` |
+| `releaseYear` | int | — | Exact year match (1950–2100) |
+| `releaseYearRange` | string | — | Year range in `from-to` format (e.g., `1990-2000`) |
+| `showEmptyPlatforms` | boolean | `false` | Include platforms with zero games |
+| `page` | int | `1` | Page number |
+| `limit` | int | `20` | Results per page (1–100) |
+| `sort` | enum | — | `name`, `releaseYear`, `gameCount` |
+| `order` | enum | `asc` | `asc` or `desc` |
+
+**curl — basic listing** (platforms with games only):
+
+```bash
+curl "http://localhost:3000/api/v1/platforms/summary"
+```
+
+**curl — filter by company**:
+
+```bash
+curl "http://localhost:3000/api/v1/platforms/summary?companyName=Nintendo"
+```
+
+**curl — filter by status and release range**:
+
+```bash
+curl "http://localhost:3000/api/v1/platforms/summary?platformStatus=active&releaseYearRange=2000-2025"
+```
+
+**curl — include empty platforms**:
+
+```bash
+curl "http://localhost:3000/api/v1/platforms/summary?showEmptyPlatforms=true"
+```
+
+**curl — sorted by release year**:
+
+```bash
+curl "http://localhost:3000/api/v1/platforms/summary?sort=releaseYear&order=desc"
+```
+
+**Response**:
+
+```json
+{
+  "data": [
+    {
+      "id": "nintendo-switch",
+      "name": "Nintendo Switch",
+      "company": "Nintendo",
+      "releaseYear": 2017,
+      "status": "active",
+      "family": "Nintendo",
+      "type": "handheld",
+      "thumb": null,
+      "gameCount": 42
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 15,
+    "totalPages": 1
+  },
+  "origin": "database"
+}
+```
+
+**Errors**:
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Invalid query parameters |
+| 500 | `PERSISTENCE_ERROR` | MongoDB connection or query failure |
+
+**Dependencies**: MongoDB (read-only). No external APIs. No writes.
+
+---
+
+## Single Platform
+
+### `GET /api/v1/platforms/:platformId`
+
+Retrieve a single platform by its domain ID.
+
+**Path Parameters**:
+
+| Parameter | Description |
+|-----------|-------------|
+| `platformId` | Platform domain ID (required, non-empty) |
+
+**How to get a valid ID**: Call `GET /api/v1/platforms/summary` and use the `id` field.
+
+**curl**:
+
+```bash
+curl "http://localhost:3000/api/v1/platforms/nintendo-switch"
+```
+
+**Response**:
+
+```json
+{
+  "data": {
+    "id": "nintendo-switch",
+    "name": "Nintendo Switch",
+    "company": "Nintendo",
+    "releaseYear": 2017,
+    "status": "active",
+    "family": "Nintendo",
+    "type": "handheld",
+    "thumb": null,
+    "gameCount": 42
+  },
+  "origin": "database"
+}
+```
+
+**Errors**:
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Empty or missing `platformId` |
+| 404 | `NOT_FOUND` | No platform with that ID exists |
+| 500 | `PERSISTENCE_ERROR` | MongoDB failure |
+
+**Dependencies**: MongoDB (read-only). No external APIs. No writes.
+
+---
+
 # Quick Reference
 
 ```bash
@@ -709,6 +870,12 @@ curl "http://localhost:3000/api/v1/games"
 # List games with filters
 curl "http://localhost:3000/api/v1/games?platform=Nintendo%20Switch&genre=Adventure&classification=GAME"
 
+# List games with multiple filters (OR within filter, AND across)
+curl "http://localhost:3000/api/v1/games?platform=Nintendo%20Switch,PlayStation%205&genre=RPG"
+
+# List games by release year range
+curl "http://localhost:3000/api/v1/games?releaseYearFrom=2017&releaseYearTo=2023&sort=releaseDate&order=asc"
+
 # Search games
 curl "http://localhost:3000/api/v1/games/search?q=Doom"
 
@@ -720,6 +887,15 @@ curl "http://localhost:3000/api/v1/covers/search?q=Doom%20Eternal&type=cover&lim
 
 # Game cover (replace GAME_ID with real ID)
 curl "http://localhost:3000/api/v1/games/GAME_ID/cover"
+
+# Platform catalog
+curl "http://localhost:3000/api/v1/platforms/summary"
+
+# Platforms by company
+curl "http://localhost:3000/api/v1/platforms/summary?companyName=Nintendo"
+
+# Single platform (replace PLATFORM_ID)
+curl "http://localhost:3000/api/v1/platforms/PLATFORM_ID"
 ```
 
 ---
@@ -734,6 +910,8 @@ curl "http://localhost:3000/api/v1/games/GAME_ID/cover"
 | `GET /api/v1/games/:id` | ✅ read | ❌ | ❌ |
 | `GET /api/v1/covers/search` | ❌ | ✅ Wikipedia, Steam | ❌ |
 | `GET /api/v1/games/:id/cover` | ✅ read+write | ✅ Wikipedia, Steam | ✅ persists cover |
+| `GET /api/v1/platforms/summary` | ✅ read | ❌ | ❌ |
+| `GET /api/v1/platforms/:platformId` | ✅ read | ❌ | ❌ |
 
 **External source adapters**:
 

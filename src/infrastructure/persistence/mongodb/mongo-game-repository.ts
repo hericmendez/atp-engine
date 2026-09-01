@@ -110,7 +110,11 @@ export class MongoGameRepository implements GameRepository {
       filter['titles.value'] = { $regex: escapeRegex(query.title), $options: 'i' };
     }
 
-    if (query.platform) {
+    if (query.platforms && query.platforms.length > 0) {
+      filter['releases.platform.name'] = {
+        $in: query.platforms.map((p) => new RegExp(escapeRegex(p), 'i')),
+      };
+    } else if (query.platform) {
       filter['releases.platform.name'] = { $regex: escapeRegex(query.platform), $options: 'i' };
     }
 
@@ -118,15 +122,27 @@ export class MongoGameRepository implements GameRepository {
       filter['releases.platform.family'] = query.platformFamily;
     }
 
-    if (query.developer) {
+    if (query.developers && query.developers.length > 0) {
+      filter['developers.name'] = {
+        $in: query.developers.map((d) => new RegExp(escapeRegex(d), 'i')),
+      };
+    } else if (query.developer) {
       filter['developers.name'] = { $regex: escapeRegex(query.developer), $options: 'i' };
     }
 
-    if (query.publisher) {
+    if (query.publishers && query.publishers.length > 0) {
+      filter['publishers.name'] = {
+        $in: query.publishers.map((p) => new RegExp(escapeRegex(p), 'i')),
+      };
+    } else if (query.publisher) {
       filter['publishers.name'] = { $regex: escapeRegex(query.publisher), $options: 'i' };
     }
 
-    if (query.genre) {
+    if (query.genres && query.genres.length > 0) {
+      filter['genres.name'] = {
+        $in: query.genres.map((g) => new RegExp(escapeRegex(g), 'i')),
+      };
+    } else if (query.genre) {
       filter['genres.name'] = { $regex: escapeRegex(query.genre), $options: 'i' };
     }
 
@@ -142,6 +158,17 @@ export class MongoGameRepository implements GameRepository {
       filter['releases.releaseDate.year'] = query.releaseYear;
     }
 
+    if (query.releaseYearFrom !== undefined || query.releaseYearTo !== undefined) {
+      const yearFilter: MongoFilter = {};
+      if (query.releaseYearFrom !== undefined) {
+        yearFilter.$gte = query.releaseYearFrom;
+      }
+      if (query.releaseYearTo !== undefined) {
+        yearFilter.$lte = query.releaseYearTo;
+      }
+      filter['releases.releaseDate.year'] = yearFilter;
+    }
+
     return filter;
   }
 
@@ -152,13 +179,25 @@ export class MongoGameRepository implements GameRepository {
 
     const fieldMap: Record<string, string> = {
       title: 'titles.value',
+      name: 'titles.value',
       createdAt: 'createdAt',
       updatedAt: 'updatedAt',
       completeness: 'completeness',
+      releaseDate: 'releases.releaseDate.year',
     };
 
     const direction = sort.direction === 'asc' ? 1 : -1;
-    return { [fieldMap[sort.field] ?? sort.field]: direction };
+    const field = fieldMap[sort.field] ?? sort.field;
+
+    // Add tie-breaker for deterministic sorting
+    if (sort.field === 'title' || sort.field === 'name') {
+      return { [field]: direction, 'titles.value': direction };
+    }
+    if (sort.field === 'releaseDate') {
+      return { [field]: direction };
+    }
+
+    return { [field]: direction };
   }
 
   async save(game: Game): Promise<void> {

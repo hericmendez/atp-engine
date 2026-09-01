@@ -771,9 +771,55 @@ Wire the existing EnrichmentEngine into the application layer and persist discov
 
 ### Status
 
-**Reconnaissance complete.** Awaiting scope approval.
+**Complete.** EnrichmentService wired, discovery→enrichment→persistence pipeline implemented, comprehensive test suite (841 tests), MVP v1.0 checkpoint established.
 
-See `docs/reports/phase-16-reconnaissance.md` for full analysis.
+---
+
+# 18. Phase 17 — Platform Catalog & Advanced Game Queries ✅
+
+## Objectives
+
+Add a platform catalog (summary, detail, filters, sorting, pagination) and extend game filtering with multi-value filters, release year range queries, and new sort fields.
+
+### Tasks
+
+- PlatformCatalogEntry domain model (new entity, separate from Platform value object)
+- PlatformCatalogRepository interface with `findMany`, `findById`, `findByCompany`
+- MongoDB PlatformCatalog schema with indexes on name, company, releaseYear, status, family
+- MongoDB PlatformCatalogRepository implementation with batch gameCount aggregation
+- PlatformCatalogService (listPlatforms, getPlatformById)
+- Platform routes (GET /platforms/summary, GET /platforms/:platformId)
+- Platform validation schemas (PlatformCatalogQuerySchema, PlatformIdParamSchema)
+- Extend GameQuery with multi-value filters (platforms, developers, publishers, genres)
+- Extend GameQuery with releaseYearFrom/releaseYearTo range queries
+- Extend GameSortField with releaseDate and name aliases
+- Comma-separated parsing in CatalogQuerySchema via Zod transforms
+- Server wiring for PlatformCatalogService
+- Update AppDependencies to include PlatformRouterDependencies
+- Fix existing tests for new AppDependencies shape
+
+### Design Decisions
+
+- **PlatformCatalogEntry as new domain entity**: Platform value object is embedded in Game releases (no id, no company, no releaseYear). PlatformCatalogEntry is a separate concept with full metadata for catalog browsing.
+- **Comma-separated multi-value filters**: `?platform=Nintendo Switch,PlayStation 5` → OR semantics within filter, AND across filters. Uses Zod `.transform()` for parsing.
+- **releaseYearFrom/releaseYearTo**: Range queries for platform and game filtering. `releaseYearRange` query param parsed from `from-to` string format.
+- **showEmptyPlatforms defaults to false**: Only platforms with games are shown by default. Explicitly set to `true` to include empty platforms.
+- **gameCount computed via batch aggregation**: Not N+1. MongoDB aggregation on games collection per page of platforms.
+- **Platform domain separation**: `Platform` value object (name, family, type) remains embedded. `PlatformCatalogEntry` (id, name, company, releaseYear, status, family, type, thumb) is independent.
+
+### Exit Criteria
+
+- Platform catalog endpoints functional (summary with filters, single platform by ID)
+- Game filtering supports multi-value OR within filter, AND across filters
+- Release year range queries work for both platforms and games
+- New sort fields (releaseDate, name) available for game queries
+- All 867 tests pass
+- Build, lint, format validation passes
+- README updated with all new endpoints and filter documentation
+
+### Status
+
+**Complete.** Platform catalog with summary/detail endpoints, game multi-value filters, release year ranges, new sort fields. 867 tests passing. README updated.
 
 ---
 

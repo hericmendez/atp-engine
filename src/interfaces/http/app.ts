@@ -2,6 +2,7 @@ import express from 'express';
 import { healthRouter } from './routes/health.js';
 import { gamesRouter, type GamesRouterDependencies } from './routes/games.js';
 import { coverRouter, type CoverRouterDependencies } from './routes/cover.js';
+import { platformRouter, type PlatformRouterDependencies } from './routes/platforms.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { requestIdMiddleware } from './middleware/request-id.js';
 import { requestLoggerMiddleware } from './middleware/request-logger.js';
@@ -12,6 +13,7 @@ import { NotFoundError } from '../../shared/errors/errors.js';
 export interface AppDependencies {
   games: GamesRouterDependencies;
   cover: CoverRouterDependencies;
+  platforms: PlatformRouterDependencies;
 }
 
 export function createApp(deps: AppDependencies): express.Express {
@@ -27,6 +29,7 @@ export function createApp(deps: AppDependencies): express.Express {
   const apiV1 = express.Router();
   apiV1.use(gamesRouter(deps.games));
   apiV1.use(coverRouter(deps.cover));
+  apiV1.use(platformRouter(deps.platforms));
   app.use('/api/v1', apiV1);
 
   app.use((_req, _res, next) => {

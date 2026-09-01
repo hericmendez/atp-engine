@@ -2,8 +2,10 @@ import { createApp } from './interfaces/http/app.js';
 import { CatalogService } from './application/catalog-service.js';
 import { CoverService } from './application/cover-service.js';
 import { EnrichmentService } from './application/enrichment-service.js';
+import { PlatformCatalogService } from './application/platform-catalog-service.js';
 import { CoverEngine } from './cover/cover-engine.js';
 import { MongoGameRepository } from './infrastructure/persistence/mongodb/mongo-game-repository.js';
+import { MongoPlatformCatalogRepository } from './infrastructure/persistence/mongodb/mongo-platform-catalog-repository.js';
 import { SourceRegistry } from './sources/source-registry.js';
 import { WikipediaAdapter } from './sources/wikipedia/wikipedia-adapter.js';
 import { SteamAdapter } from './sources/steam/steam-adapter.js';
@@ -25,6 +27,7 @@ async function main(): Promise<void> {
   await connectDatabase();
 
   const gameRepository = new MongoGameRepository();
+  const platformCatalogRepository = new MongoPlatformCatalogRepository();
 
   const sourceRegistry = new SourceRegistry();
   sourceRegistry.register(
@@ -47,9 +50,12 @@ async function main(): Promise<void> {
   const coverEngine = new CoverEngine({ sourceRegistry });
   const coverService = new CoverService({ gameRepository, coverEngine });
 
+  const platformCatalogService = new PlatformCatalogService({ platformCatalogRepository });
+
   const app = createApp({
     games: { catalogService },
     cover: { coverService },
+    platforms: { platformCatalogService },
   });
 
   const server = app.listen(config.PORT, () => {

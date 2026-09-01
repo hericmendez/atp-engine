@@ -3,6 +3,7 @@ import request from 'supertest';
 import { createApp } from '../src/interfaces/http/app.js';
 import type { CatalogService } from '../src/application/catalog-service.js';
 import type { CoverService } from '../src/application/cover-service.js';
+import type { PlatformCatalogService } from '../src/application/platform-catalog-service.js';
 import type { GameQuery } from '../src/domain/game/game-repository.js';
 
 function createMockCatalogService(): CatalogService {
@@ -65,10 +66,29 @@ function createMockCoverService(): CoverService {
   } as CoverService;
 }
 
+function createMockPlatformCatalogService(): PlatformCatalogService {
+  return {
+    listPlatforms: async () => ({
+      data: {
+        items: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        totalPages: 0,
+      },
+      origin: 'database' as const,
+    }),
+    getPlatformById: async (_id: string) => {
+      throw new Error('Not implemented');
+    },
+  } as PlatformCatalogService;
+}
+
 describe('app', () => {
   const app = createApp({
     games: { catalogService: createMockCatalogService() },
     cover: { coverService: createMockCoverService() },
+    platforms: { platformCatalogService: createMockPlatformCatalogService() },
   });
 
   it('creates an express application', () => {

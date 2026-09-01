@@ -8,7 +8,8 @@ export interface FindByExternalIdentifierInput {
   externalId: string;
 }
 
-export type GameSortField = 'title' | 'createdAt' | 'updatedAt' | 'completeness';
+export type GameSortField =
+  'title' | 'createdAt' | 'updatedAt' | 'completeness' | 'releaseDate' | 'name';
 export type GameSortDirection = 'asc' | 'desc';
 
 export interface GameSort {
@@ -20,13 +21,19 @@ export interface GameQuery {
   readonly search?: string;
   readonly title?: string;
   readonly platform?: string;
+  readonly platforms?: string[];
   readonly platformFamily?: string;
   readonly developer?: string;
+  readonly developers?: string[];
   readonly publisher?: string;
+  readonly publishers?: string[];
   readonly genre?: string;
+  readonly genres?: string[];
   readonly classification?: ClassificationCategory;
   readonly completeness?: MetadataCompleteness;
   readonly releaseYear?: number;
+  readonly releaseYearFrom?: number;
+  readonly releaseYearTo?: number;
   readonly page?: number;
   readonly limit?: number;
   readonly sort?: GameSort;
