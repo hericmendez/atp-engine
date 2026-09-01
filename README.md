@@ -725,6 +725,8 @@ curl "http://localhost:3000/api/v1/games/game-abc123/cover"
 
 List platforms from the catalog with composable filters, pagination, and sorting. Returns game counts per platform.
 
+The platform catalog is seeded on server startup with 181 canonical platforms spanning home consoles, handhelds, arcade systems, PCs, mobile, and retro/boutique hardware from 48 companies. The seed is idempotent — running it multiple times does not create duplicates.
+
 **Query Parameters**:
 
 | Parameter | Type | Default | Description |

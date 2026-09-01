@@ -823,7 +823,45 @@ Add a platform catalog (summary, detail, filters, sorting, pagination) and exten
 
 ---
 
-# 19. Recommended Implementation Order
+# 19. Phase 18 — Platform Seed & Catalog Completeness ✅
+
+## Objectives
+
+Seed the platform catalog with a curated set of canonical platforms, enabling meaningful catalog browsing and gameCount enrichment out of the box.
+
+### Tasks
+
+- Audit and document all seed data fields against `PlatformCatalogEntry` domain model
+- Create curated seed data for ~181 platforms across home consoles, handhelds, PCs, mobile, arcade, retro/boutique
+- Add `upsert()` method to `PlatformCatalogRepository` interface
+- Implement `upsert()` in `MongoPlatformCatalogRepository` using `findOneAndUpdate` with upsert
+- Create `PlatformSeedService` with idempotent seed logic
+- Wire seed into server startup after database connection (non-fatal on error)
+- Write comprehensive tests (seed data validation, service unit tests, idempotency, mocked API tests)
+- Live API validation against running server
+- Update README with seed documentation
+- Create phase report
+
+### Seed Data Coverage
+
+- 181 platforms across 48 companies
+- Nintendo (25), PlayStation (14), Xbox (10), Sega (20), Atari (9), PC (12), Bandai (3), SNK (7), NEC/various retro (10), arcade systems (20+), handheld PCs (6), retro/boutique (8), mobile (4), web/smart TV (4), Microsoft/Valve (2)
+
+### Exit Criteria
+
+- 181 canonical platforms seeded on server startup
+- Seed is idempotent (running multiple times does not create duplicates)
+- All platform catalog endpoints functional with seed data
+- All 888 tests pass
+- Build, lint, format validation passes
+
+### Status
+
+**Complete.** Platform seed with 181 curated entries, idempotent upsert, 888 tests passing. README updated.
+
+---
+
+# 20. Recommended Implementation Order
 
 The preferred sequence is:
 

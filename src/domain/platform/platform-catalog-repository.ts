@@ -37,4 +37,6 @@ export interface PlatformCatalogRepository {
   findById(id: string): Promise<PlatformCatalogEntryWithGameCount | null>;
 
   findByCompany(company: string): Promise<readonly PlatformCatalogEntryWithGameCount[]>;
+
+  upsert(entry: PlatformCatalogEntry): Promise<void>;
 }

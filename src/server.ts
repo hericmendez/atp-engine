@@ -3,6 +3,7 @@ import { CatalogService } from './application/catalog-service.js';
 import { CoverService } from './application/cover-service.js';
 import { EnrichmentService } from './application/enrichment-service.js';
 import { PlatformCatalogService } from './application/platform-catalog-service.js';
+import { PlatformSeedService } from './application/platform-seed-service.js';
 import { CoverEngine } from './cover/cover-engine.js';
 import { MongoGameRepository } from './infrastructure/persistence/mongodb/mongo-game-repository.js';
 import { MongoPlatformCatalogRepository } from './infrastructure/persistence/mongodb/mongo-platform-catalog-repository.js';
@@ -28,6 +29,16 @@ async function main(): Promise<void> {
 
   const gameRepository = new MongoGameRepository();
   const platformCatalogRepository = new MongoPlatformCatalogRepository();
+
+  const platformSeedService = new PlatformSeedService({ platformCatalogRepository });
+  try {
+    const seedResult = await platformSeedService.seed();
+    logger.info('Platform seed result', seedResult);
+  } catch (error) {
+    logger.error('Platform seed failed', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 
   const sourceRegistry = new SourceRegistry();
   sourceRegistry.register(

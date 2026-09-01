@@ -4,6 +4,7 @@ import type {
   PaginatedPlatformResult,
   PlatformCatalogEntryWithGameCount,
 } from '../../../domain/platform/platform-catalog-repository.js';
+import type { PlatformCatalogEntry } from '../../../domain/platform/platform-catalog.js';
 import { PlatformCatalogModel } from './platform-catalog-schema.js';
 import { GameModel } from './game-schema.js';
 import { PersistenceError } from '../../../shared/errors/errors.js';
@@ -70,6 +71,29 @@ export class MongoPlatformCatalogRepository implements PlatformCatalogRepository
       throw new PersistenceError('Failed to find platform catalog entries by company', {
         cause: error,
       });
+    }
+  }
+
+  async upsert(entry: PlatformCatalogEntry): Promise<void> {
+    try {
+      await PlatformCatalogModel.findOneAndUpdate(
+        { platformId: entry.id },
+        {
+          $set: {
+            platformId: entry.id,
+            name: entry.name,
+            company: entry.company,
+            releaseYear: entry.releaseYear,
+            status: entry.status,
+            family: entry.family,
+            type: entry.type,
+            thumb: entry.thumb,
+          },
+        },
+        { upsert: true, runValidators: true },
+      );
+    } catch (error) {
+      throw new PersistenceError('Failed to upsert platform catalog entry', { cause: error });
     }
   }
 
