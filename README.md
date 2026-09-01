@@ -415,7 +415,7 @@ Search games by term. Database-first with discovery fallback — if no DB matche
 | `source` | string | — | Reserved (not yet used) |
 | `page` | int | `1` | Page number |
 | `limit` | int | `20` | Results per page (1–100) |
-| `sort` | enum | — | `title`, `createdAt`, `updatedAt`, `completeness` |
+| `sort` | enum | — | `title`, `name`, `createdAt`, `updatedAt`, `completeness`, `releaseDate` |
 | `order` | enum | `desc` | `asc` or `desc` |
 
 **Note**: `GET /api/v1/games/search?q=Doom` and `GET /api/v1/games?search=Doom` produce identical results.
