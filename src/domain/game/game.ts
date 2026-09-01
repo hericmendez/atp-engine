@@ -33,6 +33,7 @@ export interface Game {
   readonly classification: ClassificationCategory;
   readonly completeness: MetadataCompleteness;
   readonly cover: GameCover | null;
+  readonly lastEnrichedAt: Date | null;
 }
 
 export interface CreateGameInput {
@@ -64,6 +65,7 @@ export function createGame(input: CreateGameInput): Game {
     classification: input.classification ?? 'UNKNOWN',
     completeness: input.completeness ?? 'FOUND_PARTIAL',
     cover: null,
+    lastEnrichedAt: null,
   };
 }
 
@@ -177,5 +179,12 @@ export function gameWithCover(game: Game, cover: GameCover | null): Game {
   return {
     ...game,
     cover,
+  };
+}
+
+export function gameWithLastEnrichedAt(game: Game, lastEnrichedAt: Date): Game {
+  return {
+    ...game,
+    lastEnrichedAt,
   };
 }

@@ -82,6 +82,7 @@ export function toDomain(doc: GameDocument): Game {
           type: doc.cover.type as Game['cover'] extends { type: infer T } ? T : never,
         }
       : null,
+    lastEnrichedAt: doc.lastEnrichedAt ?? null,
   };
 }
 
@@ -146,5 +147,6 @@ export function toPersistence(game: Game): Record<string, unknown> {
           type: game.cover.type,
         }
       : null,
+    lastEnrichedAt: game.lastEnrichedAt ?? null,
   };
 }

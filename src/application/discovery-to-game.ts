@@ -66,6 +66,7 @@ export function discoveryGroupToGame(group: DiscoveryGroupResult): Game {
     classification: mapClassification(group),
     completeness: mapCompleteness(group),
     cover: null,
+    lastEnrichedAt: null,
   };
 }
 

@@ -59,6 +59,7 @@ export interface GameDocument extends Document {
     height: number | null;
     type: string;
   } | null;
+  lastEnrichedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -179,6 +180,7 @@ const gameSchema = new Schema<GameDocument>(
     classification: { type: String, required: true },
     completeness: { type: String, required: true },
     cover: { type: coverSchema, default: null },
+    lastEnrichedAt: { type: Date, default: null },
   },
   {
     timestamps: true,
@@ -193,5 +195,6 @@ gameSchema.index({ 'titles.value': 1 });
 gameSchema.index({ classification: 1, completeness: 1 });
 gameSchema.index({ updatedAt: -1 });
 gameSchema.index({ 'releases.releaseDate.year': 1 });
+gameSchema.index({ completeness: 1, lastEnrichedAt: 1 });
 
 export const GameModel = mongoose.model<GameDocument>('Game', gameSchema);

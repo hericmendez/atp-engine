@@ -2,6 +2,7 @@ import { createApp } from './interfaces/http/app.js';
 import { CatalogService } from './application/catalog-service.js';
 import { CoverService } from './application/cover-service.js';
 import { EnrichmentService } from './application/enrichment-service.js';
+import { EnrichmentRunner } from './application/enrichment-runner.js';
 import { PlatformCatalogService } from './application/platform-catalog-service.js';
 import { PlatformSeedService } from './application/platform-seed-service.js';
 import { CoverEngine } from './cover/cover-engine.js';
@@ -13,6 +14,7 @@ import { SteamAdapter } from './sources/steam/steam-adapter.js';
 import { DiscoveryEngine } from './discovery/discovery-engine.js';
 import { DeterministicClassifier } from './classification/deterministic-classifier.js';
 import { DeterministicIdentityResolver } from './identity/deterministic-identity-resolver.js';
+import { IntervalEnrichmentScheduler } from './infrastructure/enrichment-scheduler.js';
 import { loadConfig } from './infrastructure/config/config.js';
 import { logger } from './infrastructure/logger/logger.js';
 import { setLogLevel } from './infrastructure/logger/logger.js';
@@ -52,16 +54,27 @@ async function main(): Promise<void> {
   const identityResolver = new DeterministicIdentityResolver();
   const discoveryEngine = new DiscoveryEngine(sourceRegistry, classifier, identityResolver);
 
+  const enrichmentService = new EnrichmentService({ gameRepository });
+
   const catalogService = new CatalogService({
     gameRepository,
     discoveryEngine,
-    enrichmentService: new EnrichmentService({ gameRepository }),
+    enrichmentService,
   });
 
   const coverEngine = new CoverEngine({ sourceRegistry });
   const coverService = new CoverService({ gameRepository, coverEngine });
 
   const platformCatalogService = new PlatformCatalogService({ platformCatalogRepository });
+
+  const enrichmentRunner = new EnrichmentRunner(
+    { gameRepository, sourceRegistry },
+    { batchSize: 10, concurrency: 2, itemTimeoutMs: 15_000, cooldownMs: 60_000 },
+  );
+
+  const enrichmentScheduler = new IntervalEnrichmentScheduler(enrichmentRunner, {
+    intervalMs: 300_000,
+  });
 
   const app = createApp({
     games: { catalogService },
@@ -74,10 +87,20 @@ async function main(): Promise<void> {
       port: config.PORT,
       env: config.NODE_ENV,
     });
+
+    try {
+      enrichmentScheduler.start();
+      logger.info('Enrichment scheduler started', { intervalMs: 300_000 });
+    } catch (error) {
+      logger.error('Failed to start enrichment scheduler', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   });
 
   const shutdown = async (): Promise<void> => {
     logger.info('Shutting down...');
+    await enrichmentScheduler.stop();
     server.close();
     await disconnectDatabase();
     process.exit(0);

@@ -861,7 +861,38 @@ Seed the platform catalog with a curated set of canonical platforms, enabling me
 
 ---
 
-# 20. Recommended Implementation Order
+# 21. Phase 19 — Background Enrichment ✅
+
+## Objectives
+
+Progressively improve catalog quality by enriching `FOUND_PARTIAL` games in the background without requiring manual re-search.
+
+### Tasks
+
+- Add `lastEnrichedAt: Date | null` to Game domain model for enrichment tracking
+- Create `EnrichmentRunner` application service with candidate selection, source fetching, and batch processing
+- Create `EnrichmentScheduler` infrastructure interface with `IntervalEnrichmentScheduler` implementation
+- Wire runner and scheduler into server startup with graceful shutdown
+- Support configurable batch size, concurrency, item timeout, and cooldown
+- Source adapter failures handled gracefully per-item without interrupting batch
+- 23 new tests covering candidate selection, enrichment flow, error handling, concurrency, idempotency, and scheduler lifecycle
+
+### Exit Criteria
+
+- Enrichment runner processes `FOUND_PARTIAL` games with external identifiers
+- Runner respects batch size, concurrency, and cooldown limits
+- Source failures handled gracefully without interrupting other items
+- `lastEnrichedAt` prevents re-processing within cooldown window
+- All 911 tests pass
+- Build, lint, format validation passes
+
+### Status
+
+**Complete.** Background enrichment runner with idempotent processing, 911 tests passing.
+
+---
+
+# 22. Recommended Implementation Order
 
 The preferred sequence is:
 

@@ -197,6 +197,7 @@ async function areSameGame(
     classification: 'UNKNOWN',
     completeness: 'FOUND_PARTIAL',
     cover: null,
+    lastEnrichedAt: null,
   };
 
   const resolution = await resolver.resolve(obsB.candidate, fakeGame);
