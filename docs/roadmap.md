@@ -1146,7 +1146,7 @@ Before adding functionality, verify:
 
 ---
 
-# 31. Catalog Sync History — Phase 23
+# 31. Catalog Sync History — Phase 23 ✅
 
 ## Objectives
 
@@ -1181,7 +1181,7 @@ Build clean
 
 ---
 
-# 32. Game Write API (Admin) — Phase 24
+# 32. Game Write API (Admin) — Phase 24 ✅
 
 ## Objectives
 
@@ -1211,6 +1211,17 @@ Existing public routes unaffected
 Lint clean
 Build clean
 ```
+
+### Status
+
+**Complete.** Admin game write API with hard delete, duplicate protection, structured audit logging. 1039 tests passing.
+
+### Deliberately Deferred Items
+
+- **Soft delete**: Requires `deletedAt` field on Game domain, query filtering across all read paths, relationship semantics changes, and completeness calculation updates. Documented as disproportionate cross-cutting refactor for current scope.
+- **Merge endpoint** (`POST /api/v1/admin/games/:id/merge`): Safe merge requires handling releases, external identifiers, relationships, evidence, covers, and metadata integrity. A simplistic merge risks data corruption. Deferred to a dedicated data-integrity phase.
+- **Authentication/authorization**: Intentionally deferred to Phase 25 — Authentication & API Keys. Admin routes are under `/admin/` prefix to create a clean auth boundary.
+- **Relationship cleanup on delete**: Deleting a game may leave orphaned relationship references in other games. Deferred to a dedicated relationship/data-integrity phase.
 
 ---
 

@@ -8,6 +8,7 @@ import { createGameTitle } from '../../src/domain/shared/title.js';
 import { createOrganization } from '../../src/domain/shared/organization.js';
 import { createGenre } from '../../src/domain/shared/genre.js';
 import { createExternalIdentifier } from '../../src/domain/shared/external-identifier.js';
+import { ConflictError, NotFoundError } from '../../src/shared/errors/errors.js';
 
 function createTestGame(overrides: Partial<Game> = {}): Game {
   const id = overrides.id ?? createGameId('admin-test-1');
@@ -143,7 +144,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
 
     it('returns 409 for duplicate external identifier', async () => {
       vi.mocked(mockGameAdminService.createGame).mockRejectedValue(
-        new Error("External identifier 'igdb:12345' is already assigned to game game-1"),
+        new ConflictError("External identifier 'igdb:12345' is already assigned to game game-1"),
       );
 
       const res = await request(app)
@@ -153,7 +154,8 @@ describe('Phase 24 — Game Write API (Admin)', () => {
           externalIdentifiers: [{ source: 'igdb', id: '12345' }],
         });
 
-      expect(res.status).toBe(500);
+      expect(res.status).toBe(409);
+      expect(res.body.error.code).toBe('CONFLICT');
     });
 
     it('returns correct response shape', async () => {
@@ -226,14 +228,15 @@ describe('Phase 24 — Game Write API (Admin)', () => {
 
     it('returns 404 for missing game', async () => {
       vi.mocked(mockGameAdminService.updateGame).mockRejectedValue(
-        new Error('Game with ID nonexistent not found'),
+        new NotFoundError('Game with ID nonexistent not found'),
       );
 
       const res = await request(app)
         .patch('/api/v1/admin/games/nonexistent')
         .send({ titles: [{ value: 'No Game' }] });
 
-      expect(res.status).toBe(500);
+      expect(res.status).toBe(404);
+      expect(res.body.error.code).toBe('NOT_FOUND');
     });
 
     it('returns 400 for invalid patch body', async () => {
@@ -245,7 +248,9 @@ describe('Phase 24 — Game Write API (Admin)', () => {
 
     it('prevents external identifier collision', async () => {
       vi.mocked(mockGameAdminService.updateGame).mockRejectedValue(
-        new Error("External identifier 'igdb:99999' is already assigned to game other-game"),
+        new ConflictError(
+          "External identifier 'igdb:99999' is already assigned to game other-game",
+        ),
       );
 
       const res = await request(app)
@@ -254,7 +259,8 @@ describe('Phase 24 — Game Write API (Admin)', () => {
           externalIdentifiers: [{ source: 'igdb', id: '99999' }],
         });
 
-      expect(res.status).toBe(500);
+      expect(res.status).toBe(409);
+      expect(res.body.error.code).toBe('CONFLICT');
     });
 
     it('validates title type enum', async () => {
@@ -279,12 +285,13 @@ describe('Phase 24 — Game Write API (Admin)', () => {
 
     it('returns 404 for nonexistent game', async () => {
       vi.mocked(mockGameAdminService.deleteGame).mockRejectedValue(
-        new Error('Game with ID nonexistent not found'),
+        new NotFoundError('Game with ID nonexistent not found'),
       );
 
       const res = await request(app).delete('/api/v1/admin/games/nonexistent');
 
-      expect(res.status).toBe(500);
+      expect(res.status).toBe(404);
+      expect(res.body.error.code).toBe('NOT_FOUND');
     });
 
     it('does not affect unrelated records', async () => {
