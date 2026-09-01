@@ -152,16 +152,64 @@ export class WikipediaAdapter extends BaseAdapter {
     result: WikipediaSearchResult,
     coverUrls: string[],
   ): RawCandidate {
+    const description = this.stripHtml(result.snippet);
+    const classificationHints = this.extractClassificationFromText(description);
+
     return {
       source: this.source,
       sourceId: String(result.pageid),
       title: result.title,
-      description: this.stripHtml(result.snippet),
+      description,
       coverUrls,
+      classificationHints,
       metadata: {
         wordcount: result.wordcount,
       },
     };
+  }
+
+  private extractClassificationFromText(
+    text: string,
+  ): { readonly category: string; readonly confidence: number; readonly evidence: string }[] {
+    const hints: { category: string; confidence: number; evidence: string }[] = [];
+    const lower = text.toLowerCase();
+
+    if (
+      lower.includes('video game') ||
+      lower.includes('action-adventure') ||
+      lower.includes('role-playing game') ||
+      lower.includes('platform game') ||
+      lower.includes('first-person shooter') ||
+      lower.includes('battle royale')
+    ) {
+      hints.push({
+        category: 'GAME',
+        confidence: 0.7,
+        evidence: 'Snippet contains game genre term',
+      });
+    }
+    if (lower.includes('film') || lower.includes('movie') || lower.includes('cinema')) {
+      hints.push({ category: 'FILM', confidence: 0.6, evidence: 'Snippet contains film term' });
+    }
+    if (lower.includes('television') || lower.includes('tv series') || lower.includes('tv show')) {
+      hints.push({
+        category: 'TV_SERIES',
+        confidence: 0.6,
+        evidence: 'Snippet contains television term',
+      });
+    }
+    if (lower.includes('album') || lower.includes('soundtrack') || lower.includes('song')) {
+      hints.push({
+        category: 'SOUNDTRACK',
+        confidence: 0.5,
+        evidence: 'Snippet contains music term',
+      });
+    }
+    if (lower.includes('book') || lower.includes('novel') || lower.includes('manga')) {
+      hints.push({ category: 'BOOK', confidence: 0.5, evidence: 'Snippet contains book term' });
+    }
+
+    return hints;
   }
 
   private parseResponseToCandidate(parse: WikipediaPageResponse['parse']): RawCandidate {

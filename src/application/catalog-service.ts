@@ -60,6 +60,20 @@ export class CatalogService {
         return { data: dbResult, origin: 'database' };
       }
 
+      const coreTitle = this.extractCoreTitle(searchQuery);
+      if (coreTitle !== searchQuery) {
+        const coreQuery: GameQuery = {
+          search: coreTitle,
+          page: options.page,
+          limit: options.limit,
+          sort: options.sort,
+        };
+        const coreResult = await this.gameRepository.findMany(coreQuery);
+        if (coreResult.items.length > 0) {
+          return { data: coreResult, origin: 'database' };
+        }
+      }
+
       logger.info('Database search returned empty, falling back to discovery', {
         query: searchQuery,
       });
@@ -71,6 +85,58 @@ export class CatalogService {
     }
 
     return this.discoverAndPersist(searchQuery, options);
+  }
+
+  private extractCoreTitle(query: string): string {
+    const PLATFORM_SUFFIXES = [
+      'ps5',
+      'ps4',
+      'ps3',
+      'ps2',
+      'ps1',
+      'playstation 5',
+      'playstation 4',
+      'playstation 3',
+      'playstation 2',
+      'playstation',
+      'xbox series x',
+      'xbox series s',
+      'xbox one',
+      'xbox 360',
+      'xbox',
+      'nintendo switch',
+      'switch',
+      'wii u',
+      'wii',
+      'gamecube',
+      'n64',
+      'pc',
+      'windows',
+      'mac',
+      'linux',
+      'steam',
+      'android',
+      'ios',
+      'mobile',
+      'epic games',
+      'gog',
+      'origin',
+    ];
+
+    let normalized = query.toLowerCase().trim();
+
+    for (const suffix of PLATFORM_SUFFIXES) {
+      if (normalized.endsWith(' ' + suffix)) {
+        normalized = normalized.slice(0, -(suffix.length + 1)).trim();
+        break;
+      }
+    }
+
+    normalized = normalized
+      .replace(/\s+(for|on|version|edition|definitive|goty|complete)\s+.*$/i, '')
+      .trim();
+
+    return normalized.length > 0 ? normalized : query;
   }
 
   async getGameById(id: string): Promise<CatalogResult<Game>> {
