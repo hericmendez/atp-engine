@@ -16,6 +16,12 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
   IGDB_CLIENT_ID: z.string().optional().default(''),
   IGDB_CLIENT_SECRET: z.string().optional().default(''),
+  CATALOG_SYNC_ENABLED: z
+    .string()
+    .transform((val) => val === 'true')
+    .default('false'),
+  CATALOG_SYNC_INTERVAL_MS: z.coerce.number().int().positive().default(86_400_000),
+  CATALOG_SYNC_LOOKBACK_DAYS: z.coerce.number().int().positive().default(30),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -17,6 +17,7 @@ import { DiscoveryEngine } from './discovery/discovery-engine.js';
 import { DeterministicClassifier } from './classification/deterministic-classifier.js';
 import { DeterministicIdentityResolver } from './identity/deterministic-identity-resolver.js';
 import { IntervalEnrichmentScheduler } from './infrastructure/enrichment-scheduler.js';
+import { IntervalCatalogSyncScheduler } from './infrastructure/catalog-sync-scheduler.js';
 import { loadConfig } from './infrastructure/config/config.js';
 import { logger } from './infrastructure/logger/logger.js';
 import { setLogLevel } from './infrastructure/logger/logger.js';
@@ -98,6 +99,15 @@ async function main(): Promise<void> {
     intervalMs: 300_000,
   });
 
+  const catalogSyncScheduler = new IntervalCatalogSyncScheduler(
+    { catalogSyncService },
+    {
+      intervalMs: config.CATALOG_SYNC_INTERVAL_MS,
+      lookbackDays: config.CATALOG_SYNC_LOOKBACK_DAYS,
+      enabled: config.CATALOG_SYNC_ENABLED,
+    },
+  );
+
   const app = createApp({
     games: { catalogService },
     cover: { coverService },
@@ -119,10 +129,19 @@ async function main(): Promise<void> {
         error: error instanceof Error ? error.message : String(error),
       });
     }
+
+    try {
+      catalogSyncScheduler.start();
+    } catch (error) {
+      logger.error('Failed to start catalog sync scheduler', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   });
 
   const shutdown = async (): Promise<void> => {
     logger.info('Shutting down...');
+    await catalogSyncScheduler.stop();
     await enrichmentScheduler.stop();
     server.close();
     await disconnectDatabase();

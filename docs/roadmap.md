@@ -964,7 +964,45 @@ Implement a manual catalog synchronization endpoint that reconciles platform-spe
 
 ---
 
-# 24. Recommended Implementation Order
+# 24. Phase 22 — Automated Catalog Synchronization ✅
+
+## Objectives
+
+Automate periodic catalog synchronization by wiring the existing CatalogSyncService into a background scheduler that runs on a configurable interval, using a rolling window to periodically fetch recent releases for all active platforms.
+
+### Tasks
+
+- Added scheduler config to config schema (`CATALOG_SYNC_ENABLED`, `CATALOG_SYNC_INTERVAL_MS`, `CATALOG_SYNC_LOOKBACK_DAYS`)
+- Created `CatalogSyncScheduler` interface and `IntervalCatalogSyncScheduler` implementation in infrastructure layer
+- Scheduler delegates to `CatalogSyncService.sync({ activeOnly: true })` for platform resolution
+- Rolling window: `from = now - lookbackDays`, `to = now`
+- Concurrency guard via boolean `running` flag (no overlapping syncs)
+- Wired scheduler into server startup (after enrichment scheduler) and graceful shutdown (first to stop)
+- Structured logging for start, sync start, sync complete, sync failed, stop
+- `runNow()` for manual triggering and testing
+- `getStatus()` returns enabled, running, intervalMs, lookbackDays, lastSyncAt, totalSyncs, lastError
+- 23 new tests covering lifecycle, scheduled execution, concurrency guard, error handling, runNow, status, config validation
+
+### Exit Criteria
+
+- Scheduler disabled by default (`CATALOG_SYNC_ENABLED=false`)
+- Scheduler starts and logs when enabled
+- Scheduler runs sync at configured interval
+- Concurrency guard prevents overlapping syncs
+- Error recovery — scheduler continues after failure
+- Graceful shutdown stops scheduler before enrichment scheduler
+- `runNow()` triggers immediate sync
+- `getStatus()` returns accurate state
+- All 984 tests pass
+- Build, lint, format validation passes
+
+### Status
+
+**Complete.** Automated catalog synchronization scheduler with 984 tests passing.
+
+---
+
+# 25. Recommended Implementation Order
 
 The preferred sequence is:
 

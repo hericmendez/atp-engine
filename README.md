@@ -945,6 +945,28 @@ curl -X POST http://localhost:3000/api/v1/catalog/sync \
 
 ---
 
+## Automated Catalog Sync (Scheduler)
+
+When `CATALOG_SYNC_ENABLED=true`, the server automatically runs catalog synchronization on a configurable interval for all active platforms using a rolling date window.
+
+### Configuration
+
+| Env Var | Default | Description |
+|---------|---------|-------------|
+| `CATALOG_SYNC_ENABLED` | `false` | Enable/disable the scheduler |
+| `CATALOG_SYNC_INTERVAL_MS` | `86400000` (24h) | Sync interval in milliseconds |
+| `CATALOG_SYNC_LOOKBACK_DAYS` | `30` | Rolling window — syncs games from `now - lookbackDays` to `now` |
+
+**curl — trigger immediate sync manually**:
+
+```bash
+curl -X POST http://localhost:3000/api/v1/catalog/sync \
+  -H 'Content-Type: application/json' \
+  -d '{"activeOnly":true,"from":"2025-08-01","to":"2025-09-01"}'
+```
+
+---
+
 # Quick Reference
 
 ```bash
