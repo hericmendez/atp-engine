@@ -72,6 +72,7 @@ describe('Cover API', () => {
           findMany: vi.fn(),
         } as never,
       },
+      admin: { gameAdminService: {} as never },
     });
   });
 

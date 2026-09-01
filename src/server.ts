@@ -1,5 +1,6 @@
 import { createApp } from './interfaces/http/app.js';
 import { CatalogService } from './application/catalog-service.js';
+import { GameAdminService } from './application/game-admin-service.js';
 import { CoverService } from './application/cover-service.js';
 import { EnrichmentService } from './application/enrichment-service.js';
 import { EnrichmentRunner } from './application/enrichment-runner.js';
@@ -83,6 +84,8 @@ async function main(): Promise<void> {
   const coverEngine = new CoverEngine({ sourceRegistry });
   const coverService = new CoverService({ gameRepository, coverEngine });
 
+  const gameAdminService = new GameAdminService({ gameRepository });
+
   const platformCatalogService = new PlatformCatalogService({ platformCatalogRepository });
 
   const catalogSyncService = new CatalogSyncService({
@@ -117,6 +120,7 @@ async function main(): Promise<void> {
     platforms: { platformCatalogService },
     catalogSync: { catalogSyncService },
     catalogSyncHistory: { historyRepository: catalogSyncHistoryRepository },
+    admin: { gameAdminService },
   });
 
   const server = app.listen(config.PORT, () => {

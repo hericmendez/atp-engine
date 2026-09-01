@@ -117,6 +117,7 @@ describe('app', () => {
         findMany: vi.fn(),
       } as never,
     },
+    admin: { gameAdminService: {} as never },
   });
 
   it('creates an express application', () => {

@@ -268,6 +268,7 @@ describe('GET /api/v1/catalog/sync/history', () => {
         catalogSyncService: { sync: vi.fn() } as never,
       },
       catalogSyncHistory: { historyRepository: mockHistoryRepo },
+      admin: { gameAdminService: {} as never },
     });
   });
 
@@ -404,6 +405,7 @@ describe('GET /api/v1/catalog/sync/history/:id', () => {
         catalogSyncService: { sync: vi.fn() } as never,
       },
       catalogSyncHistory: { historyRepository: mockHistoryRepo },
+      admin: { gameAdminService: {} as never },
     });
   });
 

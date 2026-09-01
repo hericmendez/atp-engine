@@ -1181,7 +1181,40 @@ Build clean
 
 ---
 
-# 32. Final Goal
+# 32. Game Write API (Admin) — Phase 24
+
+## Objectives
+
+Create administrative endpoints for manual game creation, update, and deletion.
+
+### Tasks
+
+- Add `ConflictError` (409) to error types
+- Create `GameAdminService` with `createGame`, `updateGame`, `deleteGame`
+- Add `CreateGameBodySchema` and `UpdateGameBodySchema` Zod validation
+- Create `POST /api/v1/admin/games`, `PATCH /api/v1/admin/games/:id`, `DELETE /api/v1/admin/games/:id`
+- Wire admin routes through `createApp` and `server.ts`
+- Duplicate external identifier protection (pre-check + DB constraint)
+- Server-generated IDs with `admin-` prefix
+
+### Exit Criteria
+
+```text
+POST creates valid game with validation
+PATCH updates only supplied fields
+DELETE removes game, returns 204
+404 for nonexistent games
+409 for duplicate external identifiers
+400 for invalid payloads
+Existing public routes unaffected
+1039 tests pass
+Lint clean
+Build clean
+```
+
+---
+
+# 33. Final Goal
 
 ATP should evolve from:
 

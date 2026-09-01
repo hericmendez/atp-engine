@@ -226,3 +226,46 @@ export const SyncHistoryIdParamSchema = z.object({
 
 export type CatalogSyncHistoryQueryInput = z.infer<typeof CatalogSyncHistoryQuerySchema>;
 export type SyncHistoryIdParamInput = z.infer<typeof SyncHistoryIdParamSchema>;
+
+const TitleTypeSchema = z.enum(['primary', 'alternate', 'localized', 'abbreviated']);
+
+const GameTitleBodySchema = z.object({
+  value: z.string().min(1, 'Title value must not be empty').max(500),
+  type: TitleTypeSchema.optional(),
+});
+
+const OrganizationBodySchema = z.object({
+  name: z.string().min(1, 'Name must not be empty').max(200),
+});
+
+const GenreBodySchema = z.object({
+  name: z.string().min(1, 'Genre name must not be empty').max(100),
+});
+
+const ExternalIdentifierBodySchema = z.object({
+  source: z.string().min(1, 'Source must not be empty').max(50),
+  id: z.string().min(1, 'External ID must not be empty').max(200),
+});
+
+export const CreateGameBodySchema = z.object({
+  titles: z.array(GameTitleBodySchema).min(1, 'At least one title is required'),
+  developers: z.array(OrganizationBodySchema).optional().default([]),
+  publishers: z.array(OrganizationBodySchema).optional().default([]),
+  genres: z.array(GenreBodySchema).optional().default([]),
+  externalIdentifiers: z.array(ExternalIdentifierBodySchema).optional().default([]),
+  classification: ClassificationCategorySchema.optional(),
+  completeness: MetadataCompletenessSchema.optional(),
+});
+
+export const UpdateGameBodySchema = z.object({
+  titles: z.array(GameTitleBodySchema).min(1, 'At least one title is required').optional(),
+  developers: z.array(OrganizationBodySchema).optional(),
+  publishers: z.array(OrganizationBodySchema).optional(),
+  genres: z.array(GenreBodySchema).optional(),
+  externalIdentifiers: z.array(ExternalIdentifierBodySchema).optional(),
+  classification: ClassificationCategorySchema.optional(),
+  completeness: MetadataCompletenessSchema.optional(),
+});
+
+export type CreateGameBodyInput = z.infer<typeof CreateGameBodySchema>;
+export type UpdateGameBodyInput = z.infer<typeof UpdateGameBodySchema>;

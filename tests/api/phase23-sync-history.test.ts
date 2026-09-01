@@ -602,6 +602,7 @@ describe('POST /api/v1/catalog/sync — trigger parameter', () => {
           findMany: vi.fn(),
         },
       },
+      admin: { gameAdminService: {} as never },
     });
   });
 

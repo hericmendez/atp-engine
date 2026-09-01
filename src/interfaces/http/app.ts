@@ -8,6 +8,7 @@ import {
   catalogSyncHistoryRouter,
   type CatalogSyncHistoryRouterDependencies,
 } from './routes/catalog-sync-history.js';
+import { adminGamesRouter, type AdminGamesRouterDependencies } from './routes/admin-games.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { requestIdMiddleware } from './middleware/request-id.js';
 import { requestLoggerMiddleware } from './middleware/request-logger.js';
@@ -21,6 +22,7 @@ export interface AppDependencies {
   platforms: PlatformRouterDependencies;
   catalogSync: CatalogSyncRouterDependencies;
   catalogSyncHistory: CatalogSyncHistoryRouterDependencies;
+  admin: AdminGamesRouterDependencies;
 }
 
 export function createApp(deps: AppDependencies): express.Express {
@@ -39,6 +41,7 @@ export function createApp(deps: AppDependencies): express.Express {
   apiV1.use(platformRouter(deps.platforms));
   apiV1.use(catalogSyncRouter(deps.catalogSync));
   apiV1.use(catalogSyncHistoryRouter(deps.catalogSyncHistory));
+  apiV1.use(adminGamesRouter(deps.admin));
   app.use('/api/v1', apiV1);
 
   app.use((_req, _res, next) => {

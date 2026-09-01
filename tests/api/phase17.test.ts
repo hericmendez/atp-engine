@@ -480,6 +480,7 @@ describe('Phase 17 — Platform Catalog & Advanced Game Queries', () => {
           findMany: vi.fn(),
         } as never,
       },
+      admin: { gameAdminService: {} as never },
     });
   });
 

@@ -792,6 +792,7 @@ describe('POST /api/v1/catalog/sync', () => {
           findMany: vi.fn(),
         } as never,
       },
+      admin: { gameAdminService: {} as never },
     });
   });
 

@@ -425,6 +425,7 @@ describe('Phase 18 — Platform Seed & Catalog Completeness', () => {
             findMany: vi.fn(),
           } as never,
         },
+        admin: { gameAdminService: {} as never },
       });
     });
 

@@ -38,6 +38,13 @@ export class PersistenceError extends AppError {
   }
 }
 
+export class ConflictError extends AppError {
+  constructor(message: string, details?: unknown) {
+    super('CONFLICT', message, 409, details);
+    this.name = 'ConflictError';
+  }
+}
+
 export class AIError extends AppError {
   constructor(message: string, details?: unknown) {
     super('AI_ERROR', message, 502, details);

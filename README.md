@@ -222,6 +222,9 @@ All endpoints are prefixed with `http://localhost:3000` (configurable via `PORT`
 | `POST` | `/api/v1/catalog/sync` | Synchronize catalog for platforms | Catalog Sync |
 | `GET` | `/api/v1/catalog/sync/history` | List sync history records | Sync History |
 | `GET` | `/api/v1/catalog/sync/history/:id` | Get sync history by ID | Sync History |
+| `POST` | `/api/v1/admin/games` | Create game manually | Admin Write |
+| `PATCH` | `/api/v1/admin/games/:id` | Update game metadata | Admin Write |
+| `DELETE` | `/api/v1/admin/games/:id` | Delete a game | Admin Write |
 
 ---
 
@@ -1050,6 +1053,68 @@ Get a single sync history record by ID.
 | 404 | `NOT_FOUND` | History record not found |
 
 **Note**: Each `POST /api/v1/catalog/sync` request now returns a `historyId` field in the result, linking to the corresponding history record.
+
+---
+
+## Admin Game Write API
+
+Administrative endpoints for manual game management. Authentication is intentionally deferred to a future phase.
+
+### `POST /api/v1/admin/games`
+
+Create a new game manually.
+
+**Request body**:
+
+```json
+{
+  "titles": [{ "value": "Game Name", "type": "primary" }],
+  "developers": [{ "name": "Studio Name" }],
+  "publishers": [{ "name": "Publisher Name" }],
+  "genres": [{ "name": "Action" }],
+  "externalIdentifiers": [{ "source": "igdb", "id": "12345" }],
+  "classification": "GAME",
+  "completeness": "FOUND_PARTIAL"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `titles` | `array` | Yes | At least one title. Each has `value` (required) and `type` (optional: `primary`, `alternate`, `localized`, `abbreviated`) |
+| `developers` | `array` | No | Array of `{ name: string }` |
+| `publishers` | `array` | No | Array of `{ name: string }` |
+| `genres` | `array` | No | Array of `{ name: string }` |
+| `externalIdentifiers` | `array` | No | Array of `{ source: string, id: string }`. Duplicates of existing games return 409. |
+| `classification` | `string` | No | `GAME`, `DLC`, `EXPANSION`, etc. Default: `UNKNOWN` |
+| `completeness` | `string` | No | `NOT_FOUND`, `FOUND_PARTIAL`, `FOUND_SUFFICIENT`, `FOUND_COMPLETE`. Default: `FOUND_PARTIAL` |
+
+**Response** (201): Created game object.
+
+### `PATCH /api/v1/admin/games/:id`
+
+Update an existing game. Only supplied fields are updated; unspecified fields are preserved.
+
+**Request body**: Same fields as POST, all optional.
+
+**Response** (200): Updated game object.
+
+**Behavior**: External identifiers are **replaced entirely** when provided (not merged). Send the complete desired state.
+
+### `DELETE /api/v1/admin/games/:id`
+
+Delete a game.
+
+**Response** (204): Empty body.
+
+**Note**: This is a hard delete. There is no undo.
+
+**Errors**:
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Invalid payload, missing titles, invalid enum values |
+| 404 | `NOT_FOUND` | Game not found |
+| 409 | `CONFLICT` | External identifier already assigned to another game |
 
 ---
 
