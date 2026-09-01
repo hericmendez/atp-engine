@@ -4,6 +4,7 @@ import type { PlatformCatalogRepository } from '../domain/platform/platform-cata
 import type { DiscoveryEngine } from '../discovery/discovery-engine.js';
 import type { DiscoveryGroupResult } from '../discovery/discovery-types.js';
 import type { EnrichmentService } from './enrichment-service.js';
+import type { CatalogSyncHistoryRepository } from './catalog-sync-history-repository.js';
 import type {
   SyncRequest,
   SyncResult,
@@ -11,6 +12,7 @@ import type {
   ResolvedPlatform,
   SyncTotals,
 } from './catalog-sync-types.js';
+import type { SyncTrigger } from './catalog-sync-history-types.js';
 import { createGameId } from '../domain/shared/ids.js';
 import { discoveryGroupToGame } from './discovery-to-game.js';
 import { logger } from '../infrastructure/logger/logger.js';
@@ -22,6 +24,7 @@ export interface CatalogSyncServiceDependencies {
   platformCatalogRepository: PlatformCatalogRepository;
   discoveryEngine: DiscoveryEngine;
   enrichmentService: EnrichmentService;
+  historyRepository?: CatalogSyncHistoryRepository;
 }
 
 export class CatalogSyncService {
@@ -29,25 +32,128 @@ export class CatalogSyncService {
   private readonly platformCatalogRepository: PlatformCatalogRepository;
   private readonly discoveryEngine: DiscoveryEngine;
   private readonly enrichmentService: EnrichmentService;
+  private readonly historyRepository?: CatalogSyncHistoryRepository;
 
   constructor(deps: CatalogSyncServiceDependencies) {
     this.gameRepository = deps.gameRepository;
     this.platformCatalogRepository = deps.platformCatalogRepository;
     this.discoveryEngine = deps.discoveryEngine;
     this.enrichmentService = deps.enrichmentService;
+    this.historyRepository = deps.historyRepository;
   }
 
   async sync(request: SyncRequest): Promise<SyncResult> {
     const startTime = Date.now();
+    const trigger: SyncTrigger = request.trigger ?? 'manual';
+    const dryRun = request.dryRun ?? false;
 
     logger.info('catalog.sync.started', {
       platformCount: request.platforms?.length ?? 0,
       activeOnly: request.activeOnly,
       from: request.from,
       to: request.to,
-      dryRun: request.dryRun ?? false,
+      dryRun,
+      trigger,
     });
 
+    const requestedPlatformIds = [...(request.platforms ?? [])];
+
+    let historyId: string | undefined;
+    if (this.historyRepository) {
+      try {
+        historyId = await this.historyRepository.create({
+          startedAt: new Date(startTime),
+          completedAt: null,
+          trigger,
+          status: 'running',
+          dryRun,
+          from: request.from,
+          to: request.to,
+          requestedPlatformIds,
+          resolvedPlatformNames: [],
+          totals: {
+            candidatesFound: 0,
+            newGames: 0,
+            existingGames: 0,
+            updatedGames: 0,
+            rejected: 0,
+            errors: 0,
+          },
+          platformResults: [],
+          error: null,
+          durationMs: null,
+        });
+      } catch (error) {
+        logger.error('catalog.sync.history.create_failed', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+
+    try {
+      const result = await this.executeSync(request, startTime, historyId);
+
+      if (historyId && this.historyRepository) {
+        try {
+          await this.historyRepository.update(historyId, {
+            completedAt: new Date(),
+            status: result.status,
+            totals: result.totals,
+            platformResults: result.platforms.map((p) => ({
+              platformId: p.platformId,
+              platformName: p.platformName,
+              candidatesFound: p.candidatesFound,
+              newGames: p.newGames,
+              existingGames: p.existingGames,
+              updatedGames: p.updatedGames,
+              rejected: p.rejected,
+              errors: p.errors,
+              status: p.status,
+              error: p.error,
+            })),
+            durationMs: result.durationMs,
+            resolvedPlatformNames: result.platforms.map((p) => p.platformName),
+            error:
+              result.status === 'failed'
+                ? (result.platforms.find((p) => p.error)?.error ?? 'All platforms failed')
+                : null,
+          });
+        } catch (error) {
+          logger.error('catalog.sync.history.update_failed', {
+            historyId,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+
+      return { ...result, historyId };
+    } catch (error) {
+      if (historyId && this.historyRepository) {
+        const durationMs = Date.now() - startTime;
+        try {
+          await this.historyRepository.update(historyId, {
+            completedAt: new Date(),
+            status: 'failed',
+            error: error instanceof Error ? error.message : String(error),
+            durationMs,
+          });
+        } catch (updateError) {
+          logger.error('catalog.sync.history.update_failed', {
+            historyId,
+            error: updateError instanceof Error ? updateError.message : String(updateError),
+          });
+        }
+      }
+
+      throw error;
+    }
+  }
+
+  private async executeSync(
+    request: SyncRequest,
+    startTime: number,
+    _historyId?: string,
+  ): Promise<SyncResult> {
     const platforms = await this.resolvePlatforms(request);
 
     if (platforms.length === 0) {

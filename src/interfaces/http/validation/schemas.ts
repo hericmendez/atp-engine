@@ -205,3 +205,24 @@ export type GameIdParamInput = z.infer<typeof GameIdParamSchema>;
 export type CoverSearchQueryInput = z.infer<typeof CoverSearchQuerySchema>;
 export type PlatformCatalogQueryInput = z.infer<typeof PlatformCatalogQuerySchema>;
 export type PlatformIdParamInput = z.infer<typeof PlatformIdParamSchema>;
+
+const SyncHistoryStatusSchema = z.enum(['running', 'completed', 'partial', 'failed']);
+const SyncHistoryTriggerSchema = z.enum(['manual', 'scheduled']);
+const SyncHistorySortFieldSchema = z.enum(['startedAt', 'completedAt', 'status', 'trigger']);
+
+export const CatalogSyncHistoryQuerySchema = PaginationSchema.extend({
+  status: SyncHistoryStatusSchema.optional(),
+  trigger: SyncHistoryTriggerSchema.optional(),
+  platformId: z.string().optional(),
+  from: z.string().optional(),
+  to: z.string().optional(),
+  sort: SyncHistorySortFieldSchema.optional(),
+  order: GameSortDirectionSchema.default('desc'),
+});
+
+export const SyncHistoryIdParamSchema = z.object({
+  id: z.string().min(1, 'History ID is required').trim().min(1, 'History ID must not be empty'),
+});
+
+export type CatalogSyncHistoryQueryInput = z.infer<typeof CatalogSyncHistoryQuerySchema>;
+export type SyncHistoryIdParamInput = z.infer<typeof SyncHistoryIdParamSchema>;

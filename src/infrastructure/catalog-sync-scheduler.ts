@@ -155,6 +155,7 @@ export class IntervalCatalogSyncScheduler implements CatalogSyncScheduler {
         from: fromStr,
         to: toStr,
         dryRun: false,
+        trigger: 'scheduled',
       });
 
       this.lastRunAt = new Date();

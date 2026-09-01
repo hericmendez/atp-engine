@@ -11,6 +11,7 @@ export interface SyncRequest {
   readonly from: string;
   readonly to: string;
   readonly dryRun?: boolean;
+  readonly trigger?: 'manual' | 'scheduled';
 }
 
 export type SyncPlatformStatus = 'completed' | 'failed';
@@ -45,6 +46,7 @@ export interface SyncResult {
   readonly totals: SyncTotals;
   readonly dryRun: boolean;
   readonly durationMs: number;
+  readonly historyId?: string;
 }
 
 export interface ResolvedPlatform {

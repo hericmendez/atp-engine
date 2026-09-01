@@ -64,6 +64,14 @@ describe('Cover API', () => {
           }),
         } as never,
       },
+      catalogSyncHistory: {
+        historyRepository: {
+          create: vi.fn(),
+          update: vi.fn(),
+          findById: vi.fn(),
+          findMany: vi.fn(),
+        } as never,
+      },
     });
   });
 

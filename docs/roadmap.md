@@ -1146,7 +1146,42 @@ Before adding functionality, verify:
 
 ---
 
-# 31. Final Goal
+# 31. Catalog Sync History — Phase 23
+
+## Objectives
+
+Track and persist catalog synchronization history for operational auditing, debugging, and user visibility.
+
+### Tasks
+
+- Create `CatalogSyncHistory` domain type in application layer
+- Create `CatalogSyncHistoryRepository` interface
+- Implement Mongoose schema with MongoDB indexes
+- Implement `MongoCatalogSyncHistoryRepository`
+- Integrate history recording into `CatalogSyncService` (create running record → update at completion)
+- Add `trigger` parameter to `SyncRequest` (manual vs scheduled)
+- Add `historyId` to `SyncResult`
+- Create API endpoints: `GET /api/v1/catalog/sync/history` (list), `GET /api/v1/catalog/sync/history/:id` (detail)
+- Wire history repository through server.ts and createApp
+- Update scheduler to pass `trigger: 'scheduled'`
+
+### Exit Criteria
+
+```text
+History records created for each sync
+History records updated on completion/failure
+History persists across server restarts
+API returns paginated history with filtering
+historyId returned in sync result
+Graceful degradation when history unavailable
+1016 tests pass
+Lint clean
+Build clean
+```
+
+---
+
+# 32. Final Goal
 
 ATP should evolve from:
 

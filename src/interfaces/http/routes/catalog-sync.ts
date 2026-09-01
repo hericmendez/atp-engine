@@ -20,6 +20,7 @@ export function catalogSyncRouter(deps: CatalogSyncRouterDependencies): Router {
         from: body.from,
         to: body.to,
         dryRun: body.dryRun,
+        trigger: 'manual',
       });
 
       res.json({

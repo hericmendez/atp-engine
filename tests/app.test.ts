@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../src/interfaces/http/app.js';
 import type { CatalogService } from '../src/application/catalog-service.js';
@@ -109,6 +109,14 @@ describe('app', () => {
     cover: { coverService: createMockCoverService() },
     platforms: { platformCatalogService: createMockPlatformCatalogService() },
     catalogSync: { catalogSyncService: createMockCatalogSyncService() },
+    catalogSyncHistory: {
+      historyRepository: {
+        create: vi.fn(),
+        update: vi.fn(),
+        findById: vi.fn(),
+        findMany: vi.fn(),
+      } as never,
+    },
   });
 
   it('creates an express application', () => {

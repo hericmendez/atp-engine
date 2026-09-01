@@ -152,6 +152,7 @@ describe('IntervalCatalogSyncScheduler', () => {
           to: '2026-03-15',
           activeOnly: true,
           dryRun: false,
+          trigger: 'scheduled',
         }),
       );
 

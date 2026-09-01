@@ -784,6 +784,14 @@ describe('POST /api/v1/catalog/sync', () => {
         },
       },
       catalogSync: { catalogSyncService: mockCatalogSyncService },
+      catalogSyncHistory: {
+        historyRepository: {
+          create: vi.fn(),
+          update: vi.fn(),
+          findById: vi.fn(),
+          findMany: vi.fn(),
+        } as never,
+      },
     });
   });
 
@@ -870,6 +878,7 @@ describe('POST /api/v1/catalog/sync', () => {
       from: '2025-01-01',
       to: '2025-12-31',
       dryRun: false,
+      trigger: 'manual',
     });
   });
 

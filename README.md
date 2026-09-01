@@ -220,6 +220,8 @@ All endpoints are prefixed with `http://localhost:3000` (configurable via `PORT`
 | `GET` | `/api/v1/platforms/summary` | List platforms with filters | Platform Catalog |
 | `GET` | `/api/v1/platforms/:platformId` | Retrieve single platform | Platform Catalog |
 | `POST` | `/api/v1/catalog/sync` | Synchronize catalog for platforms | Catalog Sync |
+| `GET` | `/api/v1/catalog/sync/history` | List sync history records | Sync History |
+| `GET` | `/api/v1/catalog/sync/history/:id` | Get sync history by ID | Sync History |
 
 ---
 
@@ -964,6 +966,90 @@ curl -X POST http://localhost:3000/api/v1/catalog/sync \
   -H 'Content-Type: application/json' \
   -d '{"activeOnly":true,"from":"2025-08-01","to":"2025-09-01"}'
 ```
+
+---
+
+## Sync History
+
+### `GET /api/v1/catalog/sync/history`
+
+List catalog synchronization history records with optional filtering and pagination.
+
+**Query parameters**:
+
+| Param | Type | Default | Description |
+|-------|------|---------|-------------|
+| `status` | `string` | — | Filter: `running`, `completed`, `partial`, `failed` |
+| `trigger` | `string` | — | Filter: `manual`, `scheduled` |
+| `platformId` | `string` | — | Filter by platform ID |
+| `from` | `string` | — | Filter by start date (ISO format) |
+| `to` | `string` | — | Filter by end date (ISO format) |
+| `page` | `number` | `1` | Page number |
+| `limit` | `number` | `20` | Results per page (max 100) |
+| `sort.field` | `string` | `startedAt` | Sort by: `startedAt`, `completedAt`, `status`, `trigger` |
+| `sort.direction` | `string` | `desc` | Sort direction: `asc`, `desc` |
+
+**Response**:
+
+```json
+{
+  "data": [
+    {
+      "id": "abc123",
+      "startedAt": "2025-09-01T12:00:00Z",
+      "completedAt": "2025-09-01T12:05:00Z",
+      "trigger": "manual",
+      "status": "completed",
+      "dryRun": false,
+      "from": "2025-01-01",
+      "to": "2025-12-31",
+      "requestedPlatformIds": ["nintendo-switch"],
+      "resolvedPlatformNames": ["Nintendo Switch"],
+      "totals": {
+        "candidatesFound": 12,
+        "newGames": 8,
+        "existingGames": 2,
+        "updatedGames": 1,
+        "rejected": 1,
+        "errors": 0
+      },
+      "platformResults": [
+        {
+          "platformId": "nintendo-switch",
+          "platformName": "Nintendo Switch",
+          "candidatesFound": 12,
+          "newGames": 8,
+          "existingGames": 2,
+          "updatedGames": 1,
+          "rejected": 1,
+          "errors": 0,
+          "status": "completed"
+        }
+      ],
+      "error": null,
+      "durationMs": 3421,
+      "createdAt": "2025-09-01T12:00:00Z",
+      "updatedAt": "2025-09-01T12:05:00Z"
+    }
+  ],
+  "pagination": { "page": 1, "limit": 20, "total": 1, "totalPages": 1 }
+}
+```
+
+### `GET /api/v1/catalog/sync/history/:id`
+
+Get a single sync history record by ID.
+
+**Response**: Same shape as individual items in the list response.
+
+**Errors**:
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | `VALIDATION_ERROR` | Invalid ID format |
+| 404 | `NOT_FOUND` | History record not found |
+
+**Note**: Each `POST /api/v1/catalog/sync` request now returns a `historyId` field in the result, linking to the corresponding history record.
 
 ---
 

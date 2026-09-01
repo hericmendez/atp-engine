@@ -9,6 +9,7 @@ import { PlatformSeedService } from './application/platform-seed-service.js';
 import { CoverEngine } from './cover/cover-engine.js';
 import { MongoGameRepository } from './infrastructure/persistence/mongodb/mongo-game-repository.js';
 import { MongoPlatformCatalogRepository } from './infrastructure/persistence/mongodb/mongo-platform-catalog-repository.js';
+import { MongoCatalogSyncHistoryRepository } from './infrastructure/persistence/mongodb/mongo-catalog-sync-history-repository.js';
 import { SourceRegistry } from './sources/source-registry.js';
 import { WikipediaAdapter } from './sources/wikipedia/wikipedia-adapter.js';
 import { SteamAdapter } from './sources/steam/steam-adapter.js';
@@ -34,6 +35,7 @@ async function main(): Promise<void> {
 
   const gameRepository = new MongoGameRepository();
   const platformCatalogRepository = new MongoPlatformCatalogRepository();
+  const catalogSyncHistoryRepository = new MongoCatalogSyncHistoryRepository();
 
   const platformSeedService = new PlatformSeedService({ platformCatalogRepository });
   try {
@@ -88,6 +90,7 @@ async function main(): Promise<void> {
     platformCatalogRepository,
     discoveryEngine,
     enrichmentService,
+    historyRepository: catalogSyncHistoryRepository,
   });
 
   const enrichmentRunner = new EnrichmentRunner(
@@ -113,6 +116,7 @@ async function main(): Promise<void> {
     cover: { coverService },
     platforms: { platformCatalogService },
     catalogSync: { catalogSyncService },
+    catalogSyncHistory: { historyRepository: catalogSyncHistoryRepository },
   });
 
   const server = app.listen(config.PORT, () => {

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import request from 'supertest';
 import { createApp } from '../../src/interfaces/http/app.js';
 import type { CatalogService } from '../../src/application/catalog-service.js';
@@ -470,6 +470,14 @@ describe('Phase 17 — Platform Catalog & Advanced Game Queries', () => {
             dryRun: false,
             durationMs: 0,
           }),
+        } as never,
+      },
+      catalogSyncHistory: {
+        historyRepository: {
+          create: vi.fn(),
+          update: vi.fn(),
+          findById: vi.fn(),
+          findMany: vi.fn(),
         } as never,
       },
     });
