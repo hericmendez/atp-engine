@@ -235,6 +235,15 @@ export class WikipediaAdapter extends BaseAdapter {
     };
   }
 
+  private extractFieldValue(wikitext: string, fieldName: string): string {
+    const fieldPattern = new RegExp(
+      `${fieldName}[s]?\\s*=\\s*([^\\n]*(?:\\{\\{[^\\n]*\\}\\}[^\\n]*)*)`,
+      'i',
+    );
+    const match = wikitext.match(fieldPattern);
+    return match?.[1] ?? '';
+  }
+
   private extractFromWikitext(wikitext: string): {
     alternateTitles: string[];
     platforms: string[];
@@ -254,17 +263,17 @@ export class WikipediaAdapter extends BaseAdapter {
     let description = '';
     const classificationHints: { category: string; confidence: number; evidence: string }[] = [];
 
-    const titleMatch = wikitext.match(/\{\{[Ii]nfobox[^|]*\|[^}]*title\s*=\s*([^\n|}]+)/);
-    if (titleMatch?.[1]) {
-      const altTitle = this.cleanWikitext(titleMatch[1]);
+    const titleRaw = this.extractFieldValue(wikitext, 'title');
+    if (titleRaw) {
+      const altTitle = this.cleanWikitext(titleRaw);
       if (altTitle && altTitle.length > 0) {
         alternateTitles.push(altTitle);
       }
     }
 
-    const platformMatch = wikitext.match(/platform[s]?\s*=\s*([^\n|}]+)/i);
-    if (platformMatch?.[1]) {
-      const platformStr = this.cleanWikitext(platformMatch[1]);
+    const platformRaw = this.extractFieldValue(wikitext, 'platform');
+    if (platformRaw) {
+      const platformStr = this.cleanWikitext(platformRaw);
       if (platformStr) {
         platforms.push(
           ...platformStr
@@ -275,9 +284,9 @@ export class WikipediaAdapter extends BaseAdapter {
       }
     }
 
-    const developerMatch = wikitext.match(/developer[s]?\s*=\s*([^\n|}]+)/i);
-    if (developerMatch?.[1]) {
-      const devStr = this.cleanWikitext(developerMatch[1]);
+    const developerRaw = this.extractFieldValue(wikitext, 'developer');
+    if (developerRaw) {
+      const devStr = this.cleanWikitext(developerRaw);
       if (devStr) {
         developers.push(
           ...devStr
@@ -288,9 +297,9 @@ export class WikipediaAdapter extends BaseAdapter {
       }
     }
 
-    const publisherMatch = wikitext.match(/publisher[s]?\s*=\s*([^\n|}]+)/i);
-    if (publisherMatch?.[1]) {
-      const pubStr = this.cleanWikitext(publisherMatch[1]);
+    const publisherRaw = this.extractFieldValue(wikitext, 'publisher');
+    if (publisherRaw) {
+      const pubStr = this.cleanWikitext(publisherRaw);
       if (pubStr) {
         publishers.push(
           ...pubStr
@@ -301,9 +310,9 @@ export class WikipediaAdapter extends BaseAdapter {
       }
     }
 
-    const genreMatch = wikitext.match(/genre[s]?\s*=\s*([^\n|}]+)/i);
-    if (genreMatch?.[1]) {
-      const genreStr = this.cleanWikitext(genreMatch[1]);
+    const genreRaw = this.extractFieldValue(wikitext, 'genre');
+    if (genreRaw) {
+      const genreStr = this.cleanWikitext(genreRaw);
       if (genreStr) {
         genres.push(
           ...genreStr
@@ -314,14 +323,14 @@ export class WikipediaAdapter extends BaseAdapter {
       }
     }
 
-    const dateMatch = wikitext.match(/release\s*date\s*=\s*([^\n|}]+)/i);
-    if (dateMatch?.[1]) {
-      releaseDate = this.cleanWikitext(dateMatch[1]) || null;
+    const dateRaw = this.extractFieldValue(wikitext, 'release date');
+    if (dateRaw) {
+      releaseDate = this.cleanWikitext(dateRaw) || null;
     }
 
-    const descMatch = wikitext.match(/description\s*=\s*([^\n|}]+)/i);
-    if (descMatch?.[1]) {
-      description = this.cleanWikitext(descMatch[1]);
+    const descRaw = this.extractFieldValue(wikitext, 'description');
+    if (descRaw) {
+      description = this.cleanWikitext(descRaw);
     }
 
     if (wikitext.includes('video game') || wikitext.includes('Video game')) {
@@ -345,12 +354,61 @@ export class WikipediaAdapter extends BaseAdapter {
   }
 
   private cleanWikitext(text: string): string {
-    let cleaned = text.replace(/\[\[([^\]|]*\|)?([^\]]*)\]\]/g, '$2');
-    cleaned = cleaned.replace(/\{\{[^}]*\}\}/g, '');
+    let cleaned = text;
+
+    cleaned = cleaned.replace(/\[\[([^\]|]*\|)?([^\]]*)\]\]/g, '$2');
+
+    let prev = '';
+    while (cleaned !== prev) {
+      prev = cleaned;
+      cleaned = cleaned.replace(/\{\{([^{}]*)\}\}/g, (_match, inner: string) => {
+        return this.extractTemplateValues(inner);
+      });
+    }
+
     cleaned = cleaned.replace(/'''?/g, '');
+    cleaned = cleaned.replace(/<ref[^>]*>.*?<\/ref>/gi, '');
+    cleaned = cleaned.replace(/<ref[^>]*\/>/gi, '');
     cleaned = cleaned.replace(/<[^>]*>/g, '');
+    cleaned = cleaned.replace(/https?:\/\/\S+/g, '');
     cleaned = cleaned.replace(/\s+/g, ' ').trim();
     return cleaned;
+  }
+
+  private extractTemplateValues(inner: string): string {
+    const params = inner.split('|').map((p: string) => p.trim());
+    const templateName = (params[0] ?? '').toLowerCase();
+
+    const skipTemplates = ['video game release', 'efn', 'citation', 'reflist', 'ref', 'lang'];
+    if (skipTemplates.some((t) => templateName.includes(t))) {
+      const namedValues: string[] = [];
+      for (let i = 1; i < params.length; i++) {
+        const param = params[i];
+        const eqIdx = param.indexOf('=');
+        if (eqIdx > 0) {
+          const key = param.slice(0, eqIdx).trim().toLowerCase();
+          const val = param.slice(eqIdx + 1).trim();
+          if (val.length > 0 && (key === 'title' || key === 'name' || key === 'label')) {
+            namedValues.push(val);
+          }
+        }
+      }
+      return namedValues.length > 0 ? namedValues.join(', ') : '';
+    }
+
+    const values: string[] = [];
+    for (let i = 1; i < params.length; i++) {
+      const param = params[i];
+      if (param.length === 0) continue;
+      const eqIdx = param.indexOf('=');
+      if (eqIdx > 0) {
+        const val = param.slice(eqIdx + 1).trim();
+        if (val.length > 0) values.push(val);
+      } else {
+        values.push(param);
+      }
+    }
+    return values.join(', ');
   }
 
   private stripHtml(text: string): string {

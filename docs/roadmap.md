@@ -1225,7 +1225,56 @@ Build clean
 
 ---
 
-# 33. Final Goal
+# 33. Practical Validation Cycle 2
+
+**Date:** 2026-09-01
+**Status:** Complete
+
+### Findings Investigated
+
+| Finding | Description | Classification | Action |
+|---------|-------------|---------------|--------|
+| P2-002 | Platform UNKNOWN on all games | A — Real defect | Fixed Wikipedia wikitext template extraction |
+| P2-003 | Cover search returns non-game results | D — Architecture gap | Documented, no fix |
+| P2-004 | Missing developers/publishers/genres | A — Real defect | Fixed Wikipedia wikitext template extraction (same root cause as P2-002) |
+| P2-001 | 28% UNKNOWN classification | C — Expected behavior | Partially improved via title pattern |
+
+### Defects Fixed
+
+**Wikipedia wikitext template extraction** (`src/sources/wikipedia/wikipedia-adapter.ts`):
+- Added `extractFieldValue()` method to capture full field values including nested `{{templates}}`
+- Rewrote `cleanWikitext()` to extract template parameters instead of deleting templates
+- Added `extractTemplateValues()` with skip-list for non-data templates (`Video game release`, `efn`, `citation`)
+- Added reference/URL stripping from extracted values
+- Platforms now correctly extracted: `{{Unbulleted list|[[PS4]]|[[PS5]]}}` → `["PlayStation 4", "PlayStation 5"]`
+
+**Classification title pattern** (`src/classification/deterministic-classifier.ts`):
+- Added `video game|playable|gameplay` title pattern (weight 0.8, confidence 0.7)
+- Titles containing "video game" now correctly classified as GAME
+
+### Findings Deliberately Maintained
+
+- **P2-003 (Cover relevance):** Architecture gap — cover pipeline has no entity-type filtering. Requires new capability, not a bug fix.
+- **P2-002 residual (Platforms from search):** Wikipedia search snippets don't contain platform data. Only getById path does. The discovery flow uses search. This is a pipeline architecture limitation.
+- **P2-004 residual (Metadata from search):** Same as above — search path doesn't extract dev/pub/genre.
+- **P2-001 residual (20% UNKNOWN):** Expected for non-game entities (composers, events, characters).
+
+### Quality Gates
+
+| Gate | Result |
+|------|--------|
+| `pnpm test` | 1051/1051 PASS |
+| `pnpm build` | Clean |
+| `pnpm lint` | Clean |
+| `pnpm format:check` | Clean |
+
+### Checkpoint
+
+**CHECKPOINT D — Source Limitation.** Platform and metadata data exists in Wikipedia wikitext but the search pipeline architecture limits extraction to the getById path. The discovery flow uses search, which lacks this data. Fixing this would require architectural changes (e.g., calling getById per search result) which is beyond the scope of a defect fix.
+
+---
+
+# 34. Final Goal
 
 ATP should evolve from:
 

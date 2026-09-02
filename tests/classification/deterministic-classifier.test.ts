@@ -163,6 +163,27 @@ describe('DeterministicClassifier', () => {
       const result = await classifier.classify(candidate);
       expect(result.category).toBe(ClassificationCategory.PROMOTIONAL);
     });
+
+    it('classifies GAME from title containing "video game"', async () => {
+      const candidate = makeCandidate({
+        titles: [{ value: 'Doom (1993 video game)', type: 'primary' }],
+        classificationHints: [],
+        description: null,
+      });
+      const result = await classifier.classify(candidate);
+      expect(result.category).toBe(ClassificationCategory.GAME);
+      expect(result.confidence).toBeGreaterThan(0);
+    });
+
+    it('classifies GAME from title containing "playable"', async () => {
+      const candidate = makeCandidate({
+        titles: [{ value: 'Interactive Playable Experience', type: 'primary' }],
+        classificationHints: [],
+        description: null,
+      });
+      const result = await classifier.classify(candidate);
+      expect(result.category).toBe(ClassificationCategory.GAME);
+    });
   });
 
   describe('platform independence', () => {

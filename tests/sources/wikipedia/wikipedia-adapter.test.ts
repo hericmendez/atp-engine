@@ -220,5 +220,80 @@ describe('WikipediaAdapter', () => {
       expect(url).toContain('page=Resident+Evil+4');
       expect(url).toContain('prop=wikitext%7Ccategories');
     });
+
+    it('extracts platforms from Unbulleted list template', async () => {
+      mockFetch({
+        parse: {
+          pageid: 50000,
+          title: 'Test Game',
+          wikitext: {
+            '*':
+              '{{Infobox video game\n' +
+              '| title = Test Game\n' +
+              '| platforms = {{Unbulleted list|[[PlayStation 4]]|[[PlayStation 5]]|[[Windows]]|[[Xbox One]]}}\n' +
+              '| developer = [[Test Dev]]\n' +
+              '| publisher = [[Test Pub]]\n' +
+              '| genre = [[Action role-playing]]\n' +
+              '}}',
+          },
+          categories: [{ '*': 'Video games' }],
+        },
+      });
+
+      const result = await adapter.getById('Test Game');
+      expect(result).not.toBeNull();
+      expect(result!.platforms).toContain('PlayStation 4');
+      expect(result!.platforms).toContain('PlayStation 5');
+      expect(result!.platforms).toContain('Windows');
+      expect(result!.platforms).toContain('Xbox One');
+      expect(result!.platforms).toHaveLength(4);
+    });
+
+    it('extracts platforms from collapsible list template', async () => {
+      mockFetch({
+        parse: {
+          pageid: 50001,
+          title: 'Retro Game',
+          wikitext: {
+            '*':
+              '{{Infobox video game\n' +
+              '| title = Retro Game\n' +
+              '| platforms = {{collapsible list|title={{nobold|[[MS-DOS]]}}|[[Windows]]|[[Mac OS]]}}\n' +
+              '| developer = [[Retro Dev]]\n' +
+              '}}',
+          },
+          categories: [{ '*': 'Video games' }],
+        },
+      });
+
+      const result = await adapter.getById('Retro Game');
+      expect(result).not.toBeNull();
+      expect(result!.platforms).toContain('MS-DOS');
+      expect(result!.platforms).toContain('Windows');
+      expect(result!.platforms).toContain('Mac OS');
+    });
+
+    it('extracts publishers from templates with nested references', async () => {
+      mockFetch({
+        parse: {
+          pageid: 50002,
+          title: 'Published Game',
+          wikitext: {
+            '*':
+              '{{Infobox video game\n' +
+              '| title = Published Game\n' +
+              '| publisher = [[Bandai Namco Entertainment]]{{Video game release|JP|FromSoftware}}\n' +
+              '| developer = [[FromSoftware]]\n' +
+              '}}',
+          },
+          categories: [],
+        },
+      });
+
+      const result = await adapter.getById('Published Game');
+      expect(result).not.toBeNull();
+      expect(result!.publishers).toContain('Bandai Namco Entertainment');
+      expect(result!.developers).toContain('FromSoftware');
+    });
   });
 });

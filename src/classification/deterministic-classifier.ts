@@ -72,6 +72,12 @@ export class DeterministicClassifier implements Classifier {
       confidence: number;
     }> = [
       {
+        pattern: /\bvideo game\b|\bplayable\b|\bgameplay\b/,
+        category: ClassificationCategory.GAME,
+        weight: 0.8,
+        confidence: 0.7,
+      },
+      {
         pattern: /\bsoundtrack\b|\bost\b|\boriginal score\b/,
         category: ClassificationCategory.SOUNDTRACK,
         weight: 0.7,
