@@ -1274,7 +1274,50 @@ Build clean
 
 ---
 
-# 34. Final Goal
+# 34. Functional Validation — Critical Fixes
+
+**Date:** 2026-09-02
+**Status:** Complete
+
+### Root Causes Found
+
+| Problem | Root Cause | Fix |
+|---------|-----------|-----|
+| Platform seed 181 errors | `.env` uses port 27018, `docker-compose.yml` maps to 27017. Server cannot connect to MongoDB. | Fixed `.env` to use port 27017 |
+| `buildFilter` dead code | `_needsGameCountFilter: true` added to MongoDB query when `showEmptyPlatforms=false` (default). MongoDB ignores unknown fields, returning 0 results. | Removed dead code from `buildFilter` |
+| Seed counting logic | `findById` called AFTER `upsert` to determine insert/update. Logic was semantically wrong (always counted as insert). | Check `findById` BEFORE `upsert`, then increment accordingly |
+
+### Changes
+
+| File | Change |
+|------|--------|
+| `.env` | Fixed MongoDB port 27018 → 27017 |
+| `src/infrastructure/persistence/mongodb/mongo-platform-catalog-repository.ts` | Removed `_needsGameCountFilter` dead code from `buildFilter` |
+| `src/application/platform-seed-service.ts` | Fixed seed counting: check `findById` before `upsert` |
+| `tests/platform-seed-regression.test.ts` | New: 7 regression tests for platform seed |
+
+### `/games` with filters — Contract Analysis
+
+`GET /api/v1/games` is a **pure database query**. It does NOT trigger discovery/scraping. The endpoint calls `catalogService.listGames()` which only queries MongoDB. Returning `data: []` when no local matches exist is the **correct behavior**.
+
+Discovery/scraping is only triggered by `GET /api/v1/games/search?q=...` via `catalogService.searchGames()`.
+
+### Quality Gates
+
+| Gate | Result |
+|------|--------|
+| Tests | 1058/1058 PASS |
+| Build | Clean |
+| Lint | Clean |
+| Format | Clean |
+
+### Checkpoint
+
+**CHECKPOINT: System functional.** Platform seed works on clean DB. `/platforms/summary` returns data. `/games/search` discovers and classifies games. `/games` with filters correctly queries database only.
+
+---
+
+# 35. Final Goal
 
 ATP should evolve from:
 

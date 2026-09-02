@@ -119,12 +119,6 @@ export class MongoPlatformCatalogRepository implements PlatformCatalogRepository
       };
     }
 
-    if (query.showEmpty === false) {
-      // We'll filter this after game count enrichment
-      // For now, mark it for post-processing
-      filter._needsGameCountFilter = true;
-    }
-
     return filter;
   }
 

@@ -24,13 +24,13 @@ export class PlatformSeedService {
     for (const entry of PLATFORM_SEED_DATA) {
       try {
         const catalogEntry = createPlatformCatalogEntry(entry);
+        const existing = await this.platformCatalogRepository.findById(catalogEntry.id);
         await this.platformCatalogRepository.upsert(catalogEntry);
 
-        const existing = await this.platformCatalogRepository.findById(catalogEntry.id);
-        if (existing && existing.releaseYear === catalogEntry.releaseYear) {
-          inserted++;
-        } else {
+        if (existing) {
           updated++;
+        } else {
+          inserted++;
         }
       } catch (error) {
         errors++;
