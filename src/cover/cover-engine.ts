@@ -12,9 +12,13 @@ import { normalizeCandidate, type RawCandidateInput } from '../normalization/nor
 import { filterValidCandidates, deduplicateCandidates } from './cover-validate.js';
 import { rankCandidates, filterByType } from './cover-rank.js';
 import { SourceError } from '../sources/source-errors.js';
+import { assetEligibility, logAssetEligibilityDecision } from '../eligibility/asset-eligibility.js';
+import { WikipediaCoverDiscovery } from '../sources/wikipedia/cover/wikipedia-cover-discovery.js';
+import type { WikipediaCoverCandidate } from '../sources/wikipedia/cover/wikipedia-cover-types.js';
 
 export interface CoverEngineDependencies {
   readonly sourceRegistry: SourceRegistry;
+  readonly wikipediaCoverDiscovery?: WikipediaCoverDiscovery;
 }
 
 export interface CoverSearchOptions {
@@ -95,7 +99,7 @@ export class CoverEngine {
     const limit = options?.limit ?? DEFAULT_COVER_LIMIT;
     const sources = this.selectCoverSources(options?.sourceFilter);
     const sourceLimit = Math.max(limit, 5);
-    const sourceResults = await this.querySources(sources, trimmedQuery, sourceLimit);
+    const sourceResults = await this.querySources(sources, trimmedQuery, sourceLimit, searchType);
 
     const allCandidates: CoverCandidate[] = [];
     const errors: CoverSourceError[] = [];
@@ -111,7 +115,20 @@ export class CoverEngine {
 
     const validCandidates = filterValidCandidates(allCandidates);
     const deduplicated = deduplicateCandidates(validCandidates);
-    const typeFiltered = filterByType(deduplicated, searchType);
+
+    // ── Asset Eligibility gate ─────────────────────────────────
+    // game is null for query-based search; entity association
+    // cannot be validated without a canonical game.
+    const eligible = deduplicated.filter((c) => {
+      const decision = assetEligibility(c, null, searchType);
+      if (!decision.eligible) {
+        logAssetEligibilityDecision(c, decision);
+        return false;
+      }
+      return true;
+    });
+
+    const typeFiltered = filterByType(eligible, searchType);
     const ranked = rankCandidates(typeFiltered, trimmedQuery);
     const limited = ranked.slice(0, limit);
 
@@ -169,10 +186,19 @@ export class CoverEngine {
     sources: readonly SourceAdapter[],
     query: string,
     limit: number,
+    searchType: CoverSearchType = CoverSearchType.COVER,
   ): Promise<
     PromiseSettledResult<{ source: string; sourceId: string; candidate: NormalizedCandidate }>[]
   > {
     const promises = sources.map(async (adapter) => {
+      if (
+        adapter.source === 'wikipedia' &&
+        searchType === CoverSearchType.COVER &&
+        this.deps.wikipediaCoverDiscovery
+      ) {
+        return this.queryWikipediaCoverDiscovery(query, limit);
+      }
+
       const result = await adapter.search(query, { limit });
       const candidates = result.candidates;
 
@@ -216,6 +242,63 @@ export class CoverEngine {
     }
 
     return flattened;
+  }
+
+  private async queryWikipediaCoverDiscovery(
+    query: string,
+    limit: number,
+  ): Promise<{ source: string; sourceId: string; candidate: NormalizedCandidate }[]> {
+    if (!this.deps.wikipediaCoverDiscovery) {
+      return [];
+    }
+
+    const discoveryResult = await this.deps.wikipediaCoverDiscovery.discoverCovers(query);
+
+    const observations: {
+      source: string;
+      sourceId: string;
+      candidate: NormalizedCandidate;
+    }[] = [];
+
+    for (const wikiCandidate of discoveryResult.candidates.slice(0, limit)) {
+      const normalized = this.wikipediaCoverToNormalizedCandidate(wikiCandidate, query);
+      observations.push({
+        source: 'wikipedia',
+        sourceId: String(wikiCandidate.pageId),
+        candidate: normalized,
+      });
+    }
+
+    return observations;
+  }
+
+  private wikipediaCoverToNormalizedCandidate(
+    wikiCandidate: WikipediaCoverCandidate,
+    query: string,
+  ): NormalizedCandidate {
+    return {
+      titles: [{ value: wikiCandidate.title, type: 'primary' }],
+      developers: [],
+      publishers: [],
+      genres: [],
+      releases: [],
+      externalIdentifiers: [{ source: 'wikipedia', id: String(wikiCandidate.pageId) }],
+      provenance: {
+        source: 'wikipedia',
+        sourceId: String(wikiCandidate.pageId),
+        retrievedAt: new Date().toISOString(),
+        rawTitle: query,
+      },
+      classificationHints: [
+        {
+          category: 'GAME',
+          confidence: wikiCandidate.validationSignals.confidence,
+          evidence: `Wikipedia page validated as video game (confidence: ${wikiCandidate.validationSignals.confidence})`,
+        },
+      ],
+      description: null,
+      coverUrls: [wikiCandidate.imageUrl],
+    };
   }
 
   private extractSourceError(reason: unknown): CoverSourceError {

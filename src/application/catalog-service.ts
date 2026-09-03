@@ -6,6 +6,7 @@ import { NotFoundError } from '../shared/errors/errors.js';
 import type { DataOrigin } from './data-origin.js';
 import { discoveryGroupToGame } from './discovery-to-game.js';
 import type { EnrichmentService } from './enrichment-service.js';
+import { catalogEligibility, logEligibilityDecision } from '../eligibility/catalog-eligibility.js';
 import { logger } from '../infrastructure/logger/logger.js';
 
 export interface CatalogServiceDependencies {
@@ -186,7 +187,9 @@ export class CatalogService {
       for (const group of discoveryResult.groups) {
         try {
           const game = await this.persistDiscoveryGroup(group);
-          persistedGames.push(game);
+          if (game !== null) {
+            persistedGames.push(game);
+          }
         } catch (error) {
           logger.warn('Failed to persist discovery group', {
             groupId: group.groupId,
@@ -226,7 +229,7 @@ export class CatalogService {
 
   private async persistDiscoveryGroup(
     group: import('../discovery/discovery-types.js').DiscoveryGroupResult,
-  ): Promise<Game> {
+  ): Promise<Game | null> {
     const bestObs = group.observations[0];
     const extId = bestObs
       ? group.observations.find((o) => o.candidate.externalIdentifiers.length > 0)?.candidate
@@ -247,6 +250,19 @@ export class CatalogService {
       if (existing) {
         return existing;
       }
+    }
+
+    // ── Catalog Eligibility gate ───────────────────────────────
+    const decision = catalogEligibility(group);
+    logEligibilityDecision(group.groupId, decision);
+
+    if (!decision.eligible) {
+      logger.debug('eligibility.skipping_persistence', {
+        groupId: group.groupId,
+        status: decision.status,
+        reason: decision.reason,
+      });
+      return null;
     }
 
     const candidateGame = discoveryGroupToGame(group);

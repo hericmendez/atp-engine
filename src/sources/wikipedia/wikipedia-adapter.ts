@@ -109,9 +109,30 @@ export class WikipediaAdapter extends BaseAdapter {
   }
 
   async getById(id: string): Promise<RawCandidate | null> {
+    const titleParams = new URLSearchParams({
+      action: 'query',
+      pageids: id,
+      prop: 'info',
+      inprop: 'url',
+      format: 'json',
+      origin: '*',
+    });
+
+    const titleUrl = `${this.baseUrl}?${titleParams.toString()}`;
+    const titleResponse = await this.fetchJson<{
+      query?: { pages?: Record<string, { title?: string }> };
+    }>(titleUrl);
+
+    const page = Object.values(titleResponse.query?.pages ?? {})[0];
+    const title = page?.title;
+
+    if (!title) {
+      return null;
+    }
+
     const params = new URLSearchParams({
       action: 'parse',
-      page: id,
+      page: title,
       prop: 'wikitext|categories',
       format: 'json',
       origin: '*',
@@ -324,8 +345,13 @@ export class WikipediaAdapter extends BaseAdapter {
     }
 
     const dateRaw = this.extractFieldValue(wikitext, 'release date');
-    if (dateRaw) {
-      releaseDate = this.cleanWikitext(dateRaw) || null;
+    const releasedRaw = this.extractFieldValue(wikitext, 'released');
+    const dateValue = this.cleanWikitext(dateRaw);
+    const releasedValue = this.cleanWikitext(releasedRaw);
+    if (dateValue) {
+      releaseDate = dateValue || null;
+    } else if (releasedValue) {
+      releaseDate = releasedValue || null;
     }
 
     const descRaw = this.extractFieldValue(wikitext, 'description');

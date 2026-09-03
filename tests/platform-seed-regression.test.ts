@@ -3,8 +3,9 @@ import mongoose from 'mongoose';
 import { PlatformCatalogModel } from '../src/infrastructure/persistence/mongodb/platform-catalog-schema.js';
 import { GameModel } from '../src/infrastructure/persistence/mongodb/game-schema.js';
 import { MongoPlatformCatalogRepository } from '../src/infrastructure/persistence/mongodb/mongo-platform-catalog-repository.js';
+import type { PlatformCatalogRepository } from '../src/domain/platform/platform-catalog-repository.js';
 import { PlatformSeedService } from '../src/application/platform-seed-service.js';
-import { PLATFORM_SEED_DATA } from '../src/platform-catalog/platforms-seed-data.js';
+
 import { createPlatformCatalogEntry } from '../src/domain/platform/platform-catalog.js';
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/atp-engine-test';
@@ -107,7 +108,7 @@ describe('Platform Seed (Regression)', () => {
     };
 
     const failingSeedService = new PlatformSeedService({
-      platformCatalogRepository: failingRepository as any,
+      platformCatalogRepository: failingRepository as unknown as PlatformCatalogRepository,
     });
 
     const result = await failingSeedService.seed();

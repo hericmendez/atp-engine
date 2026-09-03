@@ -1,4 +1,5 @@
 import type { SourceAdapter, SearchOptions } from '../sources/source-adapter.js';
+import type { RawCandidate } from '../sources/raw-candidate.js';
 import type { SourceRegistry } from '../sources/source-registry.js';
 import type { Classifier } from '../classification/classifier.js';
 import type { IdentityResolver } from '../identity/identity-resolver.js';
@@ -93,13 +94,46 @@ export class DiscoveryEngine {
 
     const promises = sources.map(async (adapter) => {
       const result = await adapter.search(query, searchOptions);
-      const normalized = result.candidates.map((raw) =>
-        normalizeCandidate(raw as RawCandidateInput, raw.source, raw.sourceId),
-      );
+
+      const normalized: NormalizedCandidate[] = [];
+      for (const raw of result.candidates) {
+        let candidate = raw;
+
+        if (adapter.capabilities.getById) {
+          try {
+            const detailed = await adapter.getById(raw.sourceId);
+            if (detailed) {
+              candidate = this.mergeCandidates(raw, detailed);
+            }
+          } catch {
+            // Fall back to search-only data if getById fails
+          }
+        }
+
+        normalized.push(
+          normalizeCandidate(candidate as RawCandidateInput, candidate.source, candidate.sourceId),
+        );
+      }
+
       return { source: adapter.source, candidates: normalized };
     });
 
     return Promise.allSettled(promises);
+  }
+
+  private mergeCandidates(search: RawCandidate, detailed: RawCandidate): RawCandidate {
+    return {
+      ...detailed,
+      source: search.source,
+      sourceId: search.sourceId,
+      description: detailed.description ?? search.description,
+      coverUrls:
+        detailed.coverUrls && detailed.coverUrls.length > 0 ? detailed.coverUrls : search.coverUrls,
+      classificationHints:
+        detailed.classificationHints && detailed.classificationHints.length > 0
+          ? detailed.classificationHints
+          : search.classificationHints,
+    };
   }
 
   private async processSourceResults(result: {

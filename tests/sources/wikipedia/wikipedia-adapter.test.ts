@@ -16,6 +16,29 @@ function mockFetch(data: unknown) {
   );
 }
 
+function mockFetchSequence(responses: unknown[]) {
+  const mock = vi.spyOn(globalThis, 'fetch');
+  for (const data of responses) {
+    mock.mockResolvedValueOnce(
+      new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+  }
+  return mock;
+}
+
+function titleLookupResponse(title: string) {
+  return {
+    query: {
+      pages: {
+        '12345': { title },
+      },
+    },
+  };
+}
+
 function mockFetchError(status: number) {
   return vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('Error', { status }));
 }
@@ -130,9 +153,13 @@ describe('WikipediaAdapter', () => {
 
   describe('getById', () => {
     it('returns parsed candidate from wikitext', async () => {
-      mockFetch(WIKIPEDIA_PAGE_RESPONSE);
+      mockFetchSequence([
+        titleLookupResponse('Resident Evil 4'),
+        WIKIPEDIA_PAGE_RESPONSE,
+        { query: { pages: {} } },
+      ]);
 
-      const result = await adapter.getById('Resident Evil 4');
+      const result = await adapter.getById('12345');
       expect(result).not.toBeNull();
       expect(result!.source).toBe('wikipedia');
       expect(result!.sourceId).toBe('12345');
@@ -146,9 +173,13 @@ describe('WikipediaAdapter', () => {
     });
 
     it('extracts classification hints for video games', async () => {
-      mockFetch(WIKIPEDIA_PAGE_RESPONSE);
+      mockFetchSequence([
+        titleLookupResponse('Resident Evil 4'),
+        WIKIPEDIA_PAGE_RESPONSE,
+        { query: { pages: {} } },
+      ]);
 
-      const result = await adapter.getById('Resident Evil 4');
+      const result = await adapter.getById('12345');
       expect(result!.classificationHints).toBeDefined();
       expect(result!.classificationHints!.length).toBeGreaterThan(0);
       expect(result!.classificationHints![0].category).toBe('GAME');
@@ -156,29 +187,36 @@ describe('WikipediaAdapter', () => {
     });
 
     it('returns null for missing pages', async () => {
-      mockFetch({ error: { code: 'missingtitle', info: 'Page not found' } });
+      mockFetch({ query: { pages: {} } });
 
-      const result = await adapter.getById('Nonexistent Page');
+      const result = await adapter.getById('99999');
       expect(result).toBeNull();
     });
 
     it('throws SourceError on Wikipedia API error', async () => {
-      mockFetch({ error: { code: 'internal_api_error', info: 'Some error' } });
+      mockFetchSequence([
+        titleLookupResponse('test'),
+        { error: { code: 'internal_api_error', info: 'Some error' } },
+      ]);
 
-      await expect(adapter.getById('test')).rejects.toThrow(SourceError);
+      await expect(adapter.getById('12345')).rejects.toThrow(SourceError);
     });
 
     it('returns null when parse response has no parse field', async () => {
-      mockFetch({});
+      mockFetchSequence([titleLookupResponse('test'), {}]);
 
-      const result = await adapter.getById('test');
+      const result = await adapter.getById('12345');
       expect(result).toBeNull();
     });
 
     it('handles non-game content without error', async () => {
-      mockFetch(WIKIPEDIA_NON_GAME_RESPONSE);
+      mockFetchSequence([
+        titleLookupResponse('Resident Evil (film)'),
+        WIKIPEDIA_NON_GAME_RESPONSE,
+        { query: { pages: {} } },
+      ]);
 
-      const result = await adapter.getById('Resident Evil (film)');
+      const result = await adapter.getById('99999');
       expect(result).not.toBeNull();
       expect(result!.title).toBe('Resident Evil (film)');
       expect(result!.platforms).toEqual([]);
@@ -186,23 +224,27 @@ describe('WikipediaAdapter', () => {
     });
 
     it('cleans wikitext markup from extracted fields', async () => {
-      mockFetch({
-        parse: {
-          pageid: 1,
-          title: 'Test',
-          wikitext: {
-            '*':
-              '{{Infobox game\n' +
-              '| title = Custom Title\n' +
-              '| developer = Bold Dev\n' +
-              '| platform = PS4, Xbox One\n' +
-              '}}',
+      mockFetchSequence([
+        titleLookupResponse('Test'),
+        {
+          parse: {
+            pageid: 1,
+            title: 'Test',
+            wikitext: {
+              '*':
+                '{{Infobox game\n' +
+                '| title = Custom Title\n' +
+                '| developer = Bold Dev\n' +
+                '| platform = PS4, Xbox One\n' +
+                '}}',
+            },
+            categories: [],
           },
-          categories: [],
         },
-      });
+        { query: { pages: {} } },
+      ]);
 
-      const result = await adapter.getById('Test');
+      const result = await adapter.getById('1');
       expect(result).not.toBeNull();
       expect(result!.alternateTitles).toContain('Custom Title');
       expect(result!.developers).toContain('Bold Dev');
@@ -211,36 +253,46 @@ describe('WikipediaAdapter', () => {
     });
 
     it('sends correct parse parameters', async () => {
-      mockFetch(WIKIPEDIA_PAGE_RESPONSE);
+      mockFetchSequence([
+        titleLookupResponse('Resident Evil 4'),
+        WIKIPEDIA_PAGE_RESPONSE,
+        { query: { pages: {} } },
+      ]);
 
-      await adapter.getById('Resident Evil 4');
+      await adapter.getById('12345');
 
-      const [url] = vi.mocked(globalThis.fetch).mock.calls[0];
-      expect(url).toContain('action=parse');
-      expect(url).toContain('page=Resident+Evil+4');
-      expect(url).toContain('prop=wikitext%7Ccategories');
+      const calls = vi.mocked(globalThis.fetch).mock.calls;
+      expect(calls[0][0]).toContain('action=query');
+      expect(calls[0][0]).toContain('pageids=12345');
+      expect(calls[1][0]).toContain('action=parse');
+      expect(calls[1][0]).toContain('page=Resident+Evil+4');
+      expect(calls[1][0]).toContain('prop=wikitext%7Ccategories');
     });
 
     it('extracts platforms from Unbulleted list template', async () => {
-      mockFetch({
-        parse: {
-          pageid: 50000,
-          title: 'Test Game',
-          wikitext: {
-            '*':
-              '{{Infobox video game\n' +
-              '| title = Test Game\n' +
-              '| platforms = {{Unbulleted list|[[PlayStation 4]]|[[PlayStation 5]]|[[Windows]]|[[Xbox One]]}}\n' +
-              '| developer = [[Test Dev]]\n' +
-              '| publisher = [[Test Pub]]\n' +
-              '| genre = [[Action role-playing]]\n' +
-              '}}',
+      mockFetchSequence([
+        titleLookupResponse('Test Game'),
+        {
+          parse: {
+            pageid: 50000,
+            title: 'Test Game',
+            wikitext: {
+              '*':
+                '{{Infobox video game\n' +
+                '| title = Test Game\n' +
+                '| platforms = {{Unbulleted list|[[PlayStation 4]]|[[PlayStation 5]]|[[Windows]]|[[Xbox One]]}}\n' +
+                '| developer = [[Test Dev]]\n' +
+                '| publisher = [[Test Pub]]\n' +
+                '| genre = [[Action role-playing]]\n' +
+                '}}',
+            },
+            categories: [{ '*': 'Video games' }],
           },
-          categories: [{ '*': 'Video games' }],
         },
-      });
+        { query: { pages: {} } },
+      ]);
 
-      const result = await adapter.getById('Test Game');
+      const result = await adapter.getById('50000');
       expect(result).not.toBeNull();
       expect(result!.platforms).toContain('PlayStation 4');
       expect(result!.platforms).toContain('PlayStation 5');
@@ -250,23 +302,27 @@ describe('WikipediaAdapter', () => {
     });
 
     it('extracts platforms from collapsible list template', async () => {
-      mockFetch({
-        parse: {
-          pageid: 50001,
-          title: 'Retro Game',
-          wikitext: {
-            '*':
-              '{{Infobox video game\n' +
-              '| title = Retro Game\n' +
-              '| platforms = {{collapsible list|title={{nobold|[[MS-DOS]]}}|[[Windows]]|[[Mac OS]]}}\n' +
-              '| developer = [[Retro Dev]]\n' +
-              '}}',
+      mockFetchSequence([
+        titleLookupResponse('Retro Game'),
+        {
+          parse: {
+            pageid: 50001,
+            title: 'Retro Game',
+            wikitext: {
+              '*':
+                '{{Infobox video game\n' +
+                '| title = Retro Game\n' +
+                '| platforms = {{collapsible list|title={{nobold|[[MS-DOS]]}}|[[Windows]]|[[Mac OS]]}}\n' +
+                '| developer = [[Retro Dev]]\n' +
+                '}}',
+            },
+            categories: [{ '*': 'Video games' }],
           },
-          categories: [{ '*': 'Video games' }],
         },
-      });
+        { query: { pages: {} } },
+      ]);
 
-      const result = await adapter.getById('Retro Game');
+      const result = await adapter.getById('50001');
       expect(result).not.toBeNull();
       expect(result!.platforms).toContain('MS-DOS');
       expect(result!.platforms).toContain('Windows');
@@ -274,23 +330,27 @@ describe('WikipediaAdapter', () => {
     });
 
     it('extracts publishers from templates with nested references', async () => {
-      mockFetch({
-        parse: {
-          pageid: 50002,
-          title: 'Published Game',
-          wikitext: {
-            '*':
-              '{{Infobox video game\n' +
-              '| title = Published Game\n' +
-              '| publisher = [[Bandai Namco Entertainment]]{{Video game release|JP|FromSoftware}}\n' +
-              '| developer = [[FromSoftware]]\n' +
-              '}}',
+      mockFetchSequence([
+        titleLookupResponse('Published Game'),
+        {
+          parse: {
+            pageid: 50002,
+            title: 'Published Game',
+            wikitext: {
+              '*':
+                '{{Infobox video game\n' +
+                '| title = Published Game\n' +
+                '| publisher = [[Bandai Namco Entertainment]]{{Video game release|JP|FromSoftware}}\n' +
+                '| developer = [[FromSoftware]]\n' +
+                '}}',
+            },
+            categories: [],
           },
-          categories: [],
         },
-      });
+        { query: { pages: {} } },
+      ]);
 
-      const result = await adapter.getById('Published Game');
+      const result = await adapter.getById('50002');
       expect(result).not.toBeNull();
       expect(result!.publishers).toContain('Bandai Namco Entertainment');
       expect(result!.developers).toContain('FromSoftware');

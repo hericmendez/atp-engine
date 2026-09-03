@@ -13,6 +13,7 @@ import { MongoPlatformCatalogRepository } from './infrastructure/persistence/mon
 import { MongoCatalogSyncHistoryRepository } from './infrastructure/persistence/mongodb/mongo-catalog-sync-history-repository.js';
 import { SourceRegistry } from './sources/source-registry.js';
 import { WikipediaAdapter } from './sources/wikipedia/wikipedia-adapter.js';
+import { WikipediaCoverDiscovery } from './sources/wikipedia/cover/wikipedia-cover-discovery.js';
 import { SteamAdapter } from './sources/steam/steam-adapter.js';
 import { IgdbAdapter } from './sources/igdb/igdb-adapter.js';
 import { DiscoveryEngine } from './discovery/discovery-engine.js';
@@ -81,7 +82,8 @@ async function main(): Promise<void> {
     enrichmentService,
   });
 
-  const coverEngine = new CoverEngine({ sourceRegistry });
+  const wikipediaCoverDiscovery = new WikipediaCoverDiscovery();
+  const coverEngine = new CoverEngine({ sourceRegistry, wikipediaCoverDiscovery });
   const coverService = new CoverService({ gameRepository, coverEngine });
 
   const gameAdminService = new GameAdminService({ gameRepository });
