@@ -484,6 +484,8 @@ curl "http://localhost:3000/api/v1/games/search?q=Final%20Fantasy&sort=title&ord
 
 **Dependencies**: MongoDB (read+write). Wikipedia, Steam (on empty DB). Writes discovered games.
 
+> Smoke-test reading: on a fresh/empty `atp-engine` database, a search with discovery exercises **first ingestion** (persist + enrich path). On an already-populated database, the same search for a known game returns the DB hit and exercises the **re-ingestion / idempotency** path (no duplicates). The two environments test different paths — an empty database on a new host is expected, not a bug.
+
 ---
 
 ## Single Game
