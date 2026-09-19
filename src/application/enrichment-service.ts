@@ -10,27 +10,32 @@ export interface EnrichmentServiceDependencies {
 }
 
 export class EnrichmentService {
-  private readonly gameRepository: GameRepository;
+  /**
+   * Repository retained in the dependency contract for API stability
+   * (all callers construct with one). Writes moved to callers: enrich()
+   * is pure compute, the caller owns persisting the final state exactly
+   * once.
+   */
+  constructor(_deps: EnrichmentServiceDependencies) {}
 
-  constructor(deps: EnrichmentServiceDependencies) {
-    this.gameRepository = deps.gameRepository;
-  }
-
+  /**
+   * Pure merge: computes the enriched game without persisting anything.
+   * Callers MUST persist the returned game themselves when
+   * `changes.length > 0` (or fold further mutations first and persist
+   * once). Never partially writes.
+   */
   async enrich(
     game: Game,
     observations: readonly DiscoverySourceObservation[],
   ): Promise<EnrichmentResult> {
     const result = enrichGame(game, observations);
 
-    if (result.changes.length > 0) {
-      await this.gameRepository.update(result.game);
-      logger.info('EnrichmentService: enriched game persisted', {
-        gameId: game.id,
-        changeCount: result.changes.length,
-        conflictCount: result.conflicts.length,
-        completeness: result.completeness,
-      });
-    }
+    logger.debug('EnrichmentService: enrichment computed (not persisted here)', {
+      gameId: game.id,
+      changeCount: result.changes.length,
+      conflictCount: result.conflicts.length,
+      completeness: result.completeness,
+    });
 
     return result;
   }

@@ -110,6 +110,13 @@ export const CatalogQuerySchema = PaginationSchema.extend({
 export const SearchQuerySchema = PaginationSchema.extend({
   q: z.string().min(1, 'Search query is required'),
   source: z.string().optional(),
+  // Explicit opt-in for live discovery on a miss. Normal reads are
+  // read-only; `discover=true` preserves the legacy discover-and-persist
+  // behavior for callers that need it (e.g. explicit sync flows).
+  discover: z
+    .string()
+    .optional()
+    .transform((val) => val === 'true'),
 }).merge(GameSortSchema);
 
 export const GameIdParamSchema = z.object({

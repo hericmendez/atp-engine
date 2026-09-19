@@ -24,11 +24,15 @@ export function gamesRouter(deps: GamesRouterDependencies): Router {
         page: query.page,
         limit: query.limit,
         sort,
+        discover: query.discover,
       });
 
       res.json({
         ...toPaginatedResponse(result.data, toGameResponse),
         origin: result.origin,
+        // Present only when the discovery path ran (discover=true on a
+        // miss); omitted otherwise so default responses stay byte-identical.
+        ...(result.errors !== undefined ? { errors: result.errors } : {}),
       });
     } catch (error) {
       next(error);

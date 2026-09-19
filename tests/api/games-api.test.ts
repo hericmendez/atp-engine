@@ -35,10 +35,11 @@ describe('Games API', () => {
   let mockGames: Game[];
   let mockCatalogService: CatalogService;
   let app: ReturnType<typeof createApp>;
+  let capturedSearchOptions: unknown[];
 
   beforeEach(() => {
-    mockGames = [
-      createTestGame({
+    capturedSearchOptions = [];
+    mockGames = [      createTestGame({
         id: createGameId('game-1'),
         titles: [createGameTitle('The Legend of Zelda: Breath of the Wild', 'primary')],
         developers: [createOrganization('Nintendo EPD')],
@@ -158,6 +159,7 @@ describe('Games API', () => {
         searchQuery: string,
         options?: { page?: number; limit?: number; sort?: GameQuery['sort'] },
       ) => {
+        capturedSearchOptions.push(options);
         const query: GameQuery = {
           search: searchQuery,
           page: options?.page,
@@ -325,6 +327,20 @@ describe('Games API', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.data.length).toBe(0);
+    });
+
+    it('forwards the explicit discover flag to the service', async () => {
+      const res = await request(app).get('/api/v1/games/search?q=zelda&discover=true');
+
+      expect(res.status).toBe(200);
+      expect(capturedSearchOptions.at(-1)).toMatchObject({ discover: true });
+    });
+
+    it('defaults discover to false', async () => {
+      const res = await request(app).get('/api/v1/games/search?q=zelda');
+
+      expect(res.status).toBe(200);
+      expect(capturedSearchOptions.at(-1)).toMatchObject({ discover: false });
     });
   });
 

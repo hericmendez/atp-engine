@@ -11,6 +11,8 @@ import { CoverEngine } from './cover/cover-engine.js';
 import { MongoGameRepository } from './infrastructure/persistence/mongodb/mongo-game-repository.js';
 import { MongoPlatformCatalogRepository } from './infrastructure/persistence/mongodb/mongo-platform-catalog-repository.js';
 import { MongoCatalogSyncHistoryRepository } from './infrastructure/persistence/mongodb/mongo-catalog-sync-history-repository.js';
+import { MongoQuarantineRepository } from './infrastructure/persistence/mongodb/mongo-quarantine-repository.js';
+import { QuarantineService } from './application/quarantine-service.js';
 import { SourceRegistry } from './sources/source-registry.js';
 import { WikipediaAdapter } from './sources/wikipedia/wikipedia-adapter.js';
 import { WikipediaCoverDiscovery } from './sources/wikipedia/cover/wikipedia-cover-discovery.js';
@@ -76,10 +78,15 @@ async function main(): Promise<void> {
 
   const enrichmentService = new EnrichmentService({ gameRepository });
 
+  const quarantineService = new QuarantineService({
+    quarantineRepository: new MongoQuarantineRepository(),
+  });
+
   const catalogService = new CatalogService({
     gameRepository,
     discoveryEngine,
     enrichmentService,
+    quarantineService,
   });
 
   const wikipediaCoverDiscovery = new WikipediaCoverDiscovery();
@@ -96,6 +103,8 @@ async function main(): Promise<void> {
     discoveryEngine,
     enrichmentService,
     historyRepository: catalogSyncHistoryRepository,
+    quarantineService,
+    classifier,
   });
 
   const enrichmentRunner = new EnrichmentRunner(

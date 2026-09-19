@@ -256,7 +256,7 @@ describe('Discovery → Enrichment → Persistence Pipeline', () => {
         enrichmentService,
       });
 
-      const result = await service.searchGames('Hollow Knight');
+      const result = await service.searchGames('Hollow Knight', { discover: true });
 
       expect(result.origin).toBe('database');
       expect(result.data.items.length).toBe(1);
@@ -281,13 +281,13 @@ describe('Discovery → Enrichment → Persistence Pipeline', () => {
         enrichmentService,
       });
 
-      await service.searchGames('Hollow Knight');
+      await service.searchGames('Hollow Knight', { discover: true });
 
       vi.clearAllMocks();
       repo.savedGames.length = 0;
       repo.updatedGames.length = 0;
 
-      const result = await service.searchGames('Hollow Knight');
+      const result = await service.searchGames('Hollow Knight', { discover: true });
 
       expect(result.origin).toBe('database');
       expect(result.data.items.length).toBe(1);
@@ -313,7 +313,7 @@ describe('Discovery → Enrichment → Persistence Pipeline', () => {
         enrichmentService,
       });
 
-      const result = await service.searchGames('Metroidvania game');
+      const result = await service.searchGames('Metroidvania game', { discover: true });
 
       expect(result.origin).toBe('database');
       expect(result.data.items.length).toBe(1);
@@ -338,10 +338,10 @@ describe('Discovery → Enrichment → Persistence Pipeline', () => {
         enrichmentService,
       });
 
-      await service.searchGames('Hollow Knight');
+      await service.searchGames('Hollow Knight', { discover: true });
       const firstSaveCount = repo.savedGames.length;
 
-      await service.searchGames('Hollow Knight');
+      await service.searchGames('Hollow Knight', { discover: true });
       const secondSaveCount = repo.savedGames.length;
 
       expect(firstSaveCount).toBe(1);
@@ -360,7 +360,7 @@ describe('Discovery → Enrichment → Persistence Pipeline', () => {
         enrichmentService,
       });
 
-      const result = await service.searchGames('Celeste');
+      const result = await service.searchGames('Celeste', { discover: true });
 
       expect(result.data.items.length).toBe(1);
 
@@ -436,7 +436,7 @@ describe('Discovery → Enrichment → Persistence Pipeline', () => {
         enrichmentService,
       });
 
-      const result = await service.searchGames('RE4 Remake');
+      const result = await service.searchGames('RE4 Remake', { discover: true });
 
       expect(result.data.items.length).toBe(1);
 
@@ -464,7 +464,7 @@ describe('Discovery → Enrichment → Persistence Pipeline', () => {
         enrichmentService,
       });
 
-      const result = await service.searchGames('Doom');
+      const result = await service.searchGames('Doom', { discover: true });
 
       expect(result.origin).toBe('scraper');
       expect(result.data.items.length).toBe(0);
@@ -530,7 +530,7 @@ describe('Discovery → Enrichment → Persistence Pipeline', () => {
         enrichmentService,
       });
 
-      const result = await service.searchGames('Good Game');
+      const result = await service.searchGames('Good Game', { discover: true });
 
       expect(result.origin).toBe('database');
       expect(result.data.items.length).toBe(1);

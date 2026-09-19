@@ -360,7 +360,7 @@ describe('CatalogSyncService — History Integration', () => {
     expect(createCall.trigger).toBe('scheduled');
   });
 
-  it('records dry run in history', async () => {
+  it('does not record dry runs in history', async () => {
     vi.mocked(discoveryEngine.discover).mockResolvedValue({
       query: '',
       groups: [],
@@ -369,15 +369,19 @@ describe('CatalogSyncService — History Integration', () => {
       hasMore: false,
     });
 
-    await service.sync({
+    const result = await service.sync({
       platforms: ['nintendo-switch'],
       from: '2025-01-01',
       to: '2025-12-31',
       dryRun: true,
     });
 
-    const createCall = vi.mocked(historyRepository.create).mock.calls[0][0];
-    expect(createCall.dryRun).toBe(true);
+    // Dry runs are fully side-effect free: no history record is created
+    // (and therefore never updated); disposition is only reported.
+    expect(result.dryRun).toBe(true);
+    expect(result.historyId).toBeUndefined();
+    expect(historyRepository.create).not.toHaveBeenCalled();
+    expect(historyRepository.update).not.toHaveBeenCalled();
   });
 
   it('updates history with platform results', async () => {

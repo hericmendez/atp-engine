@@ -106,7 +106,7 @@ describe('Practical Validation Defect Fixes', () => {
         discoveryEngine: discovery,
       });
 
-      const result = await service.searchGames('Elden Ring PS5');
+      const result = await service.searchGames('Elden Ring PS5', { discover: true });
 
       expect(result.data.items).toHaveLength(1);
       expect(result.data.items[0].titles[0].value).toBe('Elden Ring');
@@ -122,7 +122,7 @@ describe('Practical Validation Defect Fixes', () => {
         discoveryEngine: discovery,
       });
 
-      const result = await service.searchGames('Stardew Valley definitive edition');
+      const result = await service.searchGames('Stardew Valley definitive edition', { discover: true });
 
       expect(result.data.items).toHaveLength(1);
       expect(result.data.items[0].titles[0].value).toBe('Stardew Valley');
@@ -137,7 +137,7 @@ describe('Practical Validation Defect Fixes', () => {
         discoveryEngine: discovery,
       });
 
-      const result = await service.searchGames('Brand New Game XYZ');
+      const result = await service.searchGames('Brand New Game XYZ', { discover: true });
 
       expect(result.data.items).toHaveLength(0);
       expect(result.origin).toBe('scraper');

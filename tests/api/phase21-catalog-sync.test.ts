@@ -24,6 +24,10 @@ import { createGenre } from '../../src/domain/shared/genre.js';
 import { createExternalIdentifier } from '../../src/domain/shared/external-identifier.js';
 import type { NormalizedCandidate } from '../../src/normalization/normalized-candidate.js';
 import type { ClassificationResult } from '../../src/classification/classification-result.js';
+import { QuarantineService } from '../../src/application/quarantine-service.js';
+import type { CatalogSyncHistoryRepository } from '../../src/application/catalog-sync-history-repository.js';
+import type { QuarantineRepository } from '../../src/application/quarantine-repository.js';
+import type { QuarantinedCandidate } from '../../src/application/quarantine-types.js';
 
 function createTestGame(overrides: Partial<Game> = {}): Game {
   const id = overrides.id ?? createGameId('test-game-1');
@@ -938,5 +942,175 @@ describe('POST /api/v1/catalog/sync', () => {
     expect(mockCatalogSyncService.sync).toHaveBeenCalledWith(
       expect.objectContaining({ dryRun: true }),
     );
+  });
+});
+
+describe('sync eligibility unification and quarantine', () => {
+  function memoryQuarantine() {
+    const records = new Map<string, QuarantinedCandidate>();
+    const repository: QuarantineRepository = {
+      record: async (entry) => {
+        records.set(entry.groupId, entry);
+      },
+      findByGroupId: async (groupId) => records.get(groupId) ?? null,
+      count: async () => records.size,
+    };
+    return { repository, records };
+  }
+
+  function serviceWith(
+    groups: DiscoveryGroupResult[],
+    quarantineRepository?: QuarantineRepository,
+  ) {
+    const gameRepository = createMockGameRepository();
+    const discoveryEngine = createMockDiscoveryEngine(groups);
+    return {
+      gameRepository,
+      service: new CatalogSyncService({
+        gameRepository,
+        platformCatalogRepository: createMockPlatformCatalogRepository([
+          activePlatform,
+        ]),
+        discoveryEngine,
+        enrichmentService: createMockEnrichmentService(),
+        ...(quarantineRepository
+          ? {
+              quarantineService: new QuarantineService({
+                quarantineRepository,
+              }),
+            }
+          : {}),
+      }),
+    };
+  }
+
+  it('accepts DLC through the unified gate (previously rejected by sync)', async () => {
+    const group = createTestDiscoveryGroup({
+      mergedClassification: {
+        category: 'DLC',
+        confidence: 0.8,
+        signals: [],
+        reason: 'DLC',
+      },
+    });
+    const { service, gameRepository } = serviceWith([group]);
+
+    const result = await service.sync({
+      platforms: ['nintendo-switch'],
+      from: '2025-01-01',
+      to: '2025-12-31',
+    });
+
+    expect(result.platforms[0].rejected).toBe(0);
+    expect(result.platforms[0].newGames).toBe(1);
+    expect(gameRepository.save).toHaveBeenCalled();
+  });
+
+  it('records rejections in quarantine when wired', async () => {
+    const group = createTestDiscoveryGroup({
+      groupId: 'q-hw',
+      mergedClassification: {
+        category: 'HARDWARE',
+        confidence: 0.9,
+        signals: [],
+        reason: 'Hardware',
+      },
+    });
+    const { repository } = memoryQuarantine();
+    const { service } = serviceWith(
+      [group],
+      repository,
+    );
+
+    const result = await service.sync({
+      platforms: ['nintendo-switch'],
+      from: '2025-01-01',
+      to: '2025-12-31',
+    });
+
+    expect(result.platforms[0].rejected).toBe(1);
+    const stored = await repository.findByGroupId('q-hw');
+    expect(stored?.status).toBe('INELIGIBLE');
+    expect(stored?.classification).toBe('HARDWARE');
+  });
+
+  it('does not record quarantine entries on dry runs', async () => {
+    const group = createTestDiscoveryGroup({
+      groupId: 'q-dry',
+      mergedClassification: {
+        category: 'HARDWARE',
+        confidence: 0.9,
+        signals: [],
+        reason: 'Hardware',
+      },
+    });
+    const { repository } = memoryQuarantine();
+    const { service } = serviceWith([group], repository);
+
+    const result = await service.sync({
+      platforms: ['nintendo-switch'],
+      from: '2025-01-01',
+      to: '2025-12-31',
+      dryRun: true,
+    });
+
+    expect(result.platforms[0].rejected).toBe(1);
+    expect(await repository.count()).toBe(0);
+  });
+
+  it('does not write sync history on dry runs', async () => {
+    const group = createTestDiscoveryGroup({ groupId: 'h-dry' });
+    const historyRepository: CatalogSyncHistoryRepository = {
+      create: vi.fn(async () => 'hist-dry'),
+      update: vi.fn(async () => {}),
+      findById: vi.fn(async () => null),
+      findMany: vi.fn(async () => ({ items: [], total: 0, page: 1, limit: 20, totalPages: 0 })),
+    };
+    const service = new CatalogSyncService({
+      gameRepository: createMockGameRepository(),
+      platformCatalogRepository: createMockPlatformCatalogRepository([activePlatform]),
+      discoveryEngine: createMockDiscoveryEngine([group]),
+      enrichmentService: createMockEnrichmentService(),
+      historyRepository,
+    });
+
+    const result = await service.sync({
+      platforms: ['nintendo-switch'],
+      from: '2025-01-01',
+      to: '2025-12-31',
+      dryRun: true,
+    });
+
+    expect(result.dryRun).toBe(true);
+    expect(historyRepository.create).not.toHaveBeenCalled();
+    expect(historyRepository.update).not.toHaveBeenCalled();
+    expect(result.historyId).toBeUndefined();
+  });
+
+  it('writes sync history on real runs when a repository is wired', async () => {
+    const group = createTestDiscoveryGroup({ groupId: 'h-real' });
+    const historyRepository: CatalogSyncHistoryRepository = {
+      create: vi.fn(async () => 'hist-real'),
+      update: vi.fn(async () => {}),
+      findById: vi.fn(async () => null),
+      findMany: vi.fn(async () => ({ items: [], total: 0, page: 1, limit: 20, totalPages: 0 })),
+    };
+    const service = new CatalogSyncService({
+      gameRepository: createMockGameRepository(),
+      platformCatalogRepository: createMockPlatformCatalogRepository([activePlatform]),
+      discoveryEngine: createMockDiscoveryEngine([group]),
+      enrichmentService: createMockEnrichmentService(),
+      historyRepository,
+    });
+
+    const result = await service.sync({
+      platforms: ['nintendo-switch'],
+      from: '2025-01-01',
+      to: '2025-12-31',
+    });
+
+    expect(historyRepository.create).toHaveBeenCalledTimes(1);
+    expect(historyRepository.update).toHaveBeenCalled();
+    expect(result.historyId).toBe('hist-real');
   });
 });

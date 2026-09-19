@@ -248,14 +248,34 @@ describe('CatalogService', () => {
       expect(result.data.items[0].id).toBe('game-2');
     });
 
-    it('returns empty with scraper origin for non-matching search (no discovery engine)', async () => {
+    it('returns empty with database origin for non-matching search (no discovery engine)', async () => {
       const result = await service.searchGames('nonexistent');
 
-      expect(result.origin).toBe('scraper');
+      expect(result.origin).toBe('database');
       expect(result.data.items.length).toBe(0);
+      expect(result.data.total).toBe(0);
     });
 
-    it('falls back to discovery and persists new game', async () => {
+    it('does not persist anything on search miss by default', async () => {
+      const discoveryEngine = createMockDiscoveryEngine();
+      const repo = createMockRepository([]);
+      const emptyService = new CatalogService({
+        gameRepository: repo.repository,
+        discoveryEngine,
+      });
+
+      const first = await emptyService.searchGames('Doom');
+      const second = await emptyService.searchGames('Doom');
+
+      for (const result of [first, second]) {
+        expect(result.origin).toBe('database');
+        expect(result.data.items.length).toBe(0);
+      }
+      expect(discoveryEngine.discover).not.toHaveBeenCalled();
+      expect(repo.savedGames.length).toBe(0);
+    });
+
+    it('falls back to discovery and persists new game when explicitly requested', async () => {
       const discoveryEngine = createMockDiscoveryEngine();
       const repo = createMockRepository([]);
       const enrichmentService = new EnrichmentService({ gameRepository: repo.repository });
@@ -265,7 +285,7 @@ describe('CatalogService', () => {
         enrichmentService,
       });
 
-      const result = await emptyService.searchGames('Doom');
+      const result = await emptyService.searchGames('Doom', { discover: true });
 
       expect(result.origin).toBe('database');
       expect(result.data.items.length).toBe(1);
@@ -274,7 +294,7 @@ describe('CatalogService', () => {
       expect(repo.savedGames[0].titles[0].value).toBe('Doom');
     });
 
-    it('falls back to discovery when database fails', async () => {
+    it('returns empty database result on database failure without discover flag', async () => {
       const discoveryEngine = createMockDiscoveryEngine();
       const failingService = new CatalogService({
         gameRepository: createFailingRepository(),
@@ -282,6 +302,20 @@ describe('CatalogService', () => {
       });
 
       const result = await failingService.searchGames('Doom');
+
+      expect(result.origin).toBe('database');
+      expect(result.data.items.length).toBe(0);
+      expect(discoveryEngine.discover).not.toHaveBeenCalled();
+    });
+
+    it('falls back to discovery when database fails and discover is requested', async () => {
+      const discoveryEngine = createMockDiscoveryEngine();
+      const failingService = new CatalogService({
+        gameRepository: createFailingRepository(),
+        discoveryEngine,
+      });
+
+      const result = await failingService.searchGames('Doom', { discover: true });
 
       expect(result.origin).toBe('scraper');
       expect(result.data.items.length).toBe(0);
@@ -297,20 +331,20 @@ describe('CatalogService', () => {
         discoveryEngine: failingDiscovery,
       });
 
-      const result = await failingService.searchGames('Doom');
+      const result = await failingService.searchGames('Doom', { discover: true });
 
       expect(result.origin).toBe('scraper');
       expect(result.data.items.length).toBe(0);
     });
 
-    it('returns empty scraper result when no discovery engine available', async () => {
+    it('returns empty database result when no discovery engine available', async () => {
       const emptyService = new CatalogService({
         gameRepository: createMockRepository([]).repository,
       });
 
       const result = await emptyService.searchGames('Doom');
 
-      expect(result.origin).toBe('scraper');
+      expect(result.origin).toBe('database');
       expect(result.data.items.length).toBe(0);
     });
 
@@ -327,7 +361,7 @@ describe('CatalogService', () => {
       expect(discoveryEngine.discover).not.toHaveBeenCalled();
     });
 
-    it('discovery results are persisted and returned with database origin', async () => {
+    it('discovery results are persisted and returned with database origin when requested', async () => {
       const discoveryEngine = createMockDiscoveryEngine();
       const repo = createMockRepository([]);
       const enrichmentService = new EnrichmentService({ gameRepository: repo.repository });
@@ -337,13 +371,13 @@ describe('CatalogService', () => {
         enrichmentService,
       });
 
-      const result = await emptyService.searchGames('Doom');
+      const result = await emptyService.searchGames('Doom', { discover: true });
 
       expect(result.origin).toBe('database');
       expect(repo.savedGames.length).toBe(1);
     });
 
-    it('passes pagination to discovery engine', async () => {
+    it('passes pagination to discovery engine when requested', async () => {
       const discoveryEngine = createMockDiscoveryEngine();
       const repo = createMockRepository([]);
       const enrichmentService = new EnrichmentService({ gameRepository: repo.repository });
@@ -353,7 +387,7 @@ describe('CatalogService', () => {
         enrichmentService,
       });
 
-      await emptyService.searchGames('Doom', { page: 2, limit: 5 });
+      await emptyService.searchGames('Doom', { page: 2, limit: 5, discover: true });
 
       expect(discoveryEngine.discover).toHaveBeenCalledWith({
         query: 'Doom',
