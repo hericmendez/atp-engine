@@ -9,6 +9,7 @@ import type { NormalizedRelease } from '../normalization/normalized-candidate.js
 import type { DiscoverySourceObservation } from '../discovery/discovery-types.js';
 import type { EnrichmentResult, EnrichmentChange, EnrichmentConflict } from './enrichment-types.js';
 import {
+  gameAddRelease,
   gameAddTitle,
   gameAddExternalIdentifier,
   gameAddEvidence,
@@ -687,4 +688,36 @@ function createReleaseFromNormalized(
     externalIdentifiers: [...normalized.externalIdentifiers],
     evidence: [buildEvidence(obs)],
   };
+}
+
+/**
+ * Fold candidate releases into an existing canonical game without
+ * touching any other field. Only releases absent by platform+region
+ * match are appended (deterministic IDs derived from the parent game,
+ * so re-runs are idempotent); existing releases are never modified.
+ * Used by port resolution: a port contributes release/platform data to
+ * its canonical parent and nothing else.
+ */
+export function mergeCandidateReleases(
+  game: Game,
+  observations: readonly DiscoverySourceObservation[],
+): { game: Game; addedReleases: number } {
+  let merged = game;
+  let addedReleases = 0;
+
+  for (const obs of observations) {
+    for (const normalizedRelease of obs.candidate.releases) {
+      const exists = merged.releases.some((r) => releasesMatch(normalizedRelease, r));
+      if (exists) {
+        continue;
+      }
+      merged = gameAddRelease(
+        merged,
+        createReleaseFromNormalized(normalizedRelease, merged.id, obs),
+      );
+      addedReleases++;
+    }
+  }
+
+  return { game: merged, addedReleases };
 }
