@@ -72,6 +72,8 @@ export function toDomain(doc: GameDocument): Game {
     evidence: doc.evidence.map((e) => createSourceEvidence(e.source, e.externalId, e.rawTitle)),
     classification: doc.classification as Game['classification'],
     completeness: doc.completeness as Game['completeness'],
+    gameType: doc.gameType ?? null,
+    gameStatus: doc.gameStatus ?? null,
     cover: doc.cover
       ? {
           url: doc.cover.url,
@@ -137,6 +139,8 @@ export function toPersistence(game: Game): Record<string, unknown> {
     })),
     classification: game.classification,
     completeness: game.completeness,
+    gameType: game.gameType,
+    gameStatus: game.gameStatus,
     cover: game.cover
       ? {
           url: game.cover.url,

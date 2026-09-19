@@ -298,6 +298,10 @@ export class CoverEngine {
       ],
       description: null,
       coverUrls: [wikiCandidate.imageUrl],
+      gameType: null,
+      gameStatus: null,
+      parentGameId: null,
+      versionParentId: null,
     };
   }
 

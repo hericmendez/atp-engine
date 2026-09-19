@@ -256,6 +256,10 @@ export interface RawCandidateInput {
   description?: string;
   classificationHints?: readonly { category: string; confidence: number; evidence: string }[];
   coverUrls?: readonly string[];
+  gameType?: string;
+  gameStatus?: string;
+  parentGameId?: string;
+  versionParentId?: string;
 }
 
 export function normalizeCandidate(
@@ -353,6 +357,14 @@ export function normalizeCandidate(
     (url): url is string => typeof url === 'string' && url.trim().length > 0,
   );
 
+  const cleanOptional = (value: string | undefined): string | null => {
+    if (typeof value !== 'string') {
+      return null;
+    }
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  };
+
   return {
     titles,
     developers,
@@ -363,6 +375,10 @@ export function normalizeCandidate(
     classificationHints,
     description,
     coverUrls,
+    gameType: cleanOptional(input.gameType),
+    gameStatus: cleanOptional(input.gameStatus),
+    parentGameId: cleanOptional(input.parentGameId),
+    versionParentId: cleanOptional(input.versionParentId),
     provenance: normalizeProvenance(source, sourceId, input.title ?? null),
   };
 }

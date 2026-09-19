@@ -243,3 +243,28 @@ describe('Game', () => {
     expect(updated.evidence).toHaveLength(1);
   });
 });
+
+describe('Game provider type/status metadata', () => {
+  it('defaults gameType and gameStatus to null', () => {
+    const game = createGame({
+      id: createGameId('g1'),
+      titles: [createGameTitle('Test Game', 'primary')],
+    });
+
+    expect(game.gameType).toBeNull();
+    expect(game.gameStatus).toBeNull();
+  });
+
+  it('stores explicit provider type/status without touching identity', () => {
+    const game = createGame({
+      id: createGameId('atp-igdb-100'),
+      titles: [createGameTitle('Test Game', 'primary')],
+      gameType: 'remake',
+      gameStatus: 'released',
+    });
+
+    expect(game.gameType).toBe('remake');
+    expect(game.gameStatus).toBe('released');
+    expect(game.id).toBe('atp-igdb-100');
+  });
+});

@@ -2,6 +2,7 @@ import type { Game } from '../domain/game/game.js';
 import type { GameId } from '../domain/shared/ids.js';
 import type { GameTitle } from '../domain/shared/title.js';
 import type { DiscoveryGroupResult } from '../discovery/discovery-types.js';
+import type { DiscoverySourceObservation } from '../discovery/discovery-types.js';
 import type { NormalizedCandidate } from '../normalization/normalized-candidate.js';
 import type { MetadataCompleteness } from '../domain/shared/metadata-completeness.js';
 import type { ClassificationCategory } from '../domain/shared/classification-category.js';
@@ -35,12 +36,27 @@ function mapClassification(group: DiscoveryGroupResult): ClassificationCategory 
     : 'UNKNOWN';
 }
 
+/**
+ * The single observation a group persistence uses for identity-bearing
+ * fields (game ID seed, external identifiers, evidence). Highest
+ * per-observation classification confidence wins; ties keep group order.
+ * Shared by the entity builder and the stable-identity ban so both
+ * always agree on which candidate supplies the identity.
+ */
+export function selectPersistObservation(
+  group: DiscoveryGroupResult,
+): DiscoverySourceObservation | undefined {
+  const first = group.observations[0];
+  if (!first) {
+    return undefined;
+  }
+  return group.observations.reduce((best, obs) =>
+    obs.classification.confidence > best.classification.confidence ? obs : best,
+  );
+}
+
 export function discoveryGroupToGame(group: DiscoveryGroupResult): Game {
-  const bestObservation = group.observations.reduce((best, obs) => {
-    const bestScore = best.classification.confidence;
-    const obsScore = obs.classification.confidence;
-    return obsScore > bestScore ? obs : best;
-  }, group.observations[0]);
+  const bestObservation = selectPersistObservation(group) ?? group.observations[0];
 
   const candidate = bestObservation.candidate;
   const source = bestObservation.source;
@@ -67,6 +83,8 @@ export function discoveryGroupToGame(group: DiscoveryGroupResult): Game {
     completeness: mapCompleteness(group),
     cover: null,
     lastEnrichedAt: null,
+    gameType: candidate.gameType,
+    gameStatus: candidate.gameStatus,
   };
 }
 

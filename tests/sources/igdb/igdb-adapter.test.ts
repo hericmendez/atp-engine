@@ -4,6 +4,7 @@ import {
   IGDB_OAUTH_TOKEN_RESPONSE,
   IGDB_SEARCH_RESPONSE,
   IGDB_GAME_DETAIL_RESPONSE,
+  IGDB_INVOLVED_COMPANIES_RESPONSE,
   IGDB_COMPANIES_RESPONSE,
 } from '../fixtures/source-fixtures.js';
 import { SourceError } from '../../../src/sources/source-errors.js';
@@ -101,8 +102,8 @@ describe('IgdbAdapter', () => {
       expect(candidate.platforms).toEqual([
         'PC',
         'PlayStation 4',
-        'PlayStation 5',
         'Nintendo Switch',
+        'PlayStation 5',
       ]);
       expect(candidate.genres).toEqual(['Role-playing (RPG)', 'Adventure']);
       expect(candidate.releaseDate).toBe('2015-05-19');
@@ -225,6 +226,14 @@ describe('IgdbAdapter', () => {
             }),
           );
         }
+        if (urlStr.includes('/involved_companies')) {
+          return Promise.resolve(
+            new Response(JSON.stringify(IGDB_INVOLVED_COMPANIES_RESPONSE), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            }),
+          );
+        }
         if (urlStr.includes('/companies')) {
           return Promise.resolve(
             new Response(JSON.stringify(IGDB_COMPANIES_RESPONSE), {
@@ -248,6 +257,52 @@ describe('IgdbAdapter', () => {
       expect(result!.title).toBe('The Witcher 3: Wild Hunt');
       expect(result!.developers).toEqual(['CD Projekt Red']);
       expect(result!.publishers).toEqual(['CD Projekt Red']);
+    });
+
+    it('maps developer-only and publisher-only roles from involvements', async () => {
+      vi.spyOn(globalThis, 'fetch').mockImplementation((url) => {
+        const urlStr = typeof url === 'string' ? url : url.toString();
+        if (urlStr.includes('id.twitch.tv')) {
+          return Promise.resolve(
+            new Response(JSON.stringify(IGDB_OAUTH_TOKEN_RESPONSE), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            }),
+          );
+        }
+        if (urlStr.includes('/involved_companies')) {
+          return Promise.resolve(
+            new Response(
+              JSON.stringify([
+                { id: 10, company: 20, developer: true, publisher: false },
+                { id: 11, company: 21, developer: false, publisher: true },
+              ]),
+              { status: 200, headers: { 'Content-Type': 'application/json' } },
+            ),
+          );
+        }
+        if (urlStr.includes('/companies')) {
+          return Promise.resolve(
+            new Response(
+              JSON.stringify([
+                { id: 20, name: 'Dev Studio' },
+                { id: 21, name: 'Pub House' },
+              ]),
+              { status: 200, headers: { 'Content-Type': 'application/json' } },
+            ),
+          );
+        }
+        return Promise.resolve(
+          new Response(JSON.stringify(IGDB_GAME_DETAIL_RESPONSE), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        );
+      });
+
+      const result = await adapter.getById('1942');
+      expect(result!.developers).toEqual(['Dev Studio']);
+      expect(result!.publishers).toEqual(['Pub House']);
     });
 
     it('returns null for non-existent game', async () => {
@@ -278,8 +333,7 @@ describe('IgdbAdapter', () => {
       expect(result).toBeNull();
     });
 
-    it('handles company fetch failure gracefully', async () => {
-      vi.spyOn(globalThis, 'fetch').mockImplementation((url) => {
+    it('handles company fetch failure gracefully', async () => {      vi.spyOn(globalThis, 'fetch').mockImplementation((url) => {
         const urlStr = typeof url === 'string' ? url : url.toString();
         if (urlStr.includes('id.twitch.tv')) {
           return Promise.resolve(
@@ -367,7 +421,7 @@ describe('IgdbAdapter', () => {
           {
             id: 1,
             name: 'Test Game',
-            platforms: [6, 48, 49, 130],
+            platforms: [6, 48, 130, 167],
           },
         ],
       ]);
@@ -379,6 +433,63 @@ describe('IgdbAdapter', () => {
       expect(candidate.platforms).toContain('PlayStation 4');
       expect(candidate.platforms).toContain('PlayStation 5');
       expect(candidate.platforms).toContain('Nintendo Switch');
+    });
+
+    it('maps canonical console IDs including PlayStation 2', async () => {
+      mockFetchSequence([
+        IGDB_OAUTH_TOKEN_RESPONSE,
+        [
+          {
+            id: 2,
+            name: 'PS2 Game',
+            platforms: [7, 8, 9, 11, 12, 49, 4, 5, 23, 32],
+          },
+        ],
+      ]);
+
+      const result = await adapter.search('Test');
+      const candidate = result.candidates[0];
+
+      expect(candidate.platforms).toEqual([
+        'PlayStation',
+        'PlayStation 2',
+        'PlayStation 3',
+        'Xbox',
+        'Xbox 360',
+        'Xbox One',
+        'Nintendo 64',
+        'Wii',
+        'Sega Dreamcast',
+        'Sega Saturn',
+      ]);
+    });
+
+    it('prefers expanded upstream platform names over the static map', async () => {
+      mockFetchSequence([
+        IGDB_OAUTH_TOKEN_RESPONSE,
+        [
+          {
+            id: 3,
+            name: 'Future Game',
+            // 99999 has no map entry: only the expansion carries the name.
+            platforms: [{ id: 99999, name: 'Future Console' }, 6],
+          },
+        ],
+      ]);
+
+      const result = await adapter.search('Test');
+      const candidate = result.candidates[0];
+
+      expect(candidate.platforms).toEqual(['Future Console', 'PC']);
+    });
+
+    it('keeps the stable IGDB external identifier', async () => {
+      mockFetchSequence([IGDB_OAUTH_TOKEN_RESPONSE, IGDB_SEARCH_RESPONSE]);
+
+      const result = await adapter.search('The Witcher');
+      expect(result.candidates[0].externalIdentifiers).toEqual([
+        { source: 'igdb', id: '1942' },
+      ]);
     });
 
     it('filters unmapped platform IDs', async () => {

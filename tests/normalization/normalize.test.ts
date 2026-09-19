@@ -651,6 +651,34 @@ describe('normalizeCandidate', () => {
     );
   });
 
+  it('passes provider game type, status and parent links through verbatim', () => {
+    const result = normalizeCandidate(
+      {
+        title: 'Test Game',
+        gameType: 'remake',
+        gameStatus: 'released',
+        parentGameId: '55',
+        versionParentId: '  ',
+      },
+      'igdb',
+      '100',
+    );
+
+    expect(result.gameType).toBe('remake');
+    expect(result.gameStatus).toBe('released');
+    expect(result.parentGameId).toBe('55');
+    expect(result.versionParentId).toBeNull();
+  });
+
+  it('defaults type/status/parents to null when the source provides none', () => {
+    const result = normalizeCandidate({ title: 'Test Game' }, 'wikipedia', 'wiki-1');
+
+    expect(result.gameType).toBeNull();
+    expect(result.gameStatus).toBeNull();
+    expect(result.parentGameId).toBeNull();
+    expect(result.versionParentId).toBeNull();
+  });
+
   it('handles multiple titles', () => {
     const result = normalizeCandidate(
       {

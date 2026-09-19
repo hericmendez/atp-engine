@@ -1,8 +1,14 @@
 import { BaseAdapter, type BaseAdapterConfig } from '../base-adapter.js';
 import type { SearchOptions, SearchResult } from '../source-adapter.js';
+import type {
+  CatalogPage,
+  CatalogPageOptions,
+  CatalogSource,
+} from '../catalog-source.js';
 import type { RawCandidate } from '../raw-candidate.js';
 import { SourceError } from '../source-errors.js';
 import { logger } from '../../infrastructure/logger/logger.js';
+import { igdbGameStatusName, igdbGameTypeName } from './igdb-game-type.js';
 
 interface TwitchTokenResponse {
   access_token: string;
@@ -17,7 +23,7 @@ interface IgdbGame {
   summary?: string;
   first_release_date?: number;
   genres?: number[];
-  platforms?: number[];
+  platforms?: Array<number | { id: number; name?: string }>;
   involved_companies?: number[];
   cover?: { id: string; url: string; image_id?: string };
   screenshots?: Array<{ id: string; url: string; image_id?: string }>;
@@ -26,39 +32,63 @@ interface IgdbGame {
   player_perspectives?: number[];
   storyline?: string;
   url?: string;
+  game_type?: number;
+  status?: number;
+  parent_game?: number;
+  version_parent?: number;
 }
 
+interface IgdbInvolvement {
+  id: number;
+  company: number;
+  developer: boolean;
+  publisher: boolean;
+}
+
+// Canonical console IDs below (PS1 7, PS2 8, PS3 9, Xbox 11, Xbox 360 12,
+// Xbox One 49, PS5 167, Series X|S 169, N64 4, Wii 5, Dreamcast 23,
+// Saturn 32, 3DS 37) were cross-checked against independent public IGDB
+// platform dumps. This map is a FALLBACK: the adapter prefers upstream
+// expanded `platforms.name` values whenever present (see gameToCandidate).
+// Unverified exotic entries are left untouched; do not treat this map as
+// authoritative — prefer expansion for new platforms.
 const IGDB_PLATFORM_MAP: Record<number, string> = {
   3: 'Linux',
+  4: 'Nintendo 64',
+  5: 'Wii',
   6: 'PC',
-  9: 'Nintendo 3DS',
+  7: 'PlayStation',
+  8: 'PlayStation 2',
+  9: 'PlayStation 3',
+  11: 'Xbox',
+  12: 'Xbox 360',
   13: 'Nintendo DS',
   14: 'Mac',
   18: 'NES',
   19: 'SNES',
-  20: 'Nintendo 64',
+  20: 'Nintendo DS',
   21: 'GameCube',
   22: 'Game Boy Advance',
-  23: 'Game Boy Color',
+  23: 'Sega Dreamcast',
   24: 'Game Boy',
-  34: 'Wii',
+  32: 'Sega Saturn',
+  34: 'Android',
+  37: 'Nintendo 3DS',
   38: 'PlayStation Portable',
   39: 'iOS',
   41: 'Wii U',
   48: 'PlayStation 4',
-  49: 'PlayStation 5',
+  49: 'Xbox One',
   130: 'Nintendo Switch',
   162: 'Oculus VR',
   163: 'SteamVR',
-  167: 'PlayStation VR',
-  169: 'PlayStation VR2',
+  167: 'PlayStation 5',
+  169: 'Xbox Series X|S',
   29: 'TurboGrafx-16',
   30: 'Sega Master System',
-  32: 'Sega Game Gear',
   33: 'Game & Watch',
   35: 'Sega Dreamcast',
   36: 'Sega Saturn',
-  37: '3DO Interactive Multiplayer',
   42: 'Neo Geo',
   43: 'Commodore C64',
   44: 'Amiga',
@@ -254,13 +284,21 @@ const IGDB_GENRE_MAP: Record<number, string> = {
 
 const IGDB_IMAGE_BASE = 'https://images.igdb.com/igdb/image/upload';
 
+// Shared field list: search, getById and enumeration read the same shape
+// so mapping behavior cannot drift between paths.
+const IGDB_GAME_FIELDS =
+  'name, slug, summary, first_release_date, genres, platforms, platforms.name, involved_companies, cover.image_id, screenshots.image_id, themes, game_type, status, parent_game, version_parent';
+
+// IGDB caps page size at 500.
+const MAX_ENUMERATE_LIMIT = 500;
+
 export type IgdbAdapterConfig = Omit<BaseAdapterConfig, 'baseUrl'> & {
   readonly clientId: string;
   readonly clientSecret: string;
   readonly baseUrl?: string;
 };
 
-export class IgdbAdapter extends BaseAdapter {
+export class IgdbAdapter extends BaseAdapter implements CatalogSource {
   private readonly clientId: string;
   private readonly clientSecret: string;
   private accessToken: string | null = null;
@@ -291,7 +329,7 @@ export class IgdbAdapter extends BaseAdapter {
 
     const body = [
       `search "${query.replace(/"/g, '\\"')}";`,
-      'fields name, slug, summary, first_release_date, genres, platforms, involved_companies, cover.image_id, screenshots.image_id, themes;',
+      `fields ${IGDB_GAME_FIELDS};`,
       `limit ${limit};`,
       `offset ${offset};`,
       'where category = 0;', // Main game category
@@ -318,7 +356,7 @@ export class IgdbAdapter extends BaseAdapter {
 
     const body = [
       `where id = ${igdbId};`,
-      'fields name, slug, summary, first_release_date, genres, platforms, involved_companies, cover.image_id, screenshots.image_id, themes;',
+      `fields ${IGDB_GAME_FIELDS};`,
     ].join(' ');
 
     const data = await this.postApi<IgdbGame[]>('/games', body, token);
@@ -331,11 +369,93 @@ export class IgdbAdapter extends BaseAdapter {
 
     // Fetch company details if available
     if (game.involved_companies && game.involved_companies.length > 0) {
-      const companies = await this.fetchCompanies(game.involved_companies, token);
+      const companies = await this.fetchCompanyRoles(game.involved_companies, token);
       return this.gameToCandidate(game, companies);
     }
 
     return this.gameToCandidate(game);
+  }
+
+  private platformPredicate(platformId: number): string {
+    return `where platforms = (${platformId});`;
+  }
+
+  /**
+   * One deterministic page of a platform catalog. No text-search clause
+   * (this is enumeration, not search), no category filter (ports and
+   * remakes are separate IGDB entries the future job must see), stable
+   * `sort id asc` ordering. Company details are intentionally NOT fetched
+   * per game here — that is N+1 work for the ingestion job, which resolves
+   * companies only for accepted records.
+   */
+  async enumerateByPlatform(
+    platformId: number,
+    options: CatalogPageOptions,
+  ): Promise<CatalogPage> {
+    if (!Number.isInteger(platformId) || platformId <= 0) {
+      throw new Error(
+        `IgdbAdapter.enumerateByPlatform: platformId must be a positive integer (got ${platformId})`,
+      );
+    }
+    if (
+      !Number.isInteger(options.limit) ||
+      options.limit < 1 ||
+      options.limit > MAX_ENUMERATE_LIMIT
+    ) {
+      throw new Error(
+        `IgdbAdapter.enumerateByPlatform: limit must be an integer between 1 and ${MAX_ENUMERATE_LIMIT} (got ${options.limit})`,
+      );
+    }
+    if (!Number.isInteger(options.offset) || options.offset < 0) {
+      throw new Error(
+        `IgdbAdapter.enumerateByPlatform: offset must be a non-negative integer (got ${options.offset})`,
+      );
+    }
+
+    const token = await this.getAccessToken();
+
+    const body = [
+      this.platformPredicate(platformId),
+      `fields ${IGDB_GAME_FIELDS};`,
+      `limit ${options.limit};`,
+      `offset ${options.offset};`,
+      'sort id asc;',
+    ].join(' ');
+
+    const data = await this.postApi<IgdbGame[]>('/games', body, token);
+
+    return {
+      items: data.map((game) => this.gameToCandidate(game)),
+    };
+  }
+
+  /**
+   * Total matching a platform scope, using the same predicate as
+   * enumerateByPlatform. Pure read: no persistence, discovery,
+   * eligibility, or quarantine involved.
+   */
+  async countByPlatform(platformId: number): Promise<number> {
+    if (!Number.isInteger(platformId) || platformId <= 0) {
+      throw new Error(
+        `IgdbAdapter.countByPlatform: platformId must be a positive integer (got ${platformId})`,
+      );
+    }
+
+    const token = await this.getAccessToken();
+
+    const body = [this.platformPredicate(platformId)].join(' ');
+
+    const data = await this.postApi<{ count: number }>('/games/count', body, token);
+
+    if (!data || typeof data.count !== 'number') {
+      throw new SourceError(
+        this.source,
+        'invalid_response',
+        'IGDB count endpoint returned an unexpected shape',
+      );
+    }
+
+    return data.count;
   }
 
   private async getAccessToken(): Promise<string> {
@@ -459,30 +579,55 @@ export class IgdbAdapter extends BaseAdapter {
     }
   }
 
-  private async fetchCompanies(
-    companyIds: number[],
+  private async fetchCompanyRoles(
+    involvementIds: number[],
     token: string,
   ): Promise<Array<{ name: string; developer: boolean; publisher: boolean }>> {
-    if (companyIds.length === 0) {
+    if (involvementIds.length === 0) {
       return [];
     }
 
-    const body = [`where id = (${companyIds.join(',')});`, 'fields name;'].join(' ');
-
     try {
-      const data = await this.postApi<Array<{ id: number; name: string }>>(
-        '/companies',
-        body,
+      // involved_companies IDs are involvement records, not companies:
+      // resolve true roles first, then names. Any failure degrades to
+      // no company data rather than fabricated roles.
+      const involvements = await this.postApi<IgdbInvolvement[]>(
+        '/involved_companies',
+        [`where id = (${involvementIds.join(',')});`, 'fields company,developer,publisher;'].join(' '),
         token,
       );
 
-      // Since we can't get role info from the companies endpoint directly,
-      // we'll mark all as both developer and publisher (conservative approach)
-      return data.map((c) => ({
-        name: c.name,
-        developer: true,
-        publisher: true,
-      }));
+      const rolesByCompany = new Map<number, { developer: boolean; publisher: boolean }>();
+      for (const involvement of involvements) {
+        const current = rolesByCompany.get(involvement.company) ?? {
+          developer: false,
+          publisher: false,
+        };
+        current.developer = current.developer || involvement.developer === true;
+        current.publisher = current.publisher || involvement.publisher === true;
+        rolesByCompany.set(involvement.company, current);
+      }
+
+      const companyIds = [...rolesByCompany.keys()];
+      if (companyIds.length === 0) {
+        return [];
+      }
+
+      const companies = await this.postApi<Array<{ id: number; name: string }>>(
+        '/companies',
+        [`where id = (${companyIds.join(',')});`, 'fields name;'].join(' '),
+        token,
+      );
+
+      const names = new Map(companies.map((c) => [c.id, c.name]));
+      const result: Array<{ name: string; developer: boolean; publisher: boolean }> = [];
+      for (const [companyId, roles] of rolesByCompany) {
+        const name = names.get(companyId);
+        if (name !== undefined) {
+          result.push({ name, ...roles });
+        }
+      }
+      return result;
     } catch {
       return [];
     }
@@ -492,9 +637,18 @@ export class IgdbAdapter extends BaseAdapter {
     game: IgdbGame,
     companies?: Array<{ name: string; developer: boolean; publisher: boolean }>,
   ): RawCandidate {
+    // Prefer authoritative upstream platform names from expansion; the
+    // static map is only a fallback for bare numeric IDs. An expanded
+    // name is never collapsed (e.g. PlayStation 2 stays PlayStation 2).
     const platforms = (game.platforms ?? [])
-      .map((id) => IGDB_PLATFORM_MAP[id])
-      .filter((name): name is string => Boolean(name));
+      .map((platform) => {
+        if (typeof platform === 'object' && platform !== null) {
+          const name = platform.name?.trim();
+          return name && name.length > 0 ? name : undefined;
+        }
+        return IGDB_PLATFORM_MAP[platform];
+      })
+      .filter((name): name is string => typeof name === 'string' && name.length > 0);
 
     const genres = (game.genres ?? [])
       .map((id) => IGDB_GENRE_MAP[id])
@@ -505,6 +659,17 @@ export class IgdbAdapter extends BaseAdapter {
     const publishers = (companies ?? []).filter((c) => c.publisher).map((c) => c.name);
 
     const releaseDate = game.first_release_date ? this.unixToDate(game.first_release_date) : null;
+
+    const gameType = igdbGameTypeName(game.game_type ?? null);
+    const gameStatus = igdbGameStatusName(game.status ?? null);
+    const parentGameId =
+      game.parent_game === undefined || game.parent_game === null
+        ? undefined
+        : String(game.parent_game);
+    const versionParentId =
+      game.version_parent === undefined || game.version_parent === null
+        ? undefined
+        : String(game.version_parent);
 
     const coverUrl = game.cover?.image_id
       ? `${IGDB_IMAGE_BASE}/t_cover_big/${game.cover.image_id}.png`
@@ -534,6 +699,10 @@ export class IgdbAdapter extends BaseAdapter {
           ? screenshotUrls
           : undefined,
       externalIdentifiers: [{ source: 'igdb', id: String(game.id) }],
+      gameType,
+      gameStatus,
+      parentGameId,
+      versionParentId,
       classificationHints: [
         {
           category: 'GAME',
@@ -546,6 +715,8 @@ export class IgdbAdapter extends BaseAdapter {
         slug: game.slug,
         themes: game.themes,
         igdbUrl: game.url,
+        igdbGameType: game.game_type,
+        igdbGameStatus: game.status,
       },
     };
   }

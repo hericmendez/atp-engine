@@ -51,6 +51,8 @@ export interface GameDocument extends Document {
   }[];
   classification: string;
   completeness: string;
+  gameType: string | null;
+  gameStatus: string | null;
   cover: {
     url: string;
     source: string;
@@ -179,6 +181,8 @@ const gameSchema = new Schema<GameDocument>(
     evidence: [sourceEvidenceSchema],
     classification: { type: String, required: true },
     completeness: { type: String, required: true },
+    gameType: { type: String, default: null },
+    gameStatus: { type: String, default: null },
     cover: { type: coverSchema, default: null },
     lastEnrichedAt: { type: Date, default: null },
   },

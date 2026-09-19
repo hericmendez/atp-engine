@@ -197,6 +197,8 @@ async function areSameGame(
     classification: 'UNKNOWN',
     completeness: 'FOUND_PARTIAL',
     cover: null,
+    gameType: null,
+    gameStatus: null,
     lastEnrichedAt: null,
   };
 

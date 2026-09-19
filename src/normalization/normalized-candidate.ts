@@ -49,4 +49,17 @@ export interface NormalizedCandidate {
   readonly classificationHints: readonly NormalizedClassificationHint[];
   readonly description: string | null;
   readonly coverUrls: readonly string[];
+  /**
+   * Provider-declared game type/status, passed through verbatim for
+   * downstream policy evaluation. Null when the source did not provide
+   * them — never invented here.
+   */
+  readonly gameType: string | null;
+  readonly gameStatus: string | null;
+  /**
+   * Provider parent references for future port-parent resolution.
+   * Ingest-time evidence only; never used as identity here.
+   */
+  readonly parentGameId: string | null;
+  readonly versionParentId: string | null;
 }

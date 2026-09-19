@@ -34,6 +34,15 @@ export interface Game {
   readonly completeness: MetadataCompleteness;
   readonly cover: GameCover | null;
   readonly lastEnrichedAt: Date | null;
+  /**
+   * Provider-declared game type/status (e.g. IGDB `game_type` /
+   * `game_status` names). Records what the source claimed, enabling
+   * eligibility evaluation and future reclassification detection.
+   * Null when unknown — never invented. This is provider metadata, not
+   * canonical identity: identity still lives in `id` + `externalIdentifiers`.
+   */
+  readonly gameType: string | null;
+  readonly gameStatus: string | null;
 }
 
 export interface CreateGameInput {
@@ -45,6 +54,8 @@ export interface CreateGameInput {
   externalIdentifiers?: readonly ExternalIdentifier[];
   classification?: ClassificationCategory;
   completeness?: MetadataCompleteness;
+  gameType?: string | null;
+  gameStatus?: string | null;
 }
 
 export function createGame(input: CreateGameInput): Game {
@@ -66,6 +77,8 @@ export function createGame(input: CreateGameInput): Game {
     completeness: input.completeness ?? 'FOUND_PARTIAL',
     cover: null,
     lastEnrichedAt: null,
+    gameType: input.gameType ?? null,
+    gameStatus: input.gameStatus ?? null,
   };
 }
 

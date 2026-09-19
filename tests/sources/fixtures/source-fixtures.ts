@@ -143,7 +143,7 @@ export const IGDB_SEARCH_RESPONSE = [
       'The Witcher 3: Wild Hunt is a 2015 action role-playing game developed and published by CD Projekt.',
     first_release_date: 1431993600,
     genres: [12, 31],
-    platforms: [6, 48, 49, 130],
+    platforms: [6, 48, 130, 167],
     involved_companies: [100],
     cover: {
       id: 'co1vkf',
@@ -181,7 +181,7 @@ export const IGDB_GAME_DETAIL_RESPONSE = [
       'The Witcher 3: Wild Hunt is a 2015 action role-playing game developed and published by CD Projekt.',
     first_release_date: 1431993600,
     genres: [12, 31],
-    platforms: [6, 48, 49, 130],
+    platforms: [6, 48, 130, 167],
     involved_companies: [100],
     cover: {
       id: 'co1vkf',
@@ -193,9 +193,18 @@ export const IGDB_GAME_DETAIL_RESPONSE = [
   },
 ];
 
-export const IGDB_COMPANIES_RESPONSE = [
+export const IGDB_INVOLVED_COMPANIES_RESPONSE = [
   {
     id: 100,
+    company: 200,
+    developer: true,
+    publisher: true,
+  },
+];
+
+export const IGDB_COMPANIES_RESPONSE = [
+  {
+    id: 200,
     name: 'CD Projekt Red',
   },
 ];
