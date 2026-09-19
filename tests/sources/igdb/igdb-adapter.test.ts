@@ -464,6 +464,26 @@ describe('IgdbAdapter', () => {
       ]);
     });
 
+    it('maps bare IGDB platform id 50 to 3DO Interactive Multiplayer', async () => {
+      // Regression: id 50 was mapped to 'Atari ST'; the IGDB /platforms
+      // endpoint confirms 50 = '3DO Interactive Multiplayer'.
+      mockFetchSequence([
+        IGDB_OAUTH_TOKEN_RESPONSE,
+        [
+          {
+            id: 4,
+            name: 'Mapped Game',
+            platforms: [50],
+          },
+        ],
+      ]);
+
+      const result = await adapter.search('Test');
+      const candidate = result.candidates[0];
+
+      expect(candidate.platforms).toEqual(['3DO Interactive Multiplayer']);
+    });
+
     it('prefers expanded upstream platform names over the static map', async () => {
       mockFetchSequence([
         IGDB_OAUTH_TOKEN_RESPONSE,

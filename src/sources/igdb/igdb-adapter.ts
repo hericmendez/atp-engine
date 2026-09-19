@@ -95,7 +95,7 @@ const IGDB_PLATFORM_MAP: Record<number, string> = {
   45: 'Atari 2600',
   46: 'Atari 7800',
   47: 'Atari Lynx',
-  50: 'Atari ST',
+  50: '3DO Interactive Multiplayer',
   51: 'Sega Mega Drive/Genesis',
   52: 'Sega 32X',
   53: 'Sega CD',

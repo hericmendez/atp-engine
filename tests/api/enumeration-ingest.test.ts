@@ -282,6 +282,40 @@ describe('ingestEnumerationPage', () => {
     expect(index.size).toBe(0);
   });
 
+  it('dry-run counts deferred ports as rejected without writing anything', async () => {
+    // Regression: deferred ports vanished from dry-run accounting
+    // (pending was never enqueued in dry runs, so the second pass never
+    // reported them). Deferral tracking is transient memory; only the
+    // quarantine record stays dry-run guarded.
+    const index = new Map<string, Game>();
+    const gameRepository = createMockGameRepository(index);
+    const { records, repository } = createMockQuarantine();
+    const source = createMockSource([
+      makeRaw(),
+      makeRaw({
+        gameType: 'port',
+        sourceId: 'igdb-port-9',
+        externalIdentifiers: [{ source: 'igdb', id: 'igdb-port-9' }],
+        parentGameId: 'igdb-parent-1',
+      }),
+    ]);
+    const { service } = createService(gameRepository, source, repository);
+
+    const result = await service.ingestEnumerationPage(source, 48, {
+      limit: 10,
+      offset: 0,
+      dryRun: true,
+    });
+
+    expect(result.newGames).toBe(1);
+    expect(result.rejected).toBe(1);
+    expect(gameRepository.save).not.toHaveBeenCalled();
+    expect(gameRepository.update).not.toHaveBeenCalled();
+    expect(repository.record).not.toHaveBeenCalled();
+    expect(records).toHaveLength(0);
+    expect(index.size).toBe(0);
+  });
+
   it('persists delisted main_game and quarantines cancelled regardless of evidence', async () => {
     const index = new Map<string, Game>();
     const gameRepository = createMockGameRepository(index);

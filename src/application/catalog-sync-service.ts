@@ -1068,7 +1068,7 @@ export class CatalogSyncService {
         // edge ensured (idempotent; missing targets defer to the
         // platform second pass like ports). Resolved on the enriched
         // state so the single update below carries every mutation.
-        const edge = await this.attachEdge(current, group, dryRun);
+        const edge = await this.attachEdge(current, group);
         current = edge.game;
         if (edge.attached) {
           updateSources.push('relationship');
@@ -1124,7 +1124,7 @@ export class CatalogSyncService {
     // deterministically resolvable the derivation edge folds into the
     // single save below. Missing originals defer to the platform
     // second pass.
-    const edge = await this.attachEdge(newGame, group, dryRun);
+    const edge = await this.attachEdge(newGame, group);
     newGame = edge.game;
 
     await this.persistGame('save-new', group, newGame, `${idSeed.source}:${idSeed.id}`);
@@ -1155,9 +1155,10 @@ export class CatalogSyncService {
         field: ref.field,
         externalId: ref.externalId,
       });
-      if (!dryRun) {
-        this.pendingPorts.push({ group, observation, ref });
-      }
+      // The pending list is transient per-batch memory, so deferral is
+      // tracked even in dry runs: the second pass then reports the
+      // rejection count without writing anything.
+      this.pendingPorts.push({ group, observation, ref });
       return 'pending';
     }
 
@@ -1266,7 +1267,6 @@ export class CatalogSyncService {
   private async attachEdge(
     game: Game,
     group: DiscoveryGroupResult,
-    dryRun: boolean,
   ): Promise<{ game: Game; attached: boolean }> {
     const request = findOriginalEdgeRequest(group);
     if (!request) {
@@ -1285,15 +1285,16 @@ export class CatalogSyncService {
         kind: request.kind,
         externalId: request.ref.externalId,
       });
-      if (!dryRun) {
-        this.pendingRelationships.push({
-          gameId: game.id,
-          source: request.observation.source,
-          kind: request.kind,
-          ref: request.ref,
-          group,
-        });
-      }
+      // Same transient-memory rule as ports: deferral is tracked even
+      // in dry runs so the second pass can report it; the quarantine
+      // record itself stays dry-run guarded.
+      this.pendingRelationships.push({
+        gameId: game.id,
+        source: request.observation.source,
+        kind: request.kind,
+        ref: request.ref,
+        group,
+      });
       return { game, attached: false };
     }
 
