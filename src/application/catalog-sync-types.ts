@@ -53,3 +53,41 @@ export interface ResolvedPlatform {
   readonly entry: PlatformCatalogEntry;
   readonly queryYear: number | null;
 }
+
+/**
+ * Options for resumable enumeration ingestion over one platform scope.
+ * The checkpoint row (when a state repository is wired) is keyed by
+ * (source, 'platform', platformId); resuming with a different pageSize
+ * is an explicit error.
+ */
+export interface ResumableEnumerationOptions {
+  readonly pageSize: number;
+  readonly dryRun?: boolean;
+}
+
+export type ResumableEnumerationStatus = 'COMPLETED' | 'FAILED';
+
+/**
+ * Run summary. Counters are cumulative across the whole scope when a
+ * checkpoint row exists (continued runs keep accumulating), or limited
+ * to this run when no state repository is wired.
+ */
+export interface ResumableEnumerationResult {
+  readonly status: ResumableEnumerationStatus;
+  readonly source: string;
+  readonly platformId: number;
+  readonly pageSize: number;
+  readonly totalCount: number | null;
+  /** First offset not yet completed (past totalCount when the final
+   * page was partial). */
+  /** First offset not yet completed (== totalCount when COMPLETED). */
+  readonly nextOffset: number;
+  readonly processed: number;
+  readonly accepted: number;
+  readonly quarantined: number;
+  readonly errorCount: number;
+  /** Pages fully completed by this run. */
+  readonly pages: number;
+  readonly dryRun: boolean;
+  readonly durationMs: number;
+}

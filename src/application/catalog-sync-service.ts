@@ -12,6 +12,8 @@ import type {
   PlatformSyncResult,
   ResolvedPlatform,
   SyncTotals,
+  ResumableEnumerationOptions,
+  ResumableEnumerationResult,
 } from './catalog-sync-types.js';
 import type { SyncTrigger } from './catalog-sync-history-types.js';
 import { createGameId } from '../domain/shared/ids.js';
@@ -54,6 +56,8 @@ import {
 import { mergeCandidateReleases } from '../enrichment/enrichment-engine.js';
 import type { QuarantineService } from './quarantine-service.js';
 import { logPersistFailure } from './persist-logging.js';
+import { sanitizeErrorMessage } from './persist-logging.js';
+import type { CatalogSyncStateRepository } from './catalog-sync-state-repository.js';
 import { logger } from '../infrastructure/logger/logger.js';
 
 const MAX_SYNC_LIMIT = 100;
@@ -707,6 +711,214 @@ export class CatalogSyncService {
       rejected: rejected + settled.rejected,
       errors: settled.errors,
       status: 'completed',
+    };
+  }
+
+  /**
+   * Resumable enumeration ingestion over one platform scope, one page
+   * at a time. This method only orchestrates the existing pipeline
+   * (ingestEnumerationPage per page) — no normalize/eligibility/
+   * resolution/enrichment/persist logic is duplicated here.
+   *
+   * Checkpoint rule: the row advances strictly AFTER each page fully
+   * succeeds (nextOffset = offset + pageSize). Any page failure leaves
+   * nextOffset on the uncompleted page (status FAILED) and rethrows —
+   * no automatic retry. A later run reprocesses exactly that page, and
+   * pipeline idempotency keeps the catalog safe. If even the
+   * checkpoint write fails, the failure is logged and the original
+   * error propagates: the next run reprocesses the page (prefer losing
+   * progress over advancing incorrectly).
+   *
+   * The scope is fixed by countByPlatform() once per run; a shrinking
+   * count simply completes early, a growing count is not revisited.
+   * Dry runs never touch the checkpoint store. A COMPLETED scope
+   * reruns as a no-op. Resuming with a different pageSize is an
+   * explicit error — offsets are not transferable across page sizes.
+   * Single-process sequential execution only; concurrent runs over the
+   * same scope are not supported.
+   */
+  async ingestEnumerationResumable(
+    source: CatalogSource,
+    platformId: number,
+    options: ResumableEnumerationOptions,
+    stateRepository?: CatalogSyncStateRepository,
+  ): Promise<ResumableEnumerationResult> {
+    const startTime = Date.now();
+    const { pageSize } = options;
+    const dryRun = options.dryRun ?? false;
+    if (!Number.isInteger(pageSize) || pageSize < 1) {
+      throw new Error(
+        `ingestEnumerationResumable: pageSize must be a positive integer (got ${pageSize})`,
+      );
+    }
+
+    const scope = {
+      source: source.source,
+      scopeType: 'platform',
+      scopeId: String(platformId),
+    };
+
+    const existing = stateRepository
+      ? await stateRepository.findByScope(scope.source, scope.scopeType, scope.scopeId)
+      : undefined;
+
+    if (existing && existing.status === 'COMPLETED') {
+      logger.info('catalog.enumeration.resumable.already_completed', { ...scope });
+      return {
+        status: 'COMPLETED',
+        source: scope.source,
+        platformId,
+        pageSize: existing.pageSize,
+        totalCount: existing.totalCount,
+        nextOffset: existing.nextOffset,
+        processed: existing.processed,
+        accepted: existing.accepted,
+        quarantined: existing.quarantined,
+        errorCount: existing.errorCount,
+        pages: 0,
+        dryRun,
+        durationMs: Date.now() - startTime,
+      };
+    }
+
+    if (existing && existing.pageSize !== pageSize) {
+      throw new Error(
+        `ingestEnumerationResumable: checkpoint pageSize mismatch for ` +
+          `${scope.source}:${scope.scopeType}:${scope.scopeId} ` +
+          `(checkpoint pageSize=${existing.pageSize}, requested pageSize=${pageSize}); ` +
+          `resume with the original pageSize`,
+      );
+    }
+
+    let totalCount: number | null;
+    try {
+      totalCount = await source.countByPlatform(platformId);
+    } catch (error) {
+      if (stateRepository && !dryRun) {
+        try {
+          await stateRepository.upsert({
+            ...scope,
+            pageSize,
+            status: 'FAILED',
+            nextOffset: existing?.nextOffset ?? 0,
+            totalCount: existing?.totalCount ?? null,
+            processed: existing?.processed ?? 0,
+            accepted: existing?.accepted ?? 0,
+            quarantined: existing?.quarantined ?? 0,
+            errorCount: existing?.errorCount ?? 0,
+            startedAt: existing?.startedAt ?? new Date(startTime).toISOString(),
+            completedAt: undefined,
+            error: sanitizeErrorMessage(
+              error instanceof Error ? `${error.name}: ${error.message}` : String(error),
+            ),
+          });
+        } catch (persistError) {
+          logger.warn('catalog.checkpoint.persist_failed', {
+            ...scope,
+            error: persistError instanceof Error ? persistError.message : String(persistError),
+          });
+        }
+      }
+      throw error;
+    }
+
+    let offset = existing?.nextOffset ?? 0;
+    let processed = existing?.processed ?? 0;
+    let accepted = existing?.accepted ?? 0;
+    let quarantined = existing?.quarantined ?? 0;
+    let errorCount = existing?.errorCount ?? 0;
+    let pages = 0;
+    const startedAt = existing?.startedAt ?? new Date(startTime).toISOString();
+
+    const persistCheckpoint = async (
+      status: 'RUNNING' | 'COMPLETED' | 'FAILED',
+      error?: string,
+    ): Promise<void> => {
+      if (!stateRepository || dryRun) {
+        return;
+      }
+      await stateRepository.upsert({
+        ...scope,
+        pageSize,
+        status,
+        nextOffset: offset,
+        totalCount,
+        processed,
+        accepted,
+        quarantined,
+        errorCount,
+        startedAt,
+        completedAt: status === 'COMPLETED' ? new Date().toISOString() : undefined,
+        error,
+      });
+    };
+
+    try {
+      while (offset < totalCount) {
+        const page = await this.ingestEnumerationPage(source, platformId, {
+          limit: pageSize,
+          offset,
+          dryRun,
+        });
+        processed += page.candidatesFound;
+        accepted += page.newGames + page.existingGames + page.updatedGames;
+        quarantined += page.rejected;
+        errorCount += page.errors;
+        // The page fully succeeded (all writes finished): only now may
+        // the checkpoint advance past it.
+        offset += pageSize;
+        pages += 1;
+        await persistCheckpoint('RUNNING');
+        logger.info('catalog.checkpoint.advanced', {
+          ...scope,
+          nextOffset: offset,
+          candidatesFound: page.candidatesFound,
+        });
+      }
+    } catch (error) {
+      try {
+        await persistCheckpoint(
+          'FAILED',
+          sanitizeErrorMessage(
+            error instanceof Error ? `${error.name}: ${error.message}` : String(error),
+          ),
+        );
+      } catch (persistError) {
+        logger.warn('catalog.checkpoint.persist_failed', {
+          ...scope,
+          error: persistError instanceof Error ? persistError.message : String(persistError),
+        });
+      }
+      throw error;
+    }
+
+    await persistCheckpoint('COMPLETED');
+    logger.info('catalog.enumeration.resumable.completed', {
+      ...scope,
+      totalCount,
+      processed,
+      accepted,
+      quarantined,
+      errorCount,
+      pages,
+      dryRun,
+      durationMs: Date.now() - startTime,
+    });
+
+    return {
+      status: 'COMPLETED',
+      source: scope.source,
+      platformId,
+      pageSize,
+      totalCount,
+      nextOffset: offset,
+      processed,
+      accepted,
+      quarantined,
+      errorCount,
+      pages,
+      dryRun,
+      durationMs: Date.now() - startTime,
     };
   }
 
