@@ -27,6 +27,7 @@ import {
   type AdminCatalogSyncRouterDependencies,
 } from './routes/admin-catalog-sync.js';
 import { adminDatabaseStatsRouter } from './routes/admin-database-stats.js';
+import { platformExportRouter } from './routes/platform-export.js';
 import cookieParser from 'cookie-parser';
 import { adminAuthRoutes } from './routes/admin-auth-routes.js';
 import { errorHandler } from './middleware/error-handler.js';
@@ -67,6 +68,7 @@ export function createApp(deps: AppDependencies): express.Express {
   apiV1.use(gamesRouter(deps.games));
   apiV1.use(coverRouter(deps.cover));
   apiV1.use(platformRouter(deps.platforms));
+  apiV1.use(platformExportRouter(deps.platforms));
   apiV1.use(catalogSyncRouter(deps.catalogSync));
   apiV1.use(catalogSyncHistoryRouter(deps.catalogSyncHistory));
   apiV1.use(adminGamesRouter(deps.admin));
