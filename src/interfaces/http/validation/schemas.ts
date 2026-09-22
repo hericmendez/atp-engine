@@ -357,5 +357,12 @@ export const EnrichmentJobIdParamSchema = z.object({
   id: z.string().min(1, 'Job ID is required').trim().min(1),
 });
 
+export const EnrichmentJobCreateBodySchema = z.object({
+  type: z.literal('cover'),
+  limit: z.number().int().min(1).optional(),
+  batchSize: z.number().int().min(1).max(100).optional(),
+});
+
 export type EnrichmentJobListQueryInput = z.infer<typeof EnrichmentJobListQuerySchema>;
 export type EnrichmentJobIdParamInput = z.infer<typeof EnrichmentJobIdParamSchema>;
+export type EnrichmentJobCreateBodyInput = z.infer<typeof EnrichmentJobCreateBodySchema>;

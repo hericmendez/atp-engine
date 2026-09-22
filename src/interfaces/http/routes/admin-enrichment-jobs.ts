@@ -2,14 +2,17 @@ import { Router, type Request, type Response, type NextFunction } from 'express'
 import {
   EnrichmentJobListQuerySchema,
   EnrichmentJobIdParamSchema,
+  EnrichmentJobCreateBodySchema,
 } from '../validation/schemas.js';
 import type { EnrichmentJobRepository } from '../../../domain/enrichment-job/enrichment-job-repository.js';
 import { toEnrichmentJobDto } from '../../../application/enrichment-job-presenter.js';
 import { NotFoundError, ConflictError } from '../../../shared/errors/errors.js';
 import { adminAuthMiddleware } from '../middleware/admin-auth.js';
+import type { EnrichmentOrchestrator } from '../../../application/enrichment-orchestrator.js';
 
 export interface AdminEnrichmentJobsRouterDependencies {
   jobRepository: EnrichmentJobRepository;
+  orchestrator?: EnrichmentOrchestrator;
 }
 
 export function adminEnrichmentJobsRouter(
@@ -20,6 +23,26 @@ export function adminEnrichmentJobsRouter(
 
   // All enrichment admin routes require admin authentication
   router.use(adminAuthMiddleware);
+
+  // POST /enrichment/jobs — create and start cover enrichment
+  router.post('/enrichment/jobs', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const body = EnrichmentJobCreateBodySchema.parse(req.body);
+      if (!deps.orchestrator) {
+        // Fallback for tests without orchestrator: use direct repository create for backward compat
+        const { AppError } = await import('../../../shared/errors/errors.js');
+        throw new AppError('NOT_IMPLEMENTED', 'Enrichment orchestrator not configured', 500);
+      }
+      const job = await deps.orchestrator.createAndStart({
+        type: body.type,
+        limit: body.limit,
+        batchSize: body.batchSize,
+      });
+      res.status(201).json({ data: toEnrichmentJobDto(job) });
+    } catch (error) {
+      next(error);
+    }
+  });
 
   // GET /enrichment/jobs?type=cover&status=RUNNING&limit=20&page=1&sort=updatedAt&order=desc
   router.get('/enrichment/jobs', async (req: Request, res: Response, next: NextFunction) => {

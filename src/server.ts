@@ -12,6 +12,8 @@ import { GameAdminService } from './application/game-admin-service.js';
 import { CoverService } from './application/cover-service.js';
 import { EnrichmentService } from './application/enrichment-service.js';
 import { EnrichmentRunner } from './application/enrichment-runner.js';
+import { CoverEnrichmentRunner } from './application/cover-enrichment-runner.js';
+import { EnrichmentOrchestrator } from './application/enrichment-orchestrator.js';
 import { CatalogSyncService } from './application/catalog-sync-service.js';
 import { PlatformCatalogService } from './application/platform-catalog-service.js';
 import { PlatformSeedService } from './application/platform-seed-service.js';
@@ -153,6 +155,8 @@ async function main(): Promise<void> {
   );
 
   const enrichmentJobRepository = new MongoEnrichmentJobRepository();
+  const coverEnrichmentRunner = new CoverEnrichmentRunner(gameRepository, coverService, enrichmentJobRepository);
+  const enrichmentOrchestrator = new EnrichmentOrchestrator(enrichmentJobRepository, coverEnrichmentRunner);
 
   const tCreateAppStart = Date.now();
   logger.info('startup.createApp.start', { timestamp: new Date().toISOString() });
@@ -164,7 +168,7 @@ async function main(): Promise<void> {
     catalogSyncHistory: { historyRepository: catalogSyncHistoryRepository },
     admin: { gameAdminService },
     enrichmentJobs: { jobRepository: enrichmentJobRepository },
-    adminEnrichmentJobs: { jobRepository: enrichmentJobRepository },
+    adminEnrichmentJobs: { jobRepository: enrichmentJobRepository, orchestrator: enrichmentOrchestrator },
     adminGamesRead: { catalogService },
     adminCatalogSync: { catalogSyncService },
   });
