@@ -117,7 +117,7 @@ describe('POST /api/v1/admin/enrichment/jobs', () => {
       admin: { gameAdminService: {} as never },
       adminEnrichmentJobs: { jobRepository: repo, orchestrator },
     });
-    const res = await request(app).post('/api/v1/admin/enrichment/jobs').set('Authorization', `Bearer ${ADMIN_TOKEN}`).send({ type: 'company' });
+    const res = await request(app).post('/api/v1/admin/enrichment/jobs').set('Authorization', `Bearer ${ADMIN_TOKEN}`).send({ type: 'invalid' });
     expect(res.status).toBe(400);
   });
 

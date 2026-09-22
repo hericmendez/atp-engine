@@ -165,7 +165,13 @@ async function main(): Promise<void> {
     wikipediaAdapter: sourceRegistry.get('wikipedia') as unknown as import('./sources/wikipedia/wikipedia-adapter.js').WikipediaAdapter | undefined,
   });
   const descriptionEnrichmentRunner = new DescriptionEnrichmentRunner(gameRepository, descriptionService, enrichmentJobRepository);
-  const enrichmentOrchestrator = new EnrichmentOrchestrator(enrichmentJobRepository, coverEnrichmentRunner, descriptionEnrichmentRunner);
+  const { CompanyEnrichmentService } = await import('./application/company-enrichment-service.js');
+  const { CompanyEnrichmentRunner } = await import('./application/company-enrichment-runner.js');
+  const companyService = new CompanyEnrichmentService({
+    igdbAdapter: sourceRegistry.get('igdb') as unknown as import('./sources/igdb/igdb-adapter.js').IgdbAdapter | undefined,
+  });
+  const companyEnrichmentRunner = new CompanyEnrichmentRunner(gameRepository, companyService, enrichmentJobRepository);
+  const enrichmentOrchestrator = new EnrichmentOrchestrator(enrichmentJobRepository, coverEnrichmentRunner, descriptionEnrichmentRunner, companyEnrichmentRunner);
 
   const tCreateAppStart = Date.now();
   logger.info('startup.createApp.start', { timestamp: new Date().toISOString() });

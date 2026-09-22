@@ -1,5 +1,6 @@
 import { CoverEnrichmentRunner } from './cover-enrichment-runner.js';
 import { DescriptionEnrichmentRunner } from './description-enrichment-runner.js';
+import { CompanyEnrichmentRunner } from './company-enrichment-runner.js';
 import type { EnrichmentJobRepository } from '../domain/enrichment-job/enrichment-job-repository.js';
 import type { EnrichmentJob } from '../domain/enrichment-job/enrichment-job.js';
 import { ConflictError } from '../shared/errors/errors.js';
@@ -20,16 +21,17 @@ export class EnrichmentOrchestrator {
     private readonly jobRepository: EnrichmentJobRepository,
     private readonly coverRunner: CoverEnrichmentRunner,
     private readonly descriptionRunner?: DescriptionEnrichmentRunner,
+    private readonly companyRunner?: CompanyEnrichmentRunner,
   ) {}
 
   async createAndStart(
     input: EnrichmentOrchestratorOptions & { type: string },
   ): Promise<EnrichmentJob> {
-    if (input.type !== 'cover' && input.type !== 'description') {
+    if (input.type !== 'cover' && input.type !== 'description' && input.type !== 'company') {
       throw new ConflictError(`Enrichment type ${input.type} not supported`) as unknown as Error;
     }
 
-    const type = input.type as 'cover' | 'description';
+    const type = input.type as 'cover' | 'description' | 'company';
     const batchSize = input.batchSize ?? DEFAULT_BATCH_SIZE;
     if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 100) {
       throw new ConflictError('batchSize must be integer 1..100') as unknown as Error;
@@ -62,7 +64,7 @@ export class EnrichmentOrchestrator {
       }
 
       const totalEstimate = await this.estimateTotal(type);
-      const mode = type === 'cover' ? 'needs-cover' : 'needs-description';
+      const mode = type === 'cover' ? 'needs-cover' : type === 'description' ? 'needs-description' : 'needs-companies';
       const job = await this.jobRepository.create({
         type,
         mode: mode as EnrichmentJob['mode'],
@@ -72,7 +74,7 @@ export class EnrichmentOrchestrator {
 
       // Start runner in background, not blocking HTTP
       // Use setImmediate to ensure HTTP response is sent first
-      const runner = type === 'cover' ? this.coverRunner : this.descriptionRunner;
+      const runner = type === 'cover' ? this.coverRunner : type === 'description' ? this.descriptionRunner : this.companyRunner;
       if (!runner) {
         throw new ConflictError(`Runner for type ${type} not configured`) as unknown as Error;
       }

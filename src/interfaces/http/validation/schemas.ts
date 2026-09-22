@@ -358,7 +358,7 @@ export const EnrichmentJobIdParamSchema = z.object({
 });
 
 export const EnrichmentJobCreateBodySchema = z.object({
-  type: z.enum(['cover', 'description']),
+  type: z.enum(['cover', 'description', 'company']),
   limit: z.number().int().min(1).optional(),
   batchSize: z.number().int().min(1).max(100).optional(),
 });
