@@ -27,7 +27,7 @@ export function Layout() {
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)', color: 'var(--text-primary)' }}>
       <nav style={{ width: 220, background: 'var(--sidebar-bg)', padding: 16, display: 'flex', flexDirection: 'column', gap: 4, borderRight: '1px solid var(--card-border)' }}>
         <h1 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12, color: 'var(--sidebar-active-text)' }}>ATP Engine — Admin</h1>
-        <NavLink to="/admin" end style={({ isActive }) => linkStyle(isActive)}>Overview</NavLink>
+        <NavLink to="/admin/" end style={({ isActive }) => linkStyle(isActive)}>Overview</NavLink>
         <NavLink to="/admin/games" style={({ isActive }) => linkStyle(isActive)}>Games</NavLink>
         <NavLink to="/admin/platforms" style={({ isActive }) => linkStyle(isActive)}>Platforms</NavLink>
         <NavLink to="/admin/enrichment" style={({ isActive }) => linkStyle(isActive)}>Enrichment</NavLink>

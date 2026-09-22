@@ -50,8 +50,9 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/admin/login" element={<Login />} />
+        <Route path="/admin" element={<Navigate to="/admin/" replace />} />
         <Route
-          path="/admin"
+          path="/admin/"
           element={
             <RequireAuth>
               <Layout />
@@ -67,7 +68,7 @@ export function App() {
           <Route path="catalog-sync" element={<CatalogSync />} />
           <Route path="catalog-sync/:id" element={<CatalogSyncDetail />} />
         </Route>
-        <Route path="*" element={<Navigate to="/admin" replace />} />
+        <Route path="*" element={<Navigate to="/admin/" replace />} />
       </Routes>
     </BrowserRouter>
   );
