@@ -14,7 +14,7 @@
 
 export type EnrichmentJobType = 'cover' | 'company' | 'description' | 'alias' | 'screenshot';
 
-export type EnrichmentJobMode = 'needs-cover' | 'needs-companies';
+export type EnrichmentJobMode = 'needs-cover' | 'needs-companies' | 'needs-description';
 
 export type EnrichmentJobStatus =
   | 'PENDING'
@@ -70,6 +70,8 @@ export function enrichmentJobTypeForMode(mode: EnrichmentJobMode): EnrichmentJob
       return 'cover';
     case 'needs-companies':
       return 'company';
+    case 'needs-description':
+      return 'description';
     default:
       return 'cover';
   }

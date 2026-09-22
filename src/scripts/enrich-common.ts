@@ -14,7 +14,7 @@ import { TokenBucketRateLimiter } from '../infrastructure/rate-limiter.js';
 import { GameModel } from '../infrastructure/persistence/mongodb/game-schema.js';
 import type { EnrichmentJob } from '../domain/enrichment-job/enrichment-job.js';
 
-export const SUPPORTED_TYPES = ['cover'] as const;
+export const SUPPORTED_TYPES = ['cover', 'description'] as const;
 export type SupportedType = (typeof SUPPORTED_TYPES)[number];
 
 export interface EnrichStartArgs {

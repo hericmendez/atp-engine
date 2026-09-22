@@ -156,7 +156,16 @@ async function main(): Promise<void> {
 
   const enrichmentJobRepository = new MongoEnrichmentJobRepository();
   const coverEnrichmentRunner = new CoverEnrichmentRunner(gameRepository, coverService, enrichmentJobRepository);
-  const enrichmentOrchestrator = new EnrichmentOrchestrator(enrichmentJobRepository, coverEnrichmentRunner);
+  // Description enrichment reuses same adapters but via DescriptionEnrichmentService
+  const { DescriptionEnrichmentService } = await import('./application/description-enrichment-service.js');
+  const { DescriptionEnrichmentRunner } = await import('./application/description-enrichment-runner.js');
+  const descriptionService = new DescriptionEnrichmentService({
+    igdbAdapter: sourceRegistry.get('igdb') as unknown as import('./sources/igdb/igdb-adapter.js').IgdbAdapter | undefined,
+    steamAdapter: sourceRegistry.get('steam') as unknown as import('./sources/steam/steam-adapter.js').SteamAdapter | undefined,
+    wikipediaAdapter: sourceRegistry.get('wikipedia') as unknown as import('./sources/wikipedia/wikipedia-adapter.js').WikipediaAdapter | undefined,
+  });
+  const descriptionEnrichmentRunner = new DescriptionEnrichmentRunner(gameRepository, descriptionService, enrichmentJobRepository);
+  const enrichmentOrchestrator = new EnrichmentOrchestrator(enrichmentJobRepository, coverEnrichmentRunner, descriptionEnrichmentRunner);
 
   const tCreateAppStart = Date.now();
   logger.info('startup.createApp.start', { timestamp: new Date().toISOString() });

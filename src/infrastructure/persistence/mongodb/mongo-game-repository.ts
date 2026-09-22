@@ -174,6 +174,15 @@ export class MongoGameRepository implements GameRepository {
       filter.$and = [...(Array.isArray(existing) ? existing : []), ...need];
     }
 
+    if (query.needsDescription === true) {
+      const need: MongoFilter[] = [
+        { $or: [{ description: null }, { description: { $regex: /^\s*$/ } }] },
+        { domainId: { $not: /^atp-unknown-/ } },
+      ];
+      const existing = filter.$and;
+      filter.$and = [...(Array.isArray(existing) ? existing : []), ...need];
+    }
+
     if (query.afterDomainId !== undefined) {
       const existing = filter.$and;
       const after: MongoFilter[] = [{ domainId: { $gt: query.afterDomainId } }];

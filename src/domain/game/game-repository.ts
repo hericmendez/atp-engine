@@ -44,6 +44,11 @@ export interface GameQuery {
    */
   readonly needsCover?: boolean;
   /**
+   * Description-enrichment need: description is null/empty/whitespace,
+   * restricted to canonical games (atp-unknown-* never match).
+   */
+  readonly needsDescription?: boolean;
+  /**
    * Cursor paging over a deterministic domainId ordering: only games
    * with domainId strictly greater than this value match. Combined
    * with sort {field:'domainId',direction:'asc'} it re-queries the live

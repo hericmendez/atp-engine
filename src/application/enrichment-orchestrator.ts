@@ -1,4 +1,5 @@
 import { CoverEnrichmentRunner } from './cover-enrichment-runner.js';
+import { DescriptionEnrichmentRunner } from './description-enrichment-runner.js';
 import type { EnrichmentJobRepository } from '../domain/enrichment-job/enrichment-job-repository.js';
 import type { EnrichmentJob } from '../domain/enrichment-job/enrichment-job.js';
 import { ConflictError } from '../shared/errors/errors.js';
@@ -17,18 +18,18 @@ const creationLocks = new Map<string, Promise<EnrichmentJob>>();
 export class EnrichmentOrchestrator {
   constructor(
     private readonly jobRepository: EnrichmentJobRepository,
-    private readonly runner: CoverEnrichmentRunner,
+    private readonly coverRunner: CoverEnrichmentRunner,
+    private readonly descriptionRunner?: DescriptionEnrichmentRunner,
   ) {}
 
   async createAndStart(
     input: EnrichmentOrchestratorOptions & { type: string },
   ): Promise<EnrichmentJob> {
-    if (input.type !== 'cover') {
+    if (input.type !== 'cover' && input.type !== 'description') {
       throw new ConflictError(`Enrichment type ${input.type} not supported`) as unknown as Error;
-      // Actually 400, but orchestrator throws 400 via AppError? We'll throw AppError 400 via caller validation
     }
 
-    const type = 'cover' as const;
+    const type = input.type as 'cover' | 'description';
     const batchSize = input.batchSize ?? DEFAULT_BATCH_SIZE;
     if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > 100) {
       throw new ConflictError('batchSize must be integer 1..100') as unknown as Error;
@@ -60,18 +61,23 @@ export class EnrichmentOrchestrator {
         throw new ConflictError(`Active job already exists for type=${type}: ${latest.id} status ${latest.status}`);
       }
 
-      const totalEstimate = await this.estimateTotal();
+      const totalEstimate = await this.estimateTotal(type);
+      const mode = type === 'cover' ? 'needs-cover' : 'needs-description';
       const job = await this.jobRepository.create({
         type,
-        mode: 'needs-cover',
+        mode: mode as EnrichmentJob['mode'],
         batchSize,
         totalEstimate,
       });
 
       // Start runner in background, not blocking HTTP
       // Use setImmediate to ensure HTTP response is sent first
+      const runner = type === 'cover' ? this.coverRunner : this.descriptionRunner;
+      if (!runner) {
+        throw new ConflictError(`Runner for type ${type} not configured`) as unknown as Error;
+      }
       setImmediate(() => {
-        void this.runner
+        void (runner as CoverEnrichmentRunner)
           .runMass(undefined, {
             jobId: job.id,
             batchSize,
@@ -99,10 +105,7 @@ export class EnrichmentOrchestrator {
     }
   }
 
-  private async estimateTotal(): Promise<number | null> {
-    // Reuse runner's estimate logic via gameRepository? For now return null to avoid extra query
-    // The runner itself will estimate if needed, but we set totalEstimate via create
-    // We can try to get from runner's private method? Instead, just return null
+  private async estimateTotal(_type?: string): Promise<number | null> {
     return null;
   }
 
