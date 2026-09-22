@@ -32,7 +32,7 @@ export function Enrichment() {
   // Start Enrichment modal state
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
-  const [typeInput, setTypeInput] = useState<'cover' | 'description'>('cover');
+  const [typeInput, setTypeInput] = useState<'cover' | 'description' | 'company'>('cover');
   const [limitInput, setLimitInput] = useState('100');
   const [batchInput, setBatchInput] = useState('50');
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -177,7 +177,7 @@ export function Enrichment() {
       </div>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 12, background: 'var(--card-bg)', padding: 12, borderRadius: 8, border: '1px solid var(--card-border)', flexWrap: 'wrap' }}>
-        <select value={type} onChange={(e) => updateParams({ type: e.target.value || undefined })} style={inp}><option value="">type: all</option><option value="cover">cover</option><option value="company">company</option></select>
+        <select value={type} onChange={(e) => updateParams({ type: e.target.value || undefined })} style={inp}><option value="">type: all</option><option value="cover">cover</option><option value="description">description</option><option value="company">company</option></select>
         <select value={status} onChange={(e) => updateParams({ status: e.target.value || undefined })} style={inp}><option value="">status: all</option><option value="PENDING">PENDING</option><option value="RUNNING">RUNNING</option><option value="PAUSING">PAUSING</option><option value="PAUSED">PAUSED</option><option value="FAILED">FAILED</option><option value="COMPLETED">COMPLETED</option><option value="CANCELLED">CANCELLED</option></select>
       </div>
 
@@ -253,9 +253,10 @@ export function Enrichment() {
             <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13 }}>
                 Type
-                <select value={typeInput} onChange={(e) => setTypeInput(e.target.value as 'cover' | 'description')} style={inp} aria-label="Type">
+                <select value={typeInput} onChange={(e) => setTypeInput(e.target.value as 'cover' | 'description' | 'company')} style={inp} aria-label="Type">
                   <option value="cover">Cover</option>
                   <option value="description">Description</option>
+                  <option value="company">Company</option>
                 </select>
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13 }}>

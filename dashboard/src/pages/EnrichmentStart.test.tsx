@@ -293,4 +293,35 @@ describe('Enrichment Start', () => {
     fireEvent.click(screen.getByText('Start'));
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/admin/enrichment/job-desc-123'));
   });
+
+  it('Company aparece no selector', async () => {
+    render(<MemoryRouter><Enrichment /></MemoryRouter>);
+    fireEvent.click((await screen.findAllByText('Start Enrichment'))[0]);
+    expect(screen.getByText('Company')).toBeDefined();
+  });
+
+  it('Company pode ser selecionado', async () => {
+    render(<MemoryRouter><Enrichment /></MemoryRouter>);
+    fireEvent.click((await screen.findAllByText('Start Enrichment'))[0]);
+    fireEvent.change(screen.getByLabelText('Type') as HTMLSelectElement, { target: { value: 'company' } });
+    expect((screen.getByLabelText('Type') as HTMLSelectElement).value).toBe('company');
+  });
+
+  it('Company envia type company', async () => {
+    render(<MemoryRouter><Enrichment /></MemoryRouter>);
+    fireEvent.click((await screen.findAllByText('Start Enrichment'))[0]);
+    fireEvent.change(screen.getByLabelText('Type') as HTMLSelectElement, { target: { value: 'company' } });
+    fireEvent.change(screen.getByLabelText('Limit') as HTMLInputElement, { target: { value: '30' } });
+    fireEvent.click(screen.getByText('Start'));
+    await waitFor(() => expect(mockPost).toHaveBeenCalledWith('/api/v1/admin/enrichment/jobs', { type: 'company', limit: 30, batchSize: 50 }));
+  });
+
+  it('201 de Company navega para detalhe', async () => {
+    mockPost.mockResolvedValue({ data: { id: 'job-comp-123', type: 'company', mode: 'needs-companies', status: 'RUNNING' } } as never);
+    render(<MemoryRouter><Enrichment /></MemoryRouter>);
+    fireEvent.click((await screen.findAllByText('Start Enrichment'))[0]);
+    fireEvent.change(screen.getByLabelText('Type') as HTMLSelectElement, { target: { value: 'company' } });
+    fireEvent.click(screen.getByText('Start'));
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/admin/enrichment/job-comp-123'));
+  });
 });
