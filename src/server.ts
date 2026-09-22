@@ -218,9 +218,10 @@ async function main(): Promise<void> {
 
   const shutdown = async (): Promise<void> => {
     logger.info('Shutting down...');
+    await enrichmentOrchestrator.requestGracefulShutdown(30000).catch((e) => logger.warn('enrichment.orchestrator.shutdown.error', { error: String(e) }));
     await catalogSyncScheduler.stop();
     await enrichmentScheduler.stop();
-    server.close();
+    await new Promise<void>((resolve) => server.close(() => resolve()));
     await disconnectDatabase();
     process.exit(0);
   };

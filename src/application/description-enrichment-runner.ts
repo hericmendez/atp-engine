@@ -150,9 +150,6 @@ export class DescriptionEnrichmentRunner {
           if (heartbeatTimer) clearInterval(heartbeatTimer);
         }
       }, leaseCfg.heartbeatIntervalMs);
-      if (heartbeatTimer && typeof (heartbeatTimer as unknown as { unref?: () => void }).unref === 'function') {
-        (heartbeatTimer as unknown as { unref: () => void }).unref();
-      }
     };
     startHeartbeat();
 

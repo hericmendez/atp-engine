@@ -17,6 +17,9 @@ const ACTIVE_STATUSES: EnrichmentJob['status'][] = ['RUNNING', 'PAUSING', 'PAUSE
 const creationLocks = new Map<string, Promise<EnrichmentJob>>();
 
 export class EnrichmentOrchestrator {
+  private readonly activeRuns = new Map<string, Promise<void>>();
+  private shuttingDown = false;
+
   constructor(
     private readonly jobRepository: EnrichmentJobRepository,
     private readonly coverRunner: CoverEnrichmentRunner,
@@ -27,6 +30,9 @@ export class EnrichmentOrchestrator {
   async createAndStart(
     input: EnrichmentOrchestratorOptions & { type: string },
   ): Promise<EnrichmentJob> {
+    if (this.shuttingDown) {
+      throw new ConflictError('Enrichment orchestrator is shutting down') as unknown as Error;
+    }
     if (input.type !== 'cover' && input.type !== 'description' && input.type !== 'company') {
       throw new ConflictError(`Enrichment type ${input.type} not supported`) as unknown as Error;
     }
@@ -73,26 +79,33 @@ export class EnrichmentOrchestrator {
       });
 
       // Start runner in background, not blocking HTTP
-      // Use setImmediate to ensure HTTP response is sent first
       const runner = type === 'cover' ? this.coverRunner : type === 'description' ? this.descriptionRunner : this.companyRunner;
       if (!runner) {
         throw new ConflictError(`Runner for type ${type} not configured`) as unknown as Error;
       }
-      setImmediate(() => {
-        void (runner as CoverEnrichmentRunner)
-          .runMass(undefined, {
-            jobId: job.id,
-            batchSize,
-            limit,
-          } as unknown as Parameters<CoverEnrichmentRunner['runMass']>[1])
-          .catch((err) => {
-            logger.error('enrichment.orchestrator.run_failed', {
+      const runPromise = new Promise<void>((resolve) => {
+        setImmediate(() => {
+          void (runner as CoverEnrichmentRunner)
+            .runMass(undefined, {
               jobId: job.id,
-              error: err instanceof Error ? err.message : String(err),
+              batchSize,
+              limit,
+            } as unknown as Parameters<CoverEnrichmentRunner['runMass']>[1])
+            .catch((err) => {
+              logger.error('enrichment.orchestrator.run_failed', {
+                jobId: job.id,
+                error: err instanceof Error ? err.message : String(err),
+              });
+            })
+            .finally(() => {
+              this.activeRuns.delete(job.id);
+              resolve();
             });
-            // No unhandledRejection; runner already persists FAILED via persistProgress
-          });
+        });
       });
+      this.activeRuns.set(job.id, runPromise);
+      // Ensure cleanup even if runMass throws synchronously before returning promise
+      runPromise.catch(() => this.activeRuns.delete(job.id));
 
       resolveLock(job);
       return job;
@@ -111,8 +124,50 @@ export class EnrichmentOrchestrator {
     return null;
   }
 
+  hasActiveRuns(): boolean {
+    return this.activeRuns.size > 0;
+  }
+
+  getActiveJobIds(): string[] {
+    return [...this.activeRuns.keys()];
+  }
+
+  async waitForActiveRuns(timeoutMs = 30000): Promise<void> {
+    if (this.activeRuns.size === 0) return;
+    const promises = [...this.activeRuns.values()];
+    const timeout = new Promise<void>((_, reject) => setTimeout(() => reject(new Error('waitForActiveRuns timeout')), timeoutMs));
+    try {
+      await Promise.race([Promise.all(promises), timeout]);
+    } catch (e) {
+      if ((e as Error).message === 'waitForActiveRuns timeout') {
+        logger.warn('enrichment.orchestrator.wait_timeout', { active: this.activeRuns.size, timeoutMs });
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  async requestGracefulShutdown(timeoutMs = 30000): Promise<void> {
+    this.shuttingDown = true;
+    if (this.activeRuns.size === 0) return;
+    logger.info('enrichment.orchestrator.shutdown.request', { active: this.activeRuns.size });
+    for (const jobId of this.activeRuns.keys()) {
+      try {
+        await this.jobRepository.requestPause(jobId);
+      } catch {}
+    }
+    await this.waitForActiveRuns(timeoutMs);
+    logger.info('enrichment.orchestrator.shutdown.complete', { active: this.activeRuns.size });
+  }
+
   // For testing: clear locks
   static clearLocks(): void {
     creationLocks.clear();
+  }
+
+  // For testing: clear active runs (not for production)
+  clearActiveRunsForTest(): void {
+    this.activeRuns.clear();
+    this.shuttingDown = false;
   }
 }
