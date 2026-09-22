@@ -154,6 +154,32 @@ export class MongoGameRepository implements GameRepository {
       filter.completeness = query.completeness;
     }
 
+    if (query.needsCompanies === true) {
+      const need: MongoFilter[] = [
+        { $or: [{ developers: { $size: 0 } }, { publishers: { $size: 0 } }] },
+        { externalIdentifiers: { $elemMatch: { source: 'igdb' } } },
+        { domainId: { $not: /^atp-unknown-/ } },
+      ];
+      const existing = filter.$and;
+      filter.$and = [...(Array.isArray(existing) ? existing : []), ...need];
+    }
+
+    if (query.needsCover === true) {
+      const need: MongoFilter[] = [
+        { cover: null },
+        { externalIdentifiers: { $elemMatch: { source: 'igdb' } } },
+        { domainId: { $not: /^atp-unknown-/ } },
+      ];
+      const existing = filter.$and;
+      filter.$and = [...(Array.isArray(existing) ? existing : []), ...need];
+    }
+
+    if (query.afterDomainId !== undefined) {
+      const existing = filter.$and;
+      const after: MongoFilter[] = [{ domainId: { $gt: query.afterDomainId } }];
+      filter.$and = [...(Array.isArray(existing) ? existing : []), ...after];
+    }
+
     if (query.releaseYear) {
       filter['releases.releaseDate.year'] = query.releaseYear;
     }
@@ -169,12 +195,47 @@ export class MongoGameRepository implements GameRepository {
       filter['releases.releaseDate.year'] = yearFilter;
     }
 
+    // hasCover: true => cover !== null (valid cover), false => cover === null
+    if (query.hasCover === true) {
+      filter.cover = { $ne: null };
+    } else if (query.hasCover === false) {
+      filter.cover = null;
+    }
+
+    // hasDescription: true => non-empty trimmed description (at least one non-whitespace)
+    if (query.hasDescription === true) {
+      filter.description = { $regex: /\S/ };
+    } else if (query.hasDescription === false) {
+      const or: MongoFilter[] = [{ description: null }, { description: { $regex: /^\s*$/ } }];
+      const existing = filter.$and;
+      filter.$and = [...(Array.isArray(existing) ? existing : []), { $or: or }];
+    }
+
+    // hasDevelopers: true => at least one developer, false => none
+    if (query.hasDevelopers === true) {
+      filter['developers.0'] = { $exists: true };
+    } else if (query.hasDevelopers === false) {
+      filter['developers.0'] = { $exists: false };
+    }
+
+    // hasPublishers: true => at least one publisher, false => none
+    if (query.hasPublishers === true) {
+      filter['publishers.0'] = { $exists: true };
+    } else if (query.hasPublishers === false) {
+      filter['publishers.0'] = { $exists: false };
+    }
+
     return filter;
   }
 
   private buildSort(sort: GameQuery['sort']): Record<string, 1 | -1> {
+    // domainId is unique and immutable: appending it as the secondary key
+    // makes every ordering total and pagination deterministic, including
+    // the default updatedAt ordering under concurrent writes.
+    const secondary: Record<string, 1 | -1> = { domainId: 1 };
+
     if (!sort) {
-      return { updatedAt: -1 };
+      return { updatedAt: -1, ...secondary };
     }
 
     const fieldMap: Record<string, string> = {
@@ -184,20 +245,13 @@ export class MongoGameRepository implements GameRepository {
       updatedAt: 'updatedAt',
       completeness: 'completeness',
       releaseDate: 'releases.releaseDate.year',
+      domainId: 'domainId',
     };
 
     const direction = sort.direction === 'asc' ? 1 : -1;
     const field = fieldMap[sort.field] ?? sort.field;
 
-    // Add tie-breaker for deterministic sorting
-    if (sort.field === 'title' || sort.field === 'name') {
-      return { [field]: direction, 'titles.value': direction };
-    }
-    if (sort.field === 'releaseDate') {
-      return { [field]: direction };
-    }
-
-    return { [field]: direction };
+    return { [field]: direction, ...secondary };
   }
 
   async save(game: Game): Promise<void> {

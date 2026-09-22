@@ -21,6 +21,8 @@ import type { CatalogSyncHistory } from '../../src/application/catalog-sync-hist
 import { createExternalIdentifier } from '../../src/domain/shared/external-identifier.js';
 import type { NormalizedCandidate } from '../../src/normalization/normalized-candidate.js';
 import type { ClassificationResult } from '../../src/classification/classification-result.js';
+import { loadConfig, resetConfig } from '../../src/infrastructure/config/config.js';
+const ADMIN_TOKEN = 'test-admin-token-1234567890123456';
 
 function createMockGameRepository(): GameRepository {
   const store = new Map<string, Game>();
@@ -535,7 +537,7 @@ describe('POST /api/v1/catalog/sync — trigger parameter', () => {
   let mockCatalogSyncService: CatalogSyncService;
 
   beforeEach(async () => {
-    vi.clearAllMocks();
+    resetConfig(); loadConfig({ ADMIN_API_TOKEN: ADMIN_TOKEN }); vi.clearAllMocks();
 
     mockCatalogSyncService = {
       sync: vi.fn(),
@@ -628,7 +630,7 @@ describe('POST /api/v1/catalog/sync — trigger parameter', () => {
     });
 
     await request(app)
-      .post('/api/v1/catalog/sync')
+      .post('/api/v1/catalog/sync').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
       .send({ platforms: ['nintendo-switch'], from: '2025-01-01', to: '2025-12-31' });
 
     expect(mockCatalogSyncService.sync).toHaveBeenCalledWith(

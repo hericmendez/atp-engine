@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { IgdbAdapter } from '../../../src/sources/igdb/igdb-adapter.js';
+import {
+  IGDB_CANONICAL_GAME_TYPE_IDS,
+  IGDB_GAME_TYPE_NAMES,
+} from '../../../src/sources/igdb/igdb-game-type.js';
+import { CANONICAL_TYPES } from '../../../src/eligibility/game-type-policy.js';
 import { IGDB_OAUTH_TOKEN_RESPONSE } from '../fixtures/source-fixtures.js';
 
 function mockIgdbBodies(responder: (url: string, body: string) => unknown) {
@@ -62,12 +67,14 @@ describe('IgdbAdapter game_type/game_status/parent links', () => {
   });
 
   it('maps remake type, released status and parent links', async () => {
-    mockIgdbBodies(() => igdbGameResponse({
-      game_type: 8,
-      status: 0,
-      parent_game: 55,
-      version_parent: null,
-    }));
+    mockIgdbBodies(() =>
+      igdbGameResponse({
+        game_type: 8,
+        status: 0,
+        parent_game: 55,
+        version_parent: null,
+      }),
+    );
 
     const result = await adapter.search('Test');
     const candidate = result.candidates[0];
@@ -116,16 +123,42 @@ describe('IgdbAdapter game_type/game_status/parent links', () => {
   });
 
   it('exposes type/status/parents on getById as well', async () => {
-    mockIgdbBodies(() => igdbGameResponse({
-      game_type: 9,
-      status: 8,
-      parent_game: 77,
-    }));
+    mockIgdbBodies(() =>
+      igdbGameResponse({
+        game_type: 9,
+        status: 8,
+        parent_game: 77,
+      }),
+    );
 
     const candidate = await adapter.getById('100');
 
     expect(candidate?.gameType).toBe('remaster');
     expect(candidate?.gameStatus).toBe('delisted');
     expect(candidate?.parentGameId).toBe('77');
+  });
+
+  it('search filters to canonically admissible game types (policy B)', async () => {
+    const bodies = mockIgdbBodies(() => igdbGameResponse());
+
+    await adapter.search('Test');
+
+    const where = bodies.find((b) => b.includes('where game_type')) ?? '';
+    expect(where).toContain('where game_type = (0,4,8,9,10);');
+  });
+
+  it('expanded_game candidates keep a stable external identity', async () => {
+    mockIgdbBodies(() => igdbGameResponse({ game_type: 10, status: 0 }));
+
+    const result = await adapter.search('Gundam');
+    const candidate = result.candidates[0];
+
+    expect(candidate.gameType).toBe('expanded_game');
+    expect(candidate.externalIdentifiers).toEqual([{ source: 'igdb', id: '100' }]);
+  });
+
+  it('canonical id set matches the eligibility policy exactly', () => {
+    const names = [...IGDB_CANONICAL_GAME_TYPE_IDS].map((id) => IGDB_GAME_TYPE_NAMES[id]).sort();
+    expect(names).toEqual([...CANONICAL_TYPES].sort());
   });
 });

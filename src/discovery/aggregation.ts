@@ -179,31 +179,33 @@ function calculateRankingScore(
   };
 }
 
-async function areSameGame(
-  obsA: DiscoverySourceObservation,
-  obsB: DiscoverySourceObservation,
-  resolver: IdentityResolver,
-): Promise<boolean> {
-  const fakeGame: Game = {
+function buildComparisonGame(obs: DiscoverySourceObservation): Game {
+  return {
     id: 'temp' as GameId,
-    titles: obsA.candidate.titles.map((t) => ({ value: t.value, type: t.type })),
+    titles: obs.candidate.titles.map((t) => ({ value: t.value, type: t.type })),
     releases: [],
-    developers: obsA.candidate.developers,
-    publishers: obsA.candidate.publishers,
-    genres: obsA.candidate.genres,
-    externalIdentifiers: obsA.candidate.externalIdentifiers,
+    developers: obs.candidate.developers,
+    publishers: obs.candidate.publishers,
+    genres: obs.candidate.genres,
+    externalIdentifiers: obs.candidate.externalIdentifiers,
     relationships: [],
     evidence: [],
     classification: 'UNKNOWN',
     completeness: 'FOUND_PARTIAL',
     cover: null,
+    lastEnrichedAt: null,
     gameType: null,
     gameStatus: null,
-    lastEnrichedAt: null,
+    description: null,
   };
+}
 
-  const resolution = await resolver.resolve(obsB.candidate, fakeGame);
-  return resolution.outcome === 'SAME_GAME';
+async function resolvePair(
+  obsA: DiscoverySourceObservation,
+  obsB: DiscoverySourceObservation,
+  resolver: IdentityResolver,
+): Promise<IdentityResolutionResult> {
+  return resolver.resolve(obsB.candidate, buildComparisonGame(obsA));
 }
 
 export async function aggregateAndDeduplicate(
@@ -225,6 +227,12 @@ export async function aggregateAndDeduplicate(
     const groupObservations: DiscoverySourceObservation[] = [observations[firstIdx]];
     used.add(firstIdx);
 
+    // Weakest pairwise identity confidence in the group. Members joined by
+    // the exact-external-ID pre-grouping imply confidence 1.0 (the same
+    // value the resolver assigns to exact matches), so only pairwise and
+    // self resolutions can lower it.
+    let minConfidence = 1.0;
+
     for (const otherIdx of preGroup) {
       if (otherIdx === firstIdx || used.has(otherIdx)) continue;
       groupObservations.push(observations[otherIdx]);
@@ -234,19 +242,36 @@ export async function aggregateAndDeduplicate(
     for (let j = 0; j < observations.length; j++) {
       if (used.has(j)) continue;
 
-      if (await areSameGame(observations[firstIdx], observations[j], identityResolver)) {
+      const resolution = await resolvePair(
+        observations[firstIdx],
+        observations[j],
+        identityResolver,
+      );
+      if (resolution.outcome === 'SAME_GAME') {
         groupObservations.push(observations[j]);
         used.add(j);
+        minConfidence = Math.min(minConfidence, resolution.confidence);
       }
+    }
+
+    if (groupObservations.length === 1) {
+      // Single-observation groups carry no pairwise evidence: measure
+      // self-coherence instead of asserting unconditional confidence.
+      const selfResolution = await resolvePair(
+        observations[firstIdx],
+        observations[firstIdx],
+        identityResolver,
+      );
+      minConfidence = Math.min(minConfidence, selfResolution.confidence);
     }
 
     const mergedClassification = groupObservations[0].classification;
     const identityResolution: IdentityResolutionResult = {
       outcome: 'SAME_GAME' as IdentityOutcome,
       relationship: null,
-      confidence: 1.0,
+      confidence: minConfidence,
       signals: [],
-      reason: `Grouped ${groupObservations.length} observation(s) as same game`,
+      reason: `Grouped ${groupObservations.length} observation(s) as same game (weakest pairwise confidence ${minConfidence.toFixed(2)})`,
       method: 'NATIVE',
     };
 

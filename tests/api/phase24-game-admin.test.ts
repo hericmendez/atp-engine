@@ -9,6 +9,10 @@ import { createOrganization } from '../../src/domain/shared/organization.js';
 import { createGenre } from '../../src/domain/shared/genre.js';
 import { createExternalIdentifier } from '../../src/domain/shared/external-identifier.js';
 import { ConflictError, NotFoundError } from '../../src/shared/errors/errors.js';
+import { loadConfig, resetConfig } from '../../src/infrastructure/config/config.js';
+const ADMIN_TOKEN = 'test-admin-token-1234567890123456';
+
+
 
 function createTestGame(overrides: Partial<Game> = {}): Game {
   const id = overrides.id ?? createGameId('admin-test-1');
@@ -42,6 +46,8 @@ describe('Phase 24 — Game Write API (Admin)', () => {
   let app: ReturnType<typeof createApp>;
 
   beforeEach(() => {
+    resetConfig();
+    loadConfig({ ADMIN_API_TOKEN: ADMIN_TOKEN });
     mockGameAdminService = createMockGameAdminService();
 
     app = createApp({
@@ -63,7 +69,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
       vi.mocked(mockGameAdminService.createGame).mockResolvedValue(newGame);
 
       const res = await request(app)
-        .post('/api/v1/admin/games')
+        .post('/api/v1/admin/games').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({
           titles: [{ value: 'New Game', type: 'primary' }],
         });
@@ -75,14 +81,14 @@ describe('Phase 24 — Game Write API (Admin)', () => {
     });
 
     it('returns 400 for empty payload', async () => {
-      const res = await request(app).post('/api/v1/admin/games').send({});
+      const res = await request(app).post('/api/v1/admin/games').set('Authorization', `Bearer ${ADMIN_TOKEN}`).send({});
 
       expect(res.status).toBe(400);
       expect(res.body.error.code).toBe('VALIDATION_ERROR');
     });
 
     it('returns 400 for empty titles array', async () => {
-      const res = await request(app).post('/api/v1/admin/games').send({ titles: [] });
+      const res = await request(app).post('/api/v1/admin/games').set('Authorization', `Bearer ${ADMIN_TOKEN}`).send({ titles: [] });
 
       expect(res.status).toBe(400);
       expect(res.body.error.code).toBe('VALIDATION_ERROR');
@@ -90,7 +96,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
 
     it('returns 400 for empty title value', async () => {
       const res = await request(app)
-        .post('/api/v1/admin/games')
+        .post('/api/v1/admin/games').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({ titles: [{ value: '' }] });
 
       expect(res.status).toBe(400);
@@ -99,7 +105,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
 
     it('returns 400 for invalid classification', async () => {
       const res = await request(app)
-        .post('/api/v1/admin/games')
+        .post('/api/v1/admin/games').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({
           titles: [{ value: 'Test' }],
           classification: 'INVALID',
@@ -111,7 +117,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
 
     it('returns 400 for invalid completeness', async () => {
       const res = await request(app)
-        .post('/api/v1/admin/games')
+        .post('/api/v1/admin/games').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({
           titles: [{ value: 'Test' }],
           completeness: 'INVALID',
@@ -128,7 +134,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
       vi.mocked(mockGameAdminService.createGame).mockResolvedValue(newGame);
 
       const res = await request(app)
-        .post('/api/v1/admin/games')
+        .post('/api/v1/admin/games').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({
           titles: [{ value: 'IGDB Game' }],
           externalIdentifiers: [{ source: 'igdb', id: '12345' }],
@@ -148,7 +154,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
       );
 
       const res = await request(app)
-        .post('/api/v1/admin/games')
+        .post('/api/v1/admin/games').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({
           titles: [{ value: 'Dup Game' }],
           externalIdentifiers: [{ source: 'igdb', id: '12345' }],
@@ -167,7 +173,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
       vi.mocked(mockGameAdminService.createGame).mockResolvedValue(newGame);
 
       const res = await request(app)
-        .post('/api/v1/admin/games')
+        .post('/api/v1/admin/games').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({
           titles: [{ value: 'Shape Test' }],
           developers: [{ name: 'Dev Studio' }],
@@ -183,7 +189,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
 
     it('rejects malformed JSON body', async () => {
       const res = await request(app)
-        .post('/api/v1/admin/games')
+        .post('/api/v1/admin/games').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .set('Content-Type', 'application/json')
         .send('{ invalid json }');
 
@@ -201,7 +207,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
       vi.mocked(mockGameAdminService.updateGame).mockResolvedValue(updatedGame);
 
       const res = await request(app)
-        .patch('/api/v1/admin/games/game-1')
+        .patch('/api/v1/admin/games/game-1').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({ titles: [{ value: 'Updated Title', type: 'primary' }] });
 
       expect(res.status).toBe(200);
@@ -216,7 +222,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
       vi.mocked(mockGameAdminService.updateGame).mockResolvedValue(existingGame);
 
       const res = await request(app)
-        .patch('/api/v1/admin/games/game-1')
+        .patch('/api/v1/admin/games/game-1').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({ titles: [{ value: 'Only Title Changed' }] });
 
       expect(res.status).toBe(200);
@@ -232,7 +238,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
       );
 
       const res = await request(app)
-        .patch('/api/v1/admin/games/nonexistent')
+        .patch('/api/v1/admin/games/nonexistent').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({ titles: [{ value: 'No Game' }] });
 
       expect(res.status).toBe(404);
@@ -240,7 +246,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
     });
 
     it('returns 400 for invalid patch body', async () => {
-      const res = await request(app).patch('/api/v1/admin/games/game-1').send({ titles: [] });
+      const res = await request(app).patch('/api/v1/admin/games/game-1').set('Authorization', `Bearer ${ADMIN_TOKEN}`).send({ titles: [] });
 
       expect(res.status).toBe(400);
       expect(res.body.error.code).toBe('VALIDATION_ERROR');
@@ -254,7 +260,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
       );
 
       const res = await request(app)
-        .patch('/api/v1/admin/games/game-1')
+        .patch('/api/v1/admin/games/game-1').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({
           externalIdentifiers: [{ source: 'igdb', id: '99999' }],
         });
@@ -265,7 +271,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
 
     it('validates title type enum', async () => {
       const res = await request(app)
-        .patch('/api/v1/admin/games/game-1')
+        .patch('/api/v1/admin/games/game-1').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({ titles: [{ value: 'Test', type: 'invalid_type' }] });
 
       expect(res.status).toBe(400);
@@ -277,7 +283,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
     it('deletes existing game', async () => {
       vi.mocked(mockGameAdminService.deleteGame).mockResolvedValue(undefined);
 
-      const res = await request(app).delete('/api/v1/admin/games/game-1');
+      const res = await request(app).delete('/api/v1/admin/games/game-1').set('Authorization', `Bearer ${ADMIN_TOKEN}`);
 
       expect(res.status).toBe(204);
       expect(mockGameAdminService.deleteGame).toHaveBeenCalledWith('game-1');
@@ -288,7 +294,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
         new NotFoundError('Game with ID nonexistent not found'),
       );
 
-      const res = await request(app).delete('/api/v1/admin/games/nonexistent');
+      const res = await request(app).delete('/api/v1/admin/games/nonexistent').set('Authorization', `Bearer ${ADMIN_TOKEN}`);
 
       expect(res.status).toBe(404);
       expect(res.body.error.code).toBe('NOT_FOUND');
@@ -297,7 +303,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
     it('does not affect unrelated records', async () => {
       vi.mocked(mockGameAdminService.deleteGame).mockResolvedValue(undefined);
 
-      await request(app).delete('/api/v1/admin/games/game-1');
+      await request(app).delete('/api/v1/admin/games/game-1').set('Authorization', `Bearer ${ADMIN_TOKEN}`);
 
       expect(mockGameAdminService.deleteGame).toHaveBeenCalledTimes(1);
       expect(mockGameAdminService.deleteGame).toHaveBeenCalledWith('game-1');
@@ -311,7 +317,7 @@ describe('Phase 24 — Game Write API (Admin)', () => {
       );
 
       const res = await request(app)
-        .post('/api/v1/admin/games')
+        .post('/api/v1/admin/games').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({ titles: [{ value: 'Route Test' }] });
 
       expect(res.status).toBe(201);
@@ -348,14 +354,14 @@ describe('Phase 24 — Game Write API (Admin)', () => {
       );
 
       const res = await request(app)
-        .post('/api/v1/admin/games')
+        .post('/api/v1/admin/games').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
         .send({ titles: [{ value: 'Failing Game' }] });
 
       expect(res.status).toBe(500);
     });
 
     it('validates game ID param', async () => {
-      const res = await request(app).delete('/api/v1/admin/games/');
+      const res = await request(app).delete('/api/v1/admin/games/').set('Authorization', `Bearer ${ADMIN_TOKEN}`);
 
       expect(res.status).toBe(404);
     });

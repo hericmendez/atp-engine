@@ -6,7 +6,25 @@ import { enrichGame } from '../enrichment/enrichment-engine.js';
 import { normalizeCandidate } from '../normalization/normalize.js';
 import { DeterministicClassifier } from '../classification/deterministic-classifier.js';
 import { gameWithLastEnrichedAt } from '../domain/game/game.js';
+import { createGameId } from '../domain/shared/ids.js';
 import { logger } from '../infrastructure/logger/logger.js';
+import {
+  ENRICHMENT_CHECKPOINT_KEY,
+  type EnrichmentCheckpointStatus,
+} from './enrichment-checkpoint-types.js';
+import type { EnrichmentCheckpointRepository } from './enrichment-checkpoint-repository.js';
+
+export interface MassRunResult {
+  readonly status: Extract<EnrichmentCheckpointStatus, 'COMPLETED' | 'RUNNING'>;
+  readonly processed: number;
+  readonly enriched: number;
+  readonly skipped: number;
+  readonly failed: number;
+  readonly batches: number;
+  readonly cursor: string;
+  readonly dryRun: boolean;
+  readonly durationMs: number;
+}
 
 export interface EnrichmentRunnerDependencies {
   gameRepository: GameRepository;
@@ -18,6 +36,26 @@ export interface EnrichmentRunnerOptions {
   readonly concurrency: number;
   readonly itemTimeoutMs: number;
   readonly cooldownMs: number;
+  /**
+   * Explicit canonical IDs to enrich (CLI --ids). Bypasses the
+   * completeness filter for deterministic MVP control, but never the
+   * identity guards: missing games are skipped, games without external
+   * identifiers are skipped, and atp-unknown-* are always excluded.
+   */
+  readonly ids?: readonly string[];
+  /**
+   * Compute-only mode (CLI --dry-run): runs selection, provider fetch,
+   * and enrichGame accounting without any repository writes.
+   */
+  readonly dryRun?: boolean;
+  /**
+   * Company-need selection (CLI --needs-companies): developers.length
+   * === 0 OR publishers.length === 0, resolved Mongo-side with the
+   * IGDB-identity and atp-unknown guards baked into the query. An
+   * additional strategy alongside --ids and the default completeness
+   * filter — never a replacement.
+   */
+  readonly needsCompanies?: boolean;
 }
 
 export interface EnrichmentItemResult {
@@ -92,7 +130,7 @@ export class EnrichmentRunner {
       totalCandidates,
     });
 
-    const items = await this.processBatch(candidates);
+    const items = await this.processBatch(candidates, this.options.dryRun ?? false);
     const enriched = items.filter((i) => i.success && i.changesCount > 0).length;
     const skipped = items.filter((i) => i.success && i.changesCount === 0).length;
     const failed = items.filter((i) => !i.success).length;
@@ -119,11 +157,159 @@ export class EnrichmentRunner {
     return result;
   }
 
+  /**
+   * Bounded needs-companies sweep with a persistent cursor checkpoint.
+   *
+   * Each batch re-queries the live need-set (`domainId > cursor`, ASC)
+   * and persists the checkpoint only after the whole batch is
+   * attempted — a crash reprocesses at most one batch, and items are
+   * idempotent. Per-item failures are counted and passed over (never
+   * abort the sweep); they stay needy and reprocessable via --ids.
+   * A scope that exhausts its selection persists COMPLETED; hitting
+   * `limit` persists RUNNING. Dry runs advance an in-memory cursor
+   * only: zero game writes, zero checkpoint writes.
+   */
+  async runNeedsCompaniesMass(
+    checkpoints: EnrichmentCheckpointRepository | undefined,
+    options: {
+      batchSize: number;
+      limit?: number;
+      dryRun?: boolean;
+      restart?: boolean;
+      delayMs?: number;
+    },
+  ): Promise<MassRunResult> {
+    const startTime = Date.now();
+    const dryRun = options.dryRun ?? false;
+    const delayMs = options.delayMs ?? 0;
+    const limit = options.limit;
+    if (!Number.isInteger(options.batchSize) || options.batchSize < 1) {
+      throw new Error(
+        `runNeedsCompaniesMass: batchSize must be a positive integer (got ${options.batchSize})`,
+      );
+    }
+    if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
+      throw new Error(`runNeedsCompaniesMass: limit must be a positive integer (got ${limit})`);
+    }
+
+    const stored = checkpoints ? await checkpoints.load(ENRICHMENT_CHECKPOINT_KEY) : undefined;
+    if (stored && stored.status === 'COMPLETED' && !options.restart) {
+      logger.info('enrichment.checkpoint.already_completed', { key: stored.key });
+      return {
+        status: 'COMPLETED',
+        processed: 0,
+        enriched: 0,
+        skipped: 0,
+        failed: 0,
+        batches: 0,
+        cursor: stored.cursor,
+        dryRun,
+        durationMs: Date.now() - startTime,
+      };
+    }
+
+    let cursor = options.restart ? '' : (stored?.cursor ?? '');
+    let processed = 0;
+    let enriched = 0;
+    let skipped = 0;
+    let failed = 0;
+    let batches = 0;
+    let exhausted = false;
+
+    const persist = async (
+      status: 'RUNNING' | 'COMPLETED' | 'FAILED',
+      error?: string,
+    ): Promise<void> => {
+      if (!checkpoints || dryRun) return;
+      await checkpoints.save({
+        key: ENRICHMENT_CHECKPOINT_KEY,
+        mode: 'needs-companies',
+        cursor,
+        status,
+        processed,
+        enriched,
+        failed,
+        error,
+      });
+    };
+
+    try {
+      for (;;) {
+        if (limit !== undefined && processed >= limit) break;
+        const fetchSize =
+          limit === undefined ? options.batchSize : Math.min(options.batchSize, limit - processed);
+        const page = await this.gameRepository.findMany({
+          needsCompanies: true,
+          afterDomainId: cursor === '' ? undefined : cursor,
+          sort: { field: 'domainId', direction: 'asc' },
+          limit: fetchSize,
+        });
+        if (page.items.length === 0) {
+          exhausted = true;
+          break;
+        }
+
+        const items = await this.processBatch([...page.items], dryRun);
+        processed += items.length;
+        enriched += items.filter((i) => i.success && i.changesCount > 0).length;
+        skipped += items.filter((i) => i.success && i.changesCount === 0).length;
+        failed += items.filter((i) => !i.success).length;
+        // Whole batch attempted (successes and isolated failures alike):
+        // only now may the cursor advance past it.
+        cursor = page.items[page.items.length - 1].id;
+        batches += 1;
+        await persist('RUNNING');
+        logger.info('enrichment.checkpoint.advanced', { cursor, processed });
+
+        if (delayMs > 0) {
+          const more = limit === undefined || processed < limit;
+          if (more) await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+      }
+    } catch (error) {
+      // A page that fails pins the checkpoint at the last fully
+      // attempted batch and rethrows — no silent advance, no retry.
+      try {
+        await persist(
+          'FAILED',
+          error instanceof Error ? `${error.name}: ${error.message}` : String(error),
+        );
+      } catch (persistError) {
+        logger.warn('enrichment.checkpoint.persist_failed', {
+          error: persistError instanceof Error ? persistError.message : String(persistError),
+        });
+      }
+      throw error;
+    }
+
+    // Exhausted selection => COMPLETED. A limit stop stays RUNNING
+    // (resumable) even if the boundary coincides with exhaustion — the
+    // next invocation confirms COMPLETED with zero batches. Never claim
+    // COMPLETED prematurely.
+    const status = exhausted ? 'COMPLETED' : 'RUNNING';
+    await persist(status);
+    return {
+      status,
+      processed,
+      enriched,
+      skipped,
+      failed,
+      batches,
+      cursor,
+      dryRun,
+      durationMs: Date.now() - startTime,
+    };
+  }
+
   private async selectCandidates(): Promise<Game[]> {
+    if (this.options.ids !== undefined) {
+      return this.selectExplicitCandidates(this.options.ids);
+    }
     const cooldownDate = new Date(Date.now() - this.options.cooldownMs);
 
     const result = await this.gameRepository.findMany({
-      completeness: 'FOUND_PARTIAL',
+      completeness: this.options.needsCompanies === true ? undefined : 'FOUND_PARTIAL',
+      needsCompanies: this.options.needsCompanies,
       sort: { field: 'updatedAt', direction: 'asc' },
       limit: this.options.batchSize,
     });
@@ -131,18 +317,40 @@ export class EnrichmentRunner {
     const candidates = result.items.filter(
       (game) =>
         game.externalIdentifiers.length > 0 &&
+        !game.id.startsWith('atp-unknown-') &&
         (game.lastEnrichedAt === null || game.lastEnrichedAt < cooldownDate),
     );
 
     return candidates;
   }
 
-  private async processBatch(candidates: Game[]): Promise<EnrichmentItemResult[]> {
+  private async selectExplicitCandidates(ids: readonly string[]): Promise<Game[]> {
+    const candidates: Game[] = [];
+    for (const id of ids.slice(0, this.options.batchSize)) {
+      const game = await this.gameRepository.findById(createGameId(id));
+      if (!game) {
+        logger.info('EnrichmentRunner: explicit id not found, skipping', { id });
+        continue;
+      }
+      if (game.externalIdentifiers.length === 0 || game.id.startsWith('atp-unknown-')) {
+        logger.info('EnrichmentRunner: explicit id has no stable identity, skipping', {
+          id,
+        });
+        continue;
+      }
+      candidates.push(game);
+    }
+    return candidates;
+  }
+
+  private async processBatch(candidates: Game[], dryRun: boolean): Promise<EnrichmentItemResult[]> {
     const results: EnrichmentItemResult[] = [];
     const chunks = this.chunk(candidates, this.options.concurrency);
 
     for (const chunk of chunks) {
-      const chunkResults = await Promise.allSettled(chunk.map((game) => this.processItem(game)));
+      const chunkResults = await Promise.allSettled(
+        chunk.map((game) => this.processItem(game, dryRun)),
+      );
 
       for (const result of chunkResults) {
         if (result.status === 'fulfilled') {
@@ -166,7 +374,7 @@ export class EnrichmentRunner {
     return results;
   }
 
-  private async processItem(game: Game): Promise<EnrichmentItemResult> {
+  private async processItem(game: Game, dryRun: boolean): Promise<EnrichmentItemResult> {
     const title = game.titles[0]?.value ?? 'Untitled';
     const completenessBefore = game.completeness;
     const sourcesQueried: string[] = [];
@@ -176,7 +384,9 @@ export class EnrichmentRunner {
 
       if (observations.length === 0) {
         const enriched = gameWithLastEnrichedAt(game, new Date());
-        await this.gameRepository.update(enriched);
+        if (!dryRun) {
+          await this.gameRepository.update(enriched);
+        }
 
         return {
           gameId: game.id,
@@ -193,7 +403,9 @@ export class EnrichmentRunner {
       const result = enrichGame(game, observations);
 
       const enrichedGame = gameWithLastEnrichedAt(result.game, new Date());
-      await this.gameRepository.update(enrichedGame);
+      if (!dryRun) {
+        await this.gameRepository.update(enrichedGame);
+      }
 
       return {
         gameId: game.id,

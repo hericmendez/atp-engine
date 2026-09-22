@@ -6,6 +6,7 @@ import {
   UpdateGameBodySchema,
 } from '../validation/schemas.js';
 import { toGameResponse } from '../types/api.js';
+import { adminAuthMiddleware } from '../middleware/admin-auth.js';
 
 export interface AdminGamesRouterDependencies {
   gameAdminService: GameAdminService;
@@ -15,7 +16,7 @@ export function adminGamesRouter(deps: AdminGamesRouterDependencies): Router {
   const router = Router();
   const { gameAdminService } = deps;
 
-  router.post('/admin/games', async (req: Request, res: Response, next: NextFunction) => {
+  router.post('/admin/games', adminAuthMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
       const body = CreateGameBodySchema.parse(req.body);
       const game = await gameAdminService.createGame(body);
@@ -25,7 +26,7 @@ export function adminGamesRouter(deps: AdminGamesRouterDependencies): Router {
     }
   });
 
-  router.patch('/admin/games/:id', async (req: Request, res: Response, next: NextFunction) => {
+  router.patch('/admin/games/:id', adminAuthMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = GameIdParamSchema.parse(req.params);
       const body = UpdateGameBodySchema.parse(req.body);
@@ -36,7 +37,7 @@ export function adminGamesRouter(deps: AdminGamesRouterDependencies): Router {
     }
   });
 
-  router.delete('/admin/games/:id', async (req: Request, res: Response, next: NextFunction) => {
+  router.delete('/admin/games/:id', adminAuthMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = GameIdParamSchema.parse(req.params);
       await gameAdminService.deleteGame(id);

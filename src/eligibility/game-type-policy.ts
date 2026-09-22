@@ -56,7 +56,7 @@ export interface CatalogPolicyResult {
 
 // ─── Type sets (ratified P2) ─────────────────────────────────────
 
-const CANONICAL_TYPES: readonly string[] = [
+export const CANONICAL_TYPES: readonly string[] = [
   'main_game',
   'standalone_expansion',
   'remake',

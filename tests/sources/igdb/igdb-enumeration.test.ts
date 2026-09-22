@@ -110,8 +110,12 @@ describe('IgdbAdapter catalog enumeration', () => {
 
     const page = await adapter.enumerateByPlatform(8, { limit: 20, offset: 0 });
 
-    expect(page.items[0].platforms).toEqual(['PlayStation 2']);
-    expect(page.items[1].platforms).toEqual(['PlayStation 2']);
+    expect(page.items[0].platforms).toEqual([
+      { name: 'PlayStation 2', source: 'igdb', sourceId: 8 },
+    ]);
+    expect(page.items[1].platforms).toEqual([
+      { name: 'PlayStation 2', source: 'igdb', sourceId: 8 },
+    ]);
   });
 
   it('drops unknown platform IDs instead of mislabeling them', async () => {

@@ -3,6 +3,7 @@ import type { GameId } from '../domain/shared/ids.js';
 import type { GameTitle } from '../domain/shared/title.js';
 import type { DiscoveryGroupResult } from '../discovery/discovery-types.js';
 import type { DiscoverySourceObservation } from '../discovery/discovery-types.js';
+import { selectDescriptionByPriority } from '../enrichment/enrichment-engine.js';
 import type { NormalizedCandidate } from '../normalization/normalized-candidate.js';
 import type { MetadataCompleteness } from '../domain/shared/metadata-completeness.js';
 import type { ClassificationCategory } from '../domain/shared/classification-category.js';
@@ -85,6 +86,7 @@ export function discoveryGroupToGame(group: DiscoveryGroupResult): Game {
     lastEnrichedAt: null,
     gameType: candidate.gameType,
     gameStatus: candidate.gameStatus,
+    description: selectDescriptionByPriority(group.observations)?.description ?? null,
   };
 }
 

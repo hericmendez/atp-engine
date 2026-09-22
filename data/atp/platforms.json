@@ -1,0 +1,7 @@
+[
+  { "id": "atp-platform-playstation-4", "slug": "playstation-4", "name": "PlayStation 4" },
+  { "id": "atp-platform-3do", "slug": "3do", "name": "3DO" },
+  { "id": "atp-platform-nintendo-switch", "slug": "nintendo-switch", "name": "Nintendo Switch" },
+  { "id": "atp-platform-atari-2600", "slug": "atari-2600", "name": "Atari 2600" },
+  { "id": "atp-platform-msx", "slug": "msx", "name": "MSX" }
+]

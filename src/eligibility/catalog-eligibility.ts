@@ -165,6 +165,24 @@ export function hasStableIdentity(group: DiscoveryGroupResult): boolean {
   return stableIdentityExtId(group) !== undefined;
 }
 
+// ─── Durable-identity read gate ────────────────────────────────
+// Legacy fallback namespace minted before the stable-identity ban
+// (`atp-${... ?? 'unknown'}-...`, e.g. `atp-unknown-1789413911077`).
+// Current code cannot mint these anymore — ids are always
+// `atp-{source}-{externalId}` behind the ban above, or deliberately
+// admin-created (`admin-*`, which remain legitimate catalog records).
+// Persisted legacy rows still match title searches, so public reads
+// must exclude the fallback namespace instead of serving records that
+// can never be stable canonical references. (Save State mirrors the
+// same namespaces in its import quarantine; the two cannot share code
+// because ATP must not depend on Save State.)
+
+const LEGACY_FALLBACK_ID_PREFIX = 'atp-unknown-';
+
+export function hasDurableCatalogIdentity(game: { id: string }): boolean {
+  return !game.id.toLowerCase().startsWith(LEGACY_FALLBACK_ID_PREFIX);
+}
+
 function decisionSignals(group: DiscoveryGroupResult): CatalogEligibilitySignals {
   return {
     classification: group.mergedClassification.category,

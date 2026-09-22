@@ -100,10 +100,10 @@ describe('IgdbAdapter', () => {
       expect(candidate.sourceId).toBe('1942');
       expect(candidate.title).toBe('The Witcher 3: Wild Hunt');
       expect(candidate.platforms).toEqual([
-        'PC',
-        'PlayStation 4',
-        'Nintendo Switch',
-        'PlayStation 5',
+        { name: 'PC', source: 'igdb', sourceId: 6 },
+        { name: 'PlayStation 4', source: 'igdb', sourceId: 48 },
+        { name: 'Nintendo Switch', source: 'igdb', sourceId: 130 },
+        { name: 'PlayStation 5', source: 'igdb', sourceId: 167 },
       ]);
       expect(candidate.genres).toEqual(['Role-playing (RPG)', 'Adventure']);
       expect(candidate.releaseDate).toBe('2015-05-19');
@@ -116,9 +116,17 @@ describe('IgdbAdapter', () => {
       const result = await adapter.search('The Witcher');
       const candidate = result.candidates[0];
 
-      expect(candidate.platforms).toContain('PC');
-      expect(candidate.platforms).toContain('PlayStation 4');
-      expect(candidate.platforms).toContain('Nintendo Switch');
+      expect(candidate.platforms).toContainEqual({ name: 'PC', source: 'igdb', sourceId: 6 });
+      expect(candidate.platforms).toContainEqual({
+        name: 'PlayStation 4',
+        source: 'igdb',
+        sourceId: 48,
+      });
+      expect(candidate.platforms).toContainEqual({
+        name: 'Nintendo Switch',
+        source: 'igdb',
+        sourceId: 130,
+      });
     });
 
     it('maps genre IDs to names correctly', async () => {
@@ -429,10 +437,22 @@ describe('IgdbAdapter', () => {
       const result = await adapter.search('Test');
       const candidate = result.candidates[0];
 
-      expect(candidate.platforms).toContain('PC');
-      expect(candidate.platforms).toContain('PlayStation 4');
-      expect(candidate.platforms).toContain('PlayStation 5');
-      expect(candidate.platforms).toContain('Nintendo Switch');
+      expect(candidate.platforms).toContainEqual({ name: 'PC', source: 'igdb', sourceId: 6 });
+      expect(candidate.platforms).toContainEqual({
+        name: 'PlayStation 4',
+        source: 'igdb',
+        sourceId: 48,
+      });
+      expect(candidate.platforms).toContainEqual({
+        name: 'PlayStation 5',
+        source: 'igdb',
+        sourceId: 167,
+      });
+      expect(candidate.platforms).toContainEqual({
+        name: 'Nintendo Switch',
+        source: 'igdb',
+        sourceId: 130,
+      });
     });
 
     it('maps canonical console IDs including PlayStation 2', async () => {
@@ -451,16 +471,16 @@ describe('IgdbAdapter', () => {
       const candidate = result.candidates[0];
 
       expect(candidate.platforms).toEqual([
-        'PlayStation',
-        'PlayStation 2',
-        'PlayStation 3',
-        'Xbox',
-        'Xbox 360',
-        'Xbox One',
-        'Nintendo 64',
-        'Wii',
-        'Sega Dreamcast',
-        'Sega Saturn',
+        { name: 'PlayStation', source: 'igdb', sourceId: 7 },
+        { name: 'PlayStation 2', source: 'igdb', sourceId: 8 },
+        { name: 'PlayStation 3', source: 'igdb', sourceId: 9 },
+        { name: 'Xbox', source: 'igdb', sourceId: 11 },
+        { name: 'Xbox 360', source: 'igdb', sourceId: 12 },
+        { name: 'Xbox One', source: 'igdb', sourceId: 49 },
+        { name: 'Nintendo 64', source: 'igdb', sourceId: 4 },
+        { name: 'Wii', source: 'igdb', sourceId: 5 },
+        { name: 'Sega Dreamcast', source: 'igdb', sourceId: 23 },
+        { name: 'Sega Saturn', source: 'igdb', sourceId: 32 },
       ]);
     });
 
@@ -481,7 +501,9 @@ describe('IgdbAdapter', () => {
       const result = await adapter.search('Test');
       const candidate = result.candidates[0];
 
-      expect(candidate.platforms).toEqual(['3DO Interactive Multiplayer']);
+      expect(candidate.platforms).toEqual([
+        { name: '3DO Interactive Multiplayer', source: 'igdb', sourceId: 50 },
+      ]);
     });
 
     it('prefers expanded upstream platform names over the static map', async () => {
@@ -500,7 +522,10 @@ describe('IgdbAdapter', () => {
       const result = await adapter.search('Test');
       const candidate = result.candidates[0];
 
-      expect(candidate.platforms).toEqual(['Future Console', 'PC']);
+      expect(candidate.platforms).toEqual([
+        { name: 'Future Console', source: 'igdb', sourceId: 99999 },
+        { name: 'PC', source: 'igdb', sourceId: 6 },
+      ]);
     });
 
     it('keeps the stable IGDB external identifier', async () => {
@@ -527,7 +552,7 @@ describe('IgdbAdapter', () => {
       const result = await adapter.search('Test');
       const candidate = result.candidates[0];
 
-      expect(candidate.platforms).toEqual(['PC']);
+      expect(candidate.platforms).toEqual([{ name: 'PC', source: 'igdb', sourceId: 6 }]);
     });
 
     it('maps common genres correctly', async () => {

@@ -23,9 +23,53 @@ export class MongoPlatformCatalogRepository implements PlatformCatalogRepository
       const filter = this.buildFilter(query);
       const page = query.page ?? DEFAULT_PAGE;
       const limit = Math.min(query.limit ?? DEFAULT_LIMIT, MAX_LIMIT);
-      const skip = (page - 1) * limit;
+
+      // showEmpty === false (explicit) hides empties; undefined/true shows all.
+      // Via HTTP, absent query param transforms to false (hide), so default hides.
+      // Direct repo calls with {} keep undefined → show all (preserves seed regression).
+      const hideEmpty = query.showEmpty === false;
+      const needsGameCountSort = query.sort?.field === 'gameCount';
+
+      // When gameCount is needed for sorting/filtering, DB-level pagination is
+      // incorrect because gameCount is computed after the query. Fetch all
+      // matching docs, enrich, then filter/sort/paginate in memory. Platforms
+      // collection is small (few hundred), so this is correct and cheap.
+      // For other sorts we keep DB pagination.
+      const needsPostEnrichmentHandling = hideEmpty || needsGameCountSort;
+
+      if (needsPostEnrichmentHandling) {
+        const sortForFetch = needsGameCountSort ? ({ name: 1 } as Record<string, 1 | -1>) : this.buildSort(query.sort);
+        const allDocs = await PlatformCatalogModel.find(filter).sort(sortForFetch as never).lean();
+        let items = await this.enrichWithGameCounts(allDocs);
+
+        if (hideEmpty) {
+          items = items.filter((p) => p.gameCount > 0);
+        }
+
+        if (needsGameCountSort) {
+          const dir = query.sort!.direction === 'desc' ? -1 : 1;
+          items.sort((a, b) => {
+            const diff = dir * (a.gameCount - b.gameCount);
+            if (diff !== 0) return diff;
+            return a.name.localeCompare(b.name);
+          });
+        }
+
+        const total = items.length;
+        const skip = (page - 1) * limit;
+        const paginated = items.slice(skip, skip + limit);
+
+        return {
+          items: paginated,
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        };
+      }
 
       const sort = this.buildSort(query.sort);
+      const skip = (page - 1) * limit;
 
       const [docs, total] = await Promise.all([
         PlatformCatalogModel.find(filter).sort(sort).skip(skip).limit(limit).lean(),
@@ -34,6 +78,8 @@ export class MongoPlatformCatalogRepository implements PlatformCatalogRepository
 
       const items = await this.enrichWithGameCounts(docs);
 
+      // showEmpty===true is already correct (DB pagination ok because no post-filter).
+      // For safety, if showEmpty became true after conditional, we are here only when showEmpty===true and no gameCount sort.
       return {
         items,
         total,
@@ -97,6 +143,48 @@ export class MongoPlatformCatalogRepository implements PlatformCatalogRepository
     }
   }
 
+  async bulkUpsert(entries: readonly PlatformCatalogEntry[]): Promise<{ inserted: number; updated: number; errors: number }> {
+    if (entries.length === 0) return { inserted: 0, updated: 0, errors: 0 };
+    try {
+      const ops = entries.map((entry) => ({
+        updateOne: {
+          filter: { platformId: entry.id },
+          update: {
+            $set: {
+              platformId: entry.id,
+              name: entry.name,
+              company: entry.company,
+              releaseYear: entry.releaseYear,
+              status: entry.status,
+              family: entry.family,
+              type: entry.type,
+              thumb: entry.thumb,
+            },
+          },
+          upsert: true,
+        },
+      }));
+
+      const result = await PlatformCatalogModel.bulkWrite(ops as never, { ordered: false });
+
+      const inserted = (result as unknown as { upsertedCount: number }).upsertedCount ?? 0;
+      const matched = (result as unknown as { matchedCount: number }).matchedCount ?? 0;
+      // For idempotence, count matched as updated (even if not modified, original logic counted as updated when existing)
+      const updated = matched;
+      const errors = 0;
+      return { inserted, updated, errors };
+    } catch (error) {
+      // BulkWriteError contains writeErrors
+      const bulkError = error as { writeErrors?: unknown[]; result?: { nInserted?: number; nMatched?: number; nUpserted?: number } };
+      if (bulkError.writeErrors) {
+        const inserted = (bulkError.result?.nUpserted ?? 0) as number;
+        const matched = (bulkError.result?.nMatched ?? 0) as number;
+        return { inserted, updated: matched, errors: bulkError.writeErrors.length };
+      }
+      throw new PersistenceError('Failed to bulk upsert platform catalog entries', { cause: error });
+    }
+  }
+
   private buildFilter(query: PlatformCatalogQuery): MongoFilter {
     const filter: MongoFilter = {};
 
@@ -139,6 +227,13 @@ export class MongoPlatformCatalogRepository implements PlatformCatalogRepository
     // For gameCount, we need to sort after enrichment
     if (sort.field === 'gameCount') {
       return { name: 1 }; // default sort, will re-sort after enrichment
+    }
+
+    // Secondary tiebreaker must not collide with the primary key: when
+    // sorting by name, `{ name: direction, name: 1 }` would silently
+    // collapse to ascending and drop the requested direction.
+    if (sort.field === 'name') {
+      return { name: direction };
     }
 
     return { [field]: direction, name: 1 };

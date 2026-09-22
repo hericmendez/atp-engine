@@ -44,6 +44,17 @@ export function igdbGameTypeName(id: number | null | undefined): string | undefi
   return IGDB_GAME_TYPE_NAMES[id];
 }
 
+/**
+ * Numeric game_type IDs whose names belong to the catalog policy's
+ * CANONICAL set (see eligibility/game-type-policy.ts): main_game (0),
+ * standalone_expansion (4), remake (8), remaster (9), expanded_game
+ * (10). Used by IgdbAdapter.search() so text discovery sees every
+ * canonically admissible type — the downstream policy gate (not the
+ * query) remains the admission authority. Covered by a parity test
+ * against the policy's CANONICAL_TYPES.
+ */
+export const IGDB_CANONICAL_GAME_TYPE_IDS: readonly number[] = [0, 4, 8, 9, 10];
+
 export function igdbGameStatusName(id: number | null | undefined): string | undefined {
   if (id === null || id === undefined) {
     return undefined;

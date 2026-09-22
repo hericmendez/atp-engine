@@ -79,6 +79,25 @@ export interface GameResponse {
   evidence: SourceEvidenceResponse[];
   classification: ClassificationCategory;
   completeness: MetadataCompleteness;
+  description: string | null;
+}
+
+export interface GameCoverResponse {
+  url: string;
+  source: string;
+  sourceId: string | null;
+  width: number | null;
+  height: number | null;
+  type: string;
+}
+
+export interface AdminGameResponse extends GameResponse {
+  cover: GameCoverResponse | null;
+  gameType: string | null;
+  gameStatus: string | null;
+  lastEnrichedAt: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 export interface PaginationMeta {
@@ -157,6 +176,29 @@ export function toGameResponse(game: Game): GameResponse {
     })),
     classification: game.classification,
     completeness: game.completeness,
+    description: game.description,
+  };
+}
+
+export function toAdminGameResponse(game: Game): AdminGameResponse {
+  const base = toGameResponse(game);
+  return {
+    ...base,
+    cover: game.cover
+      ? {
+          url: game.cover.url,
+          source: game.cover.source,
+          sourceId: game.cover.sourceId,
+          width: game.cover.width,
+          height: game.cover.height,
+          type: game.cover.type,
+        }
+      : null,
+    gameType: game.gameType,
+    gameStatus: game.gameStatus,
+    lastEnrichedAt: game.lastEnrichedAt ? game.lastEnrichedAt.toISOString() : null,
+    createdAt: game.createdAt ? game.createdAt.toISOString() : null,
+    updatedAt: game.updatedAt ? game.updatedAt.toISOString() : null,
   };
 }
 

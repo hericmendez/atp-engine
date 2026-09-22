@@ -1,6 +1,7 @@
 import { Router, type Request, type Response, type NextFunction } from 'express';
 import type { CatalogSyncService } from '../../../application/catalog-sync-service.js';
 import { CatalogSyncRequestSchema } from '../validation/schemas.js';
+import { adminAuthMiddleware } from '../middleware/admin-auth.js';
 
 export interface CatalogSyncRouterDependencies {
   catalogSyncService: CatalogSyncService;
@@ -10,7 +11,8 @@ export function catalogSyncRouter(deps: CatalogSyncRouterDependencies): Router {
   const router = Router();
   const { catalogSyncService } = deps;
 
-  router.post('/catalog/sync', async (req: Request, res: Response, next: NextFunction) => {
+  // Legacy route — now protected (requires admin auth). Kept for compatibility with new secure route POST /api/v1/admin/catalog/sync.
+  router.post('/catalog/sync', adminAuthMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
       const body = CatalogSyncRequestSchema.parse(req.body);
 

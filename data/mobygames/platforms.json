@@ -1,0 +1,9 @@
+[
+  { "source": "mobygames", "sourcePlatformId": 141, "name": "PlayStation 4" },
+  { "source": "mobygames", "sourcePlatformId": 35, "name": "3DO" },
+  { "source": "mobygames", "sourcePlatformId": 203, "name": "Nintendo Switch" },
+  { "source": "mobygames", "sourcePlatformId": 28, "name": "Atari 2600" },
+  { "source": "mobygames", "sourcePlatformId": 57, "name": "MSX" },
+  { "source": "mobygames", "sourcePlatformId": 152, "name": "Pokémon Mini" },
+  { "source": "mobygames", "sourcePlatformId": 120, "name": "SAM Coupé" }
+]

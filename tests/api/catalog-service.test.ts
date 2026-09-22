@@ -256,6 +256,79 @@ describe('CatalogService', () => {
       expect(result.data.total).toBe(0);
     });
 
+    describe('legacy fallback identities', () => {
+      function legacyService() {
+        const legacyGames = [
+          createTestGame('atp-igdb-100', 'Canonical Game A'),
+          createTestGame('atp-unknown-1789413911077', 'Legacy Junk A'),
+          createTestGame('atp-igdb-200', 'Canonical Game B'),
+          createTestGame('atp-unknown-1789413911062', 'Legacy Junk B'),
+        ];
+        const repo = createMockRepository(legacyGames);
+        return new CatalogService({ gameRepository: repo.repository });
+      }
+
+      it('keeps canonical games visible', async () => {
+        const result = await legacyService().searchGames('Canonical');
+
+        expect(result.origin).toBe('database');
+        expect(result.data.items.map((g) => g.id)).toEqual([
+          'atp-igdb-100',
+          'atp-igdb-200',
+        ]);
+      });
+
+      it('excludes atp-unknown-* records from search', async () => {
+        const result = await legacyService().searchGames('Legacy Junk');
+
+        expect(result.origin).toBe('database');
+        expect(result.data.items).toEqual([]);
+      });
+
+      it('returns only canonical games on mixed matches', async () => {
+        const mixed = createMockRepository([
+          createTestGame('atp-igdb-100', 'Mixed Canonical A'),
+          createTestGame('atp-unknown-1', 'Mixed Legacy'),
+          createTestGame('atp-igdb-200', 'Mixed Canonical B'),
+          createTestGame('atp-unknown-2', 'Mixed Other'),
+        ]);
+        const mixedService = new CatalogService({ gameRepository: mixed.repository });
+        const result = await mixedService.searchGames('Mixed');
+
+        expect(result.data.items.map((g) => g.id)).toEqual([
+          'atp-igdb-100',
+          'atp-igdb-200',
+        ]);
+      });
+
+      it('returns empty (not an error) when only legacy records match', async () => {
+        const onlyLegacy = createMockRepository([
+          createTestGame('atp-unknown-1', 'Only Legacy One'),
+          createTestGame('atp-unknown-2', 'Only Legacy Two'),
+        ]);
+        const onlyLegacyService = new CatalogService({
+          gameRepository: onlyLegacy.repository,
+        });
+        const result = await onlyLegacyService.searchGames('Only Legacy');
+
+        expect(result.origin).toBe('database');
+        expect(result.data.items).toEqual([]);
+      });
+
+      it('does not block igdb, wikipedia, steam, or admin identities', async () => {
+        const varied = createMockRepository([
+          createTestGame('atp-igdb-1', 'Varied Igdb'),
+          createTestGame('atp-wikipedia-2', 'Varied Wiki'),
+          createTestGame('atp-steam-3', 'Varied Steam'),
+          createTestGame('admin-123-abc', 'Varied Admin'),
+        ]);
+        const variedService = new CatalogService({ gameRepository: varied.repository });
+        const result = await variedService.searchGames('Varied');
+
+        expect(result.data.items).toHaveLength(4);
+      });
+    });
+
     it('does not persist anything on search miss by default', async () => {
       const discoveryEngine = createMockDiscoveryEngine();
       const repo = createMockRepository([]);

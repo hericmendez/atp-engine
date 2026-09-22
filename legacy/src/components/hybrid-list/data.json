@@ -1,0 +1,450 @@
+[
+    {
+        "key": 1,
+        "name": "The Legend of Zelda: Breath of the Wild",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Adventure",
+        "year": 2017,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 2,
+        "name": "The Legend of Zelda: Tears of the Kingdom",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Adventure",
+        "year": 2023,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 3,
+        "name": "Elden Ring",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2022,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 4,
+        "name": "Dark Souls",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2011,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 5,
+        "name": "Dark Souls II",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2014,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 6,
+        "name": "Dark Souls III",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2016,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 7,
+        "name": "Bloodborne",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2015,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 8,
+        "name": "Sekiro: Shadows Die Twice",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Action",
+        "year": 2019,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 9,
+        "name": "Baldur's Gate 3",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2023,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 10,
+        "name": "Undertale",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2015,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 11,
+        "name": "Hades",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Roguelike",
+        "year": 2020,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 12,
+        "name": "Dead Cells",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Action",
+        "year": 2018,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 13,
+        "name": "Hollow Knight",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Metroidvania",
+        "year": 2017,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 14,
+        "name": "Celeste",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Platformer",
+        "year": 2018,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 15,
+        "name": "Stardew Valley",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Simulation",
+        "year": 2016,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 16,
+        "name": "Disco Elysium",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2019,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 17,
+        "name": "Outer Wilds",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Exploration",
+        "year": 2019,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 18,
+        "name": "No Man's Sky",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Sci-Fi",
+        "year": 2016,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 19,
+        "name": "Cyberpunk 2077",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2020,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 20,
+        "name": "Mass Effect Legendary Edition",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Sci-Fi",
+        "year": 2021,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 21,
+        "name": "Red Dead Redemption 2",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Adventure",
+        "year": 2018,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 22,
+        "name": "The Witcher 3: Wild Hunt",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2015,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 23,
+        "name": "God of War",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Action",
+        "year": 2018,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 24,
+        "name": "God of War Ragnarök",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Action",
+        "year": 2022,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 25,
+        "name": "The Last of Us",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Adventure",
+        "year": 2013,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 26,
+        "name": "The Last of Us Part II",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Adventure",
+        "year": 2020,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 27,
+        "name": "Resident Evil 4",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Horror",
+        "year": 2005,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 28,
+        "name": "Resident Evil 4 Remake",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Horror",
+        "year": 2023,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 29,
+        "name": "Silent Hill 2",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Horror",
+        "year": 2001,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 30,
+        "name": "Death Stranding",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Adventure",
+        "year": 2019,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 31,
+        "name": "Metal Gear Solid",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Stealth",
+        "year": 1998,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 32,
+        "name": "Metal Gear Solid V: The Phantom Pain",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Stealth",
+        "year": 2015,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 33,
+        "name": "Persona 5",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2016,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 34,
+        "name": "Persona 5 Royal",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2019,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 35,
+        "name": "Final Fantasy VII",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 1997,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 36,
+        "name": "Final Fantasy VII Remake",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2020,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 37,
+        "name": "Chrono Trigger",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 1995,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 38,
+        "name": "Metroid Prime",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Sci-Fi",
+        "year": 2002,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 39,
+        "name": "Metroid Prime Remastered",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Sci-Fi",
+        "year": 2023,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 40,
+        "name": "Super Metroid",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Metroidvania",
+        "year": 1994,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 41,
+        "name": "Control",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Action",
+        "year": 2019,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 42,
+        "name": "Alan Wake",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Horror",
+        "year": 2010,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 43,
+        "name": "Alan Wake 2",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Horror",
+        "year": 2023,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 44,
+        "name": "Subnautica",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Exploration",
+        "year": 2018,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 45,
+        "name": "Minecraft",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Sandbox",
+        "year": 2011,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 46,
+        "name": "Terraria",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Sandbox",
+        "year": 2011,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 47,
+        "name": "Starfield",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Sci-Fi",
+        "year": 2023,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 48,
+        "name": "Dragon Age: Origins",
+        "image": "https://placehold.co/400x600/png",
+        "category": "RPG",
+        "year": 2009,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 49,
+        "name": "NieR: Automata",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Action",
+        "year": 2017,
+        "review":"This is a generic but honest game review. If i played this until the end, it means the game is at least good (or terrible in a good way).",
+        "rating": "4"
+    },
+    {
+        "key": 50,
+        "name": "Armored Core VI: Fires of Rubicon",
+        "image": "https://placehold.co/400x600/png",
+        "category": "Mecha",
+        "year": 2023
+    }
+]

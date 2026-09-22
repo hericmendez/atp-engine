@@ -6,6 +6,7 @@ import type { Genre } from '../domain/shared/genre.js';
 import type { ExternalIdentifier } from '../domain/shared/external-identifier.js';
 import type { DistributionChannel } from '../domain/shared/distribution-channel.js';
 import type { Launcher } from '../domain/shared/launcher.js';
+import type { RawPlatform } from '../sources/raw-candidate.js';
 import {
   type NormalizedCandidate,
   type NormalizedTitle,
@@ -245,7 +246,7 @@ export interface RawCandidateInput {
   developers?: readonly string[];
   publishers?: readonly string[];
   genres?: readonly string[];
-  platforms?: readonly string[];
+  platforms?: readonly (string | RawPlatform)[];
   regions?: readonly string[];
   releaseDate?: unknown;
   version?: string;
@@ -298,10 +299,10 @@ export function normalizeCandidate(
   );
   const launchers: Launcher[] = (input.launchers ?? []).map(normalizeLauncher);
 
-  const platformNames = input.platforms ?? [];
+  const platformEntries = input.platforms ?? [];
   const regionNames = input.regions ?? [];
 
-  if (platformNames.length === 0) {
+  if (platformEntries.length === 0) {
     releases.push({
       platform: { name: 'UNKNOWN', family: null, type: 'other' },
       region: null,
@@ -313,8 +314,26 @@ export function normalizeCandidate(
       externalIdentifiers: [],
     });
   } else {
-    for (const platformName of platformNames) {
+    for (const platformEntry of platformEntries) {
+      // Plain strings keep the legacy behavior (name only, no identity).
+      // Object entries additionally carry the provider-scoped identity
+      // that produced the name — co-located, never inferred or matched.
+      const platformName = typeof platformEntry === 'string' ? platformEntry : platformEntry.name;
       const platform = normalizePlatform(platformName);
+      const platformExternalIdentifiers: ExternalIdentifier[] =
+        typeof platformEntry === 'object' &&
+        platformEntry !== null &&
+        typeof platformEntry.source === 'string' &&
+        platformEntry.source.trim().length > 0 &&
+        (typeof platformEntry.sourceId === 'string' || typeof platformEntry.sourceId === 'number') &&
+        String(platformEntry.sourceId).trim().length > 0
+          ? [
+              normalizeExternalIdentifier(
+                platformEntry.source,
+                String(platformEntry.sourceId),
+              ),
+            ]
+          : [];
 
       if (regionNames.length === 0) {
         releases.push({
@@ -325,7 +344,7 @@ export function normalizeCandidate(
           edition,
           distributionChannels,
           launchers,
-          externalIdentifiers: [],
+          externalIdentifiers: platformExternalIdentifiers,
         });
       } else {
         for (const regionName of regionNames) {
@@ -337,7 +356,7 @@ export function normalizeCandidate(
             edition,
             distributionChannels,
             launchers,
-            externalIdentifiers: [],
+            externalIdentifiers: [...platformExternalIdentifiers],
           });
         }
       }

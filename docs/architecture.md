@@ -234,3 +234,46 @@ See `docs/roadmap.md` for phase-specific test criteria.
 | Remote AI   | Provider Adapter    |
 
 See `docs/stack.md` for details.
+
+---
+
+# 13. Ingestion vs Runtime Boundary
+
+ATP owns the canonical runtime catalog consumed by Save State. External
+providers are upstream ingestion/enrichment sources, never runtime search
+dependencies:
+
+```text
+External providers → ingestion pipeline → ATP MongoDB
+```
+
+```text
+Save State → ATP API → ATP MongoDB
+```
+
+Source roles:
+
+- **IGDB**: candidate primary enumeration source (paged, countable),
+  structured metadata source, identity source (`igdb:<id>`), optional
+  enrichment source. Never the runtime search backend, never the only
+  source.
+- **Wikipedia**: discovery, enrichment, and gap-filling source. No bulk
+  enumeration.
+- **Steam**: PC-specific enrichment and supplementary metadata/cover
+  evidence. No console-catalog enumeration.
+
+Runtime search serves persisted canonical knowledge only. Live discovery
+on miss is frozen by default and survives solely as an explicit,
+non-production mechanism (`?discover=true`). Cover snapshots are taken
+at ingestion time so normal game requests do not depend on a live cover
+provider; the live `CoverEngine` remains a fallback, not the read path.
+
+`CatalogSource` abstracts provider-agnostic catalog enumeration
+(`enumerateByPlatform`, `countByPlatform`). Only adapters backed by a
+truly enumerable source implement it.
+
+See `docs/reports/ingestion-architecture.md` for the ratified decisions,
+the explicitly pending domain policies, and known documentation
+contradictions introduced by this direction. The ratified catalog
+eligibility policy (game_type/game_status/identity rules) lives in
+`docs/reports/catalog-eligibility-policy.md`.

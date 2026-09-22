@@ -9,7 +9,7 @@ export interface FindByExternalIdentifierInput {
 }
 
 export type GameSortField =
-  'title' | 'createdAt' | 'updatedAt' | 'completeness' | 'releaseDate' | 'name';
+  'title' | 'createdAt' | 'updatedAt' | 'completeness' | 'releaseDate' | 'name' | 'domainId';
 export type GameSortDirection = 'asc' | 'desc';
 
 export interface GameSort {
@@ -31,9 +31,33 @@ export interface GameQuery {
   readonly genres?: string[];
   readonly classification?: ClassificationCategory;
   readonly completeness?: MetadataCompleteness;
+  /**
+   * Company-enrichment need: developers.length === 0 OR
+   * publishers.length === 0, restricted to canonical games with a valid
+   * IGDB external identity (atp-unknown-* never match). Implemented as
+   * a Mongo-side filter (no full-collection Node filtering).
+   */
+  readonly needsCompanies?: boolean;
+  /**
+   * Cover-enrichment need: cover === null, restricted to canonical games
+   * with a valid IGDB external identity (atp-unknown-* never match).
+   */
+  readonly needsCover?: boolean;
+  /**
+   * Cursor paging over a deterministic domainId ordering: only games
+   * with domainId strictly greater than this value match. Combined
+   * with sort {field:'domainId',direction:'asc'} it re-queries the live
+   * selection per batch, so documents that stop matching mid-run
+   * (e.g. enriched games leaving the need-set) can never cause skips.
+   */
+  readonly afterDomainId?: string;
   readonly releaseYear?: number;
   readonly releaseYearFrom?: number;
   readonly releaseYearTo?: number;
+  readonly hasCover?: boolean;
+  readonly hasDescription?: boolean;
+  readonly hasDevelopers?: boolean;
+  readonly hasPublishers?: boolean;
   readonly page?: number;
   readonly limit?: number;
   readonly sort?: GameSort;

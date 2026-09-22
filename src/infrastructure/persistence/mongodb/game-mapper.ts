@@ -74,6 +74,7 @@ export function toDomain(doc: GameDocument): Game {
     completeness: doc.completeness as Game['completeness'],
     gameType: doc.gameType ?? null,
     gameStatus: doc.gameStatus ?? null,
+    description: doc.description ?? null,
     cover: doc.cover
       ? {
           url: doc.cover.url,
@@ -85,6 +86,8 @@ export function toDomain(doc: GameDocument): Game {
         }
       : null,
     lastEnrichedAt: doc.lastEnrichedAt ?? null,
+    createdAt: (doc as unknown as { createdAt?: Date }).createdAt,
+    updatedAt: (doc as unknown as { updatedAt?: Date }).updatedAt,
   };
 }
 
@@ -141,6 +144,7 @@ export function toPersistence(game: Game): Record<string, unknown> {
     completeness: game.completeness,
     gameType: game.gameType,
     gameStatus: game.gameStatus,
+    description: game.description,
     cover: game.cover
       ? {
           url: game.cover.url,

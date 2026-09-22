@@ -1,0 +1,84 @@
+:root {
+  --bg: #f8fafc;
+  --bg-soft: #f1f5f9;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-muted: #475569;
+  --sidebar-bg: #1e293b;
+  --sidebar-text: #cbd5e1;
+  --sidebar-active-bg: #334155;
+  --sidebar-active-text: #ffffff;
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --input-text: #0f172a;
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+  --error-text: #991b1b;
+  --link: #2563eb;
+  --progress-bg: #e2e8f0;
+  --progress-fill: #2563eb;
+  --badge-pending-bg: #f59e0b;
+  --badge-pending-text: #0f172a;
+  --badge-running-bg: #2563eb;
+  --badge-running-text: #ffffff;
+  --badge-pausing-bg: #7c3aed;
+  --badge-pausing-text: #ffffff;
+  --badge-paused-bg: #64748b;
+  --badge-paused-text: #ffffff;
+  --badge-failed-bg: #dc2626;
+  --badge-failed-text: #ffffff;
+  --badge-completed-bg: #16a34a;
+  --badge-completed-text: #ffffff;
+  --badge-cancelled-bg: #475569;
+  --badge-cancelled-text: #ffffff;
+  --badge-neutral-bg: #e2e8f0;
+  --badge-neutral-text: #0f172a;
+}
+
+html.dark {
+  --bg: #0f172a;
+  --bg-soft: #1e293b;
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #cbd5e1;
+  --sidebar-bg: #020617;
+  --sidebar-text: #94a3b8;
+  --sidebar-active-bg: #1e293b;
+  --sidebar-active-text: #f1f5f9;
+  --input-bg: #0f172a;
+  --input-border: #475569;
+  --input-text: #f1f5f9;
+  --error-bg: #450a0a;
+  --error-border: #7f1d1d;
+  --error-text: #fecaca;
+  --link: #60a5fa;
+  --progress-bg: #334155;
+  --progress-fill: #3b82f6;
+  --badge-pending-bg: #f59e0b;
+  --badge-pending-text: #0f172a;
+  --badge-running-bg: #2563eb;
+  --badge-running-text: #ffffff;
+  --badge-pausing-bg: #7c3aed;
+  --badge-pausing-text: #ffffff;
+  --badge-paused-bg: #475569;
+  --badge-paused-text: #f1f5f9;
+  --badge-failed-bg: #ef4444;
+  --badge-failed-text: #ffffff;
+  --badge-completed-bg: #16a34a;
+  --badge-completed-text: #ffffff;
+  --badge-cancelled-bg: #334155;
+  --badge-cancelled-text: #f1f5f9;
+  --badge-neutral-bg: #334155;
+  --badge-neutral-text: #f1f5f9;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: Inter, system-ui, sans-serif; background: var(--bg); color: var(--text-primary); transition: background 0.2s, color 0.2s; }
+a { color: inherit; }
+input, select, textarea { background: var(--input-bg); color: var(--input-text); border-color: var(--input-border); }
+html.dark input, html.dark select, html.dark textarea { color-scheme: dark; }

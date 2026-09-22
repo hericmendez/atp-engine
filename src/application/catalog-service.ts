@@ -13,6 +13,7 @@ import {
   catalogEligibility,
   logEligibilityDecision,
   hasStableIdentity,
+  hasDurableCatalogIdentity,
   stableIdentityExtId,
   missingStableIdentityDecision,
   reclassificationConflictDecision,
@@ -89,8 +90,14 @@ export class CatalogService {
     try {
       const dbResult = await this.gameRepository.findMany(query);
 
-      if (dbResult.items.length > 0) {
-        return { data: dbResult, origin: 'database' };
+      // Legacy fallback identities (atp-unknown-*) predate the
+      // stable-identity ban and carry no durable metadata. They stay in
+      // the database (no destructive cleanup here) but must never reach
+      // the public search surface. Pagination totals still reflect the
+      // repository match; only selectable items are returned.
+      const items = dbResult.items.filter(hasDurableCatalogIdentity);
+      if (items.length > 0) {
+        return { data: { ...dbResult, items }, origin: 'database' };
       }
 
       const coreTitle = this.extractCoreTitle(searchQuery);
@@ -102,8 +109,9 @@ export class CatalogService {
           sort: options.sort,
         };
         const coreResult = await this.gameRepository.findMany(coreQuery);
-        if (coreResult.items.length > 0) {
-          return { data: coreResult, origin: 'database' };
+        const coreItems = coreResult.items.filter(hasDurableCatalogIdentity);
+        if (coreItems.length > 0) {
+          return { data: { ...coreResult, items: coreItems }, origin: 'database' };
         }
       }
 

@@ -6,7 +6,18 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "tsc && npm --prefix dashboard run build",
+    "dashboard:build": "npm --prefix dashboard run build",
+    "dashboard:dev": "npm --prefix dashboard run dev",
+    "dev:dashboard": "concurrently \"pnpm dev\" \"wait-on tcp:3000 -d 500 -t 120000 && pnpm dashboard:dev\"",
+    "sync:igdb": "tsx src/scripts/sync-igdb.ts",
+    "enrich:igdb": "tsx src/scripts/enrich-igdb.ts",
+    "enrich:start": "tsx src/scripts/enrich-start.ts",
+    "enrich:status": "tsx src/scripts/enrich-status.ts",
+    "enrich:pause": "tsx src/scripts/enrich-pause.ts",
+    "enrich:resume": "tsx src/scripts/enrich-resume.ts",
+    "cover:pilot": "tsx src/scripts/cover-pilot.ts",
+    "cover:enrich": "tsx src/scripts/cover-enrich.ts",
     "start": "node dist/server.js",
     "test": "vitest run",
     "test:unit": "vitest run --config vitest.config.ts",
@@ -26,14 +37,18 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^18.0.1",
     "express": "^4.21.0",
     "mongoose": "^8.8.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^4.17.21",
     "@types/node": "^20.14.0",
     "@types/supertest": "^6.0.2",
+    "concurrently": "^10.0.5",
     "eslint": "^9.14.0",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.12.0",
@@ -42,6 +57,7 @@
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.14.0",
-    "vitest": "^2.1.0"
+    "vitest": "^2.1.0",
+    "wait-on": "^8.0.1"
   }
 }

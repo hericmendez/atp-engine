@@ -32,10 +32,7 @@ import {
   policyReviewDecision,
 } from '../eligibility/catalog-eligibility.js';
 import { checkReclassification } from '../eligibility/reclassification-guard.js';
-import {
-  evaluateCatalogPolicy,
-  CatalogPolicyDecision,
-} from '../eligibility/game-type-policy.js';
+import { evaluateCatalogPolicy, CatalogPolicyDecision } from '../eligibility/game-type-policy.js';
 import type { CatalogSource } from '../sources/catalog-source.js';
 import type { Classifier } from '../classification/classifier.js';
 import type { ClassificationResult } from '../classification/classification-result.js';
@@ -49,16 +46,15 @@ import {
   type OriginalEdgeKind,
   type OriginalReference,
 } from './relationships.js';
-import {
-  resolvePortParent,
-  type PortParentReference,
-} from '../eligibility/port-resolution.js';
+import { resolvePortParent, type PortParentReference } from '../eligibility/port-resolution.js';
 import { mergeCandidateReleases } from '../enrichment/enrichment-engine.js';
 import type { QuarantineService } from './quarantine-service.js';
 import { logPersistFailure } from './persist-logging.js';
 import { sanitizeErrorMessage } from './persist-logging.js';
 import type { CatalogSyncStateRepository } from './catalog-sync-state-repository.js';
 import { logger } from '../infrastructure/logger/logger.js';
+import type { MongoCatalogSyncLockRepository } from '../infrastructure/persistence/mongodb/mongo-catalog-sync-lock-repository.js';
+import { ConflictError } from '../shared/errors/errors.js';
 
 const MAX_SYNC_LIMIT = 100;
 
@@ -165,6 +161,7 @@ export interface CatalogSyncServiceDependencies {
    * sync path classifies inside DiscoveryEngine.
    */
   classifier?: Classifier;
+  lockRepository?: MongoCatalogSyncLockRepository;
 }
 
 export class CatalogSyncService {
@@ -175,6 +172,7 @@ export class CatalogSyncService {
   private readonly historyRepository?: CatalogSyncHistoryRepository;
   private readonly quarantineService?: QuarantineService;
   private readonly classifier?: Classifier;
+  private readonly lockRepository?: MongoCatalogSyncLockRepository;
   private pendingPorts: PendingPort[] = [];
   private pendingRelationships: PendingRelationship[] = [];
 
@@ -186,6 +184,7 @@ export class CatalogSyncService {
     this.historyRepository = deps.historyRepository;
     this.quarantineService = deps.quarantineService;
     this.classifier = deps.classifier;
+    this.lockRepository = deps.lockRepository;
   }
 
   async sync(request: SyncRequest): Promise<SyncResult> {
@@ -201,6 +200,36 @@ export class CatalogSyncService {
       dryRun,
       trigger,
     });
+
+    // Dry runs bypass lock — they are side-effect free and can run concurrently
+    const lockOwner = `catalog-sync:${process.pid}:${Math.random().toString(36).slice(2, 8)}`;
+    const lockTtlMs = 300_000; // 5 min initial, renewed during execution
+    const lockRenewMs = 60_000;
+    let lockAcquired = false;
+    let renewTimer: ReturnType<typeof setInterval> | null = null;
+
+    if (!dryRun && this.lockRepository) {
+      const acquired = await this.lockRepository.tryAcquire(lockOwner, lockTtlMs);
+      if (!acquired) {
+        logger.warn('catalog.sync.lock.busy', { trigger, owner: lockOwner });
+        throw new ConflictError('Catalog sync already running');
+      }
+      lockAcquired = true;
+      // Heartbeat renewal while sync executes — prevents TTL expiration for long runs
+      renewTimer = setInterval(async () => {
+        try {
+          const renewed = await this.lockRepository!.renew(lockOwner, lockTtlMs);
+          if (!renewed) {
+            logger.warn('catalog.sync.lock.renew_failed', { owner: lockOwner });
+          }
+        } catch (e) {
+          logger.warn('catalog.sync.lock.renew_error', { owner: lockOwner, error: String(e) });
+        }
+      }, lockRenewMs);
+      if (renewTimer && typeof (renewTimer as unknown as { unref?: () => void }).unref === 'function') {
+        (renewTimer as unknown as { unref: () => void }).unref();
+      }
+    }
 
     const requestedPlatformIds = [...(request.platforms ?? [])];
 
@@ -295,6 +324,18 @@ export class CatalogSyncService {
       }
 
       throw error;
+    } finally {
+      if (renewTimer) clearInterval(renewTimer);
+      if (lockAcquired && this.lockRepository) {
+        try {
+          const released = await this.lockRepository.release(lockOwner);
+          if (!released) {
+            logger.warn('catalog.sync.lock.release_failed', { owner: lockOwner });
+          }
+        } catch (e) {
+          logger.warn('catalog.sync.lock.release_error', { owner: lockOwner, error: String(e) });
+        }
+      }
     }
   }
 
@@ -643,7 +684,10 @@ export class CatalogSyncService {
           reason: policy.reason,
         });
         if (!dryRun) {
-          await this.quarantineService?.recordRejection(group, policyExclusionDecision(group, policy));
+          await this.quarantineService?.recordRejection(
+            group,
+            policyExclusionDecision(group, policy),
+          );
         }
         rejected++;
         continue;
@@ -746,9 +790,27 @@ export class CatalogSyncService {
     const startTime = Date.now();
     const { pageSize } = options;
     const dryRun = options.dryRun ?? false;
+    const limit = options.limit;
+    const delayMs = options.delayMs ?? 0;
     if (!Number.isInteger(pageSize) || pageSize < 1) {
       throw new Error(
         `ingestEnumerationResumable: pageSize must be a positive integer (got ${pageSize})`,
+      );
+    }
+    if (delayMs !== undefined && (!Number.isInteger(delayMs) || delayMs < 0)) {
+      throw new Error(
+        `ingestEnumerationResumable: delayMs must be a non-negative integer (got ${delayMs})`,
+      );
+    }
+    const initialOffset = options.initialOffset ?? 0;
+    if (!Number.isInteger(initialOffset) || initialOffset < 0) {
+      throw new Error(
+        `ingestEnumerationResumable: initialOffset must be a non-negative integer (got ${options.initialOffset})`,
+      );
+    }
+    if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {
+      throw new Error(
+        `ingestEnumerationResumable: limit must be a positive integer (got ${limit})`,
       );
     }
 
@@ -775,6 +837,9 @@ export class CatalogSyncService {
         accepted: existing.accepted,
         quarantined: existing.quarantined,
         errorCount: existing.errorCount,
+        newGames: 0,
+        existingGames: 0,
+        updatedGames: 0,
         pages: 0,
         dryRun,
         durationMs: Date.now() - startTime,
@@ -822,11 +887,14 @@ export class CatalogSyncService {
       throw error;
     }
 
-    let offset = existing?.nextOffset ?? 0;
+    let offset = existing?.nextOffset ?? initialOffset;
     let processed = existing?.processed ?? 0;
     let accepted = existing?.accepted ?? 0;
     let quarantined = existing?.quarantined ?? 0;
     let errorCount = existing?.errorCount ?? 0;
+    let newGames = 0;
+    let existingGames = 0;
+    let updatedGames = 0;
     let pages = 0;
     const startedAt = existing?.startedAt ?? new Date(startTime).toISOString();
 
@@ -854,19 +922,27 @@ export class CatalogSyncService {
     };
 
     try {
-      while (offset < totalCount) {
+      let runProcessed = 0;
+      while (offset < totalCount && (limit === undefined || runProcessed < limit)) {
+        // Final page of a limited run fetches only the remainder, keeping
+        // offsets exact so the checkpoint stays resumable at any boundary.
+        const fetchSize = limit === undefined ? pageSize : Math.min(pageSize, limit - runProcessed);
         const page = await this.ingestEnumerationPage(source, platformId, {
-          limit: pageSize,
+          limit: fetchSize,
           offset,
           dryRun,
         });
         processed += page.candidatesFound;
+        runProcessed += page.candidatesFound;
         accepted += page.newGames + page.existingGames + page.updatedGames;
+        newGames += page.newGames;
+        existingGames += page.existingGames;
+        updatedGames += page.updatedGames;
         quarantined += page.rejected;
         errorCount += page.errors;
         // The page fully succeeded (all writes finished): only now may
         // the checkpoint advance past it.
-        offset += pageSize;
+        offset += fetchSize;
         pages += 1;
         await persistCheckpoint('RUNNING');
         logger.info('catalog.checkpoint.advanced', {
@@ -874,6 +950,11 @@ export class CatalogSyncService {
           nextOffset: offset,
           candidatesFound: page.candidatesFound,
         });
+        // Rate-limit courtesy between pages only — never after the final
+        // page, so the run ends without an idle tail.
+        if (delayMs > 0 && offset < totalCount && (limit === undefined || runProcessed < limit)) {
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
       }
     } catch (error) {
       try {
@@ -892,9 +973,10 @@ export class CatalogSyncService {
       throw error;
     }
 
-    await persistCheckpoint('COMPLETED');
+    await persistCheckpoint(limit !== undefined && offset < totalCount ? 'RUNNING' : 'COMPLETED');
     logger.info('catalog.enumeration.resumable.completed', {
       ...scope,
+      nextOffset: offset,
       totalCount,
       processed,
       accepted,
@@ -906,7 +988,7 @@ export class CatalogSyncService {
     });
 
     return {
-      status: 'COMPLETED',
+      status: limit !== undefined && offset < totalCount ? 'LIMIT_REACHED' : 'COMPLETED',
       source: scope.source,
       platformId,
       pageSize,
@@ -916,6 +998,9 @@ export class CatalogSyncService {
       accepted,
       quarantined,
       errorCount,
+      newGames,
+      existingGames,
+      updatedGames,
       pages,
       dryRun,
       durationMs: Date.now() - startTime,

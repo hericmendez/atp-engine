@@ -820,3 +820,61 @@ remake, reborn, reimagined
 - Explainability (reason, signals, confidence)
 - Edge cases (empty titles, empty releases)
 - Complex scenarios (RE4 remake, FF Tactics, BotW)
+
+---
+
+# 30. Identity Authority (Architectural Decision)
+
+## Decision
+
+**Wikipedia is a discovery/enrichment source, not a canonical identity
+authority for the ATP catalog.**
+
+Discovery, identity, canonical catalog, and enrichment are separate
+concerns. Evidence (§5) informs identity resolution, but only a recognized
+stable identity mints a canonical record.
+
+## Consequences
+
+- `wikipedia:<pageid>` MUST NOT be introduced automatically as canonical
+  identity merely to allow persistence.
+- A Wikipedia-only candidate without an ATP-recognized stable identity is
+  barred from creating a canonical record by the stable-identity ban and
+  quarantined as `MISSING_STABLE_IDENTITY`. That outcome is valid, not an
+  endpoint error.
+- Wikipedia may supply evidence, metadata, and candidates for later
+  resolution against an existing canonical identity or one provided by an
+  identity-authoritative source.
+- A `discover=true` search whose only eligible results are Wikipedia-only
+  therefore legitimately returns `data: []`.
+
+## Rationale
+
+Minting `wikipedia:pageid` as identity to bypass the ban would promote a
+Wikipedia page to identity authority without defining: Wikipedia ↔ IGDB
+deduplication, cross-source conflict resolution, pages representing
+franchises/series/multiple games, remakes/remasters/ports, page moves or
+reorganization, or precedence between provider identities. It would also
+reopen the `atp-unknown-*` class of identifier-less canonical records that
+the stable-identity ban exists to prevent.
+
+## Preconditions for revisiting
+
+Before Wikipedia (or any discovery-only source) can contribute canonical
+identity, the following must be defined: deterministic cross-source
+dedup mapping, conflict and precedence rules between provider identities,
+handling of franchise/series/multi-game pages, and page-identity stability
+guarantees.
+
+## Related
+
+- Stable-identity enforcement on bulk persistence paths.
+- `MISSING_STABLE_IDENTITY` quarantine decision.
+- IGDB as the primary enumeration/identity source where configured.
+- `docs/api.md` — discovery does not imply persistence without stable identity.
+
+## Observability follow-up (independent, not part of this decision)
+
+`catalog-service.ts` logs `eligibility.identity.banned` at `debug` while
+eligibility decisions log at `info`. Evaluate raising the ban log to `info`
+with groupId, reason, and source/sourceCount when available.

@@ -104,14 +104,69 @@ Supports pagination via `page` and `limit` query parameters.
 
 ### Origin Behavior
 
-Search follows a **database-first, scraper-fallback** strategy:
+Search follows a **database-first** strategy with an **explicit opt-in**
+discovery path:
 
 1. Query the database for matching games.
 2. If database results are non-empty, return them directly (`origin: "database"`).
-3. If the database returns empty or the query fails, fall back to external source discovery via the source registry.
-4. Discovered candidates are normalized and returned (`origin: "scraper"`).
+   Provider discovery does not run.
+3. If the database returns empty and `discover=true` is passed, run external
+   source discovery via the source registry. Persisted candidates are
+   returned (`origin: "database"`); when nothing persistable is produced the
+   response carries `origin: "scraper"`.
+4. If the database returns empty without `discover=true`, return the empty
+   result directly (`origin: "database"`). No providers are contacted.
 
-Results from external sources are **not persisted** during search — this is a discovery operation.
+Discovered candidates that pass validation are **persisted** as canonical
+games; rejected candidates are recorded in quarantine for auditability.
+
+Discovery does not imply persistence: a candidate is persisted only when it
+carries an ATP-recognized stable identity. In particular, Wikipedia is a
+discovery/enrichment source, not a canonical identity authority (see
+`docs/identity-resolution.md` §30) — a Wikipedia-only candidate without
+stable identity is quarantined as `MISSING_STABLE_IDENTITY` and a search
+whose only eligible results are of that kind legitimately returns
+`data: []`. That outcome is valid behavior, not an endpoint error.
+
+### Discovery Errors
+
+When the discovery path runs (`discover=true` on a miss), provider failures
+collected by the discovery engine are exposed as a top-level `errors` array:
+
+```json
+{
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 0,
+    "totalPages": 0
+  },
+  "origin": "scraper",
+  "errors": [
+    {
+      "source": "wikipedia",
+      "errorType": "invalid_response",
+      "message": "HTTP 429:",
+      "retryable": true
+    }
+  ]
+}
+```
+
+Rules:
+
+- `errors` is present only when discovery actually ran. Database hits and
+  `discover=false` responses never contain it.
+- `errors: []` means discovery ran cleanly but produced no persistable
+  result — a legitimate empty result, not a failure.
+- A populated `errors` array with empty `data` means providers failed.
+- Results and errors coexist: valid persisted results return
+  `origin: "database"` alongside any provider errors.
+- `origin` describes where results came from; `errors` describes provider
+  failures. They are orthogonal.
+- Upstream error messages are sanitized: no provider URLs, credentials, or
+  stack traces are exposed.
 
 ### Response
 

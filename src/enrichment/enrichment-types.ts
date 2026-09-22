@@ -9,6 +9,7 @@ export type EnrichmentFieldType =
   | 'developer'
   | 'publisher'
   | 'genre'
+  | 'description'
   | 'external_identifier'
   | 'evidence'
   | 'release'

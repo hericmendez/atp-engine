@@ -34,6 +34,8 @@ export interface Game {
   readonly completeness: MetadataCompleteness;
   readonly cover: GameCover | null;
   readonly lastEnrichedAt: Date | null;
+  readonly createdAt?: Date;
+  readonly updatedAt?: Date;
   /**
    * Provider-declared game type/status (e.g. IGDB `game_type` /
    * `game_status` names). Records what the source claimed, enabling
@@ -43,6 +45,13 @@ export interface Game {
    */
   readonly gameType: string | null;
   readonly gameStatus: string | null;
+  /**
+   * Canonical description snapshot: provider-supplied game summary as
+   * captured at ingestion/enrichment time (see source precedence in
+   * `selectDescriptionByPriority`). Nullable: absent upstream stays
+   * absent — never invented, never defaulted from other fields.
+   */
+  readonly description: string | null;
 }
 
 export interface CreateGameInput {
@@ -56,6 +65,7 @@ export interface CreateGameInput {
   completeness?: MetadataCompleteness;
   gameType?: string | null;
   gameStatus?: string | null;
+  description?: string | null;
 }
 
 export function createGame(input: CreateGameInput): Game {
@@ -79,6 +89,7 @@ export function createGame(input: CreateGameInput): Game {
     lastEnrichedAt: null,
     gameType: input.gameType ?? null,
     gameStatus: input.gameStatus ?? null,
+    description: input.description ?? null,
   };
 }
 

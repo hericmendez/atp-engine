@@ -1,3 +1,11 @@
+// Must stay the first import: loads .env into process.env for the
+// whole server process tree (config, adapters). tsx --env-file does
+// not propagate to watch-mode children and NODE_OPTIONS forbids it,
+// so explicit dotenv here is the only reliable mechanism. Scoped to
+// this entrypoint on purpose: shared modules and tests must never
+// depend on ambient .env files.
+import 'dotenv/config';
+
 import { createApp } from './interfaces/http/app.js';
 import { CatalogService } from './application/catalog-service.js';
 import { GameAdminService } from './application/game-admin-service.js';
@@ -23,6 +31,8 @@ import { DeterministicClassifier } from './classification/deterministic-classifi
 import { DeterministicIdentityResolver } from './identity/deterministic-identity-resolver.js';
 import { IntervalEnrichmentScheduler } from './infrastructure/enrichment-scheduler.js';
 import { IntervalCatalogSyncScheduler } from './infrastructure/catalog-sync-scheduler.js';
+import { MongoEnrichmentJobRepository } from './infrastructure/persistence/mongodb/mongo-enrichment-job-repository.js';
+import { MongoCatalogSyncLockRepository } from './infrastructure/persistence/mongodb/mongo-catalog-sync-lock-repository.js';
 import { loadConfig } from './infrastructure/config/config.js';
 import { logger } from './infrastructure/logger/logger.js';
 import { setLogLevel } from './infrastructure/logger/logger.js';
@@ -32,20 +42,34 @@ import {
 } from './infrastructure/persistence/mongodb/connection.js';
 
 async function main(): Promise<void> {
+  // INSTRUMENTATION Fase 4.8 — timing
+  const tMainStart = Date.now();
+  logger.info('startup.main.start', { timestamp: new Date().toISOString() });
+
+  const tLoadConfigStart = Date.now();
   const config = loadConfig();
+  logger.info('startup.loadConfig.completed', { durationMs: Date.now() - tLoadConfigStart });
+
   setLogLevel(config.LOG_LEVEL);
 
+  const tConnectStart = Date.now();
+  logger.info('startup.connectDatabase.start', { timestamp: new Date().toISOString() });
   await connectDatabase();
+  logger.info('startup.connectDatabase.completed', { durationMs: Date.now() - tConnectStart, totalMs: Date.now() - tMainStart });
 
   const gameRepository = new MongoGameRepository();
   const platformCatalogRepository = new MongoPlatformCatalogRepository();
   const catalogSyncHistoryRepository = new MongoCatalogSyncHistoryRepository();
 
   const platformSeedService = new PlatformSeedService({ platformCatalogRepository });
+  const tSeedStart = Date.now();
+  logger.info('startup.platformSeed.start', { timestamp: new Date().toISOString() });
   try {
     const seedResult = await platformSeedService.seed();
+    logger.info('startup.platformSeed.completed', { durationMs: Date.now() - tSeedStart, totalMs: Date.now() - tMainStart, result: seedResult });
     logger.info('Platform seed result', seedResult);
   } catch (error) {
+    logger.info('startup.platformSeed.failed', { durationMs: Date.now() - tSeedStart });
     logger.error('Platform seed failed', {
       error: error instanceof Error ? error.message : String(error),
     });
@@ -97,6 +121,8 @@ async function main(): Promise<void> {
 
   const platformCatalogService = new PlatformCatalogService({ platformCatalogRepository });
 
+  const catalogSyncLockRepository = new MongoCatalogSyncLockRepository();
+
   const catalogSyncService = new CatalogSyncService({
     gameRepository,
     platformCatalogRepository,
@@ -105,6 +131,7 @@ async function main(): Promise<void> {
     historyRepository: catalogSyncHistoryRepository,
     quarantineService,
     classifier,
+    lockRepository: catalogSyncLockRepository,
   });
 
   const enrichmentRunner = new EnrichmentRunner(
@@ -125,6 +152,10 @@ async function main(): Promise<void> {
     },
   );
 
+  const enrichmentJobRepository = new MongoEnrichmentJobRepository();
+
+  const tCreateAppStart = Date.now();
+  logger.info('startup.createApp.start', { timestamp: new Date().toISOString() });
   const app = createApp({
     games: { catalogService },
     cover: { coverService },
@@ -132,9 +163,17 @@ async function main(): Promise<void> {
     catalogSync: { catalogSyncService },
     catalogSyncHistory: { historyRepository: catalogSyncHistoryRepository },
     admin: { gameAdminService },
+    enrichmentJobs: { jobRepository: enrichmentJobRepository },
+    adminEnrichmentJobs: { jobRepository: enrichmentJobRepository },
+    adminGamesRead: { catalogService },
+    adminCatalogSync: { catalogSyncService },
   });
+  logger.info('startup.createApp.completed', { durationMs: Date.now() - tCreateAppStart, totalMs: Date.now() - tMainStart });
 
+  const tListenStart = Date.now();
+  logger.info('startup.listen.start', { timestamp: new Date().toISOString(), port: config.PORT });
   const server = app.listen(config.PORT, () => {
+    logger.info('startup.listen.callback', { durationMs: Date.now() - tListenStart, totalMs: Date.now() - tMainStart });
     logger.info('ATP Engine started', {
       port: config.PORT,
       env: config.NODE_ENV,

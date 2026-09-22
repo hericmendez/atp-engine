@@ -35,6 +35,15 @@ const GameSortFieldSchema = z.enum([
   'releaseDate',
   'name',
 ]);
+const AdminGameSortFieldSchema = z.enum([
+  'title',
+  'createdAt',
+  'updatedAt',
+  'completeness',
+  'releaseDate',
+  'name',
+  'domainId',
+]);
 const GameSortDirectionSchema = z.enum(['asc', 'desc']);
 
 const PlatformSortFieldSchema = z.enum(['name', 'releaseYear', 'gameCount']);
@@ -46,6 +55,11 @@ export const PaginationSchema = z.object({
 
 export const GameSortSchema = z.object({
   sort: GameSortFieldSchema.optional(),
+  order: GameSortDirectionSchema.default('desc'),
+});
+
+export const AdminGameSortSchema = z.object({
+  sort: AdminGameSortFieldSchema.optional(),
   order: GameSortDirectionSchema.default('desc'),
 });
 
@@ -98,6 +112,46 @@ export const CatalogQuerySchema = PaginationSchema.extend({
     const publisherArr = parseCommaSeparated(val.publisher);
     const genreArr = parseCommaSeparated(val.genre);
 
+    return {
+      ...val,
+      platforms: platformArr,
+      developers: developerArr,
+      publishers: publisherArr,
+      genres: genreArr,
+    };
+  });
+
+const booleanFromString = z
+  .string()
+  .optional()
+  .transform((val) => (val === undefined ? undefined : val === 'true'));
+
+export const AdminGamesQuerySchema = PaginationSchema.extend({
+  search: z.string().optional(),
+  title: z.string().optional(),
+  platform: z.string().optional(),
+  platformFamily: z.string().optional(),
+  developer: z.string().optional(),
+  publisher: z.string().optional(),
+  genre: z.string().optional(),
+  classification: ClassificationCategorySchema.optional(),
+  completeness: MetadataCompletenessSchema.optional(),
+  releaseYear: z.coerce.number().int().min(1950).max(2100).optional(),
+  releaseYearFrom: z.coerce.number().int().min(1950).max(2100).optional(),
+  releaseYearTo: z.coerce.number().int().min(1950).max(2100).optional(),
+  hasCover: booleanFromString,
+  hasDescription: booleanFromString,
+  hasDevelopers: booleanFromString,
+  hasPublishers: booleanFromString,
+  needsCover: booleanFromString,
+  needsCompanies: booleanFromString,
+})
+  .merge(AdminGameSortSchema)
+  .transform((val) => {
+    const platformArr = parseCommaSeparated(val.platform);
+    const developerArr = parseCommaSeparated(val.developer);
+    const publisherArr = parseCommaSeparated(val.publisher);
+    const genreArr = parseCommaSeparated(val.genre);
     return {
       ...val,
       platforms: platformArr,
@@ -207,6 +261,7 @@ export const PlatformIdParamSchema = z.object({
 });
 
 export type CatalogQueryInput = z.infer<typeof CatalogQuerySchema>;
+export type AdminGamesQueryInput = z.infer<typeof AdminGamesQuerySchema>;
 export type SearchQueryInput = z.infer<typeof SearchQuerySchema>;
 export type GameIdParamInput = z.infer<typeof GameIdParamSchema>;
 export type CoverSearchQueryInput = z.infer<typeof CoverSearchQuerySchema>;
@@ -276,3 +331,31 @@ export const UpdateGameBodySchema = z.object({
 
 export type CreateGameBodyInput = z.infer<typeof CreateGameBodySchema>;
 export type UpdateGameBodyInput = z.infer<typeof UpdateGameBodySchema>;
+
+export const EnrichmentJobTypeSchema = z.enum(['cover', 'company', 'description', 'alias', 'screenshot']);
+export const EnrichmentJobStatusSchema = z.enum([
+  'PENDING',
+  'RUNNING',
+  'PAUSING',
+  'PAUSED',
+  'COMPLETED',
+  'FAILED',
+  'CANCELLED',
+]);
+
+const EnrichmentJobSortFieldSchema = z.enum(['startedAt', 'updatedAt', 'status']);
+export const EnrichmentJobListQuerySchema = z.object({
+  type: EnrichmentJobTypeSchema.optional(),
+  status: EnrichmentJobStatusSchema.optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  page: z.coerce.number().int().min(1).default(1),
+  sort: EnrichmentJobSortFieldSchema.optional(),
+  order: z.enum(['asc', 'desc']).default('desc'),
+});
+
+export const EnrichmentJobIdParamSchema = z.object({
+  id: z.string().min(1, 'Job ID is required').trim().min(1),
+});
+
+export type EnrichmentJobListQueryInput = z.infer<typeof EnrichmentJobListQuerySchema>;
+export type EnrichmentJobIdParamInput = z.infer<typeof EnrichmentJobIdParamSchema>;

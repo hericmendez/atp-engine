@@ -1,0 +1,47 @@
+[
+  {
+    "mobygamesPlatformId": 141,
+    "atpPlatformId": "atp-platform-playstation-4",
+    "status": "MAPPED",
+    "evidence": "ROMM MOBYGAMES_PLATFORM_LIST (UPS.PS4, API-derived) corroborates id 141; official MobyGames API /platforms contract defines platform_id as the join key"
+  },
+  {
+    "mobygamesPlatformId": 35,
+    "atpPlatformId": "atp-platform-3do",
+    "status": "MAPPED",
+    "evidence": "ROMM MOBYGAMES_PLATFORM_LIST (UPS._3DO, API-derived) corroborates id 35; official MobyGames API /platforms contract defines platform_id as the join key"
+  },
+  {
+    "mobygamesPlatformId": 203,
+    "atpPlatformId": "atp-platform-nintendo-switch",
+    "status": "MAPPED",
+    "evidence": "ROMM MOBYGAMES_PLATFORM_LIST (UPS.SWITCH, API-derived) corroborates id 203; official MobyGames API /platforms contract defines platform_id as the join key"
+  },
+  {
+    "mobygamesPlatformId": 28,
+    "atpPlatformId": "atp-platform-atari-2600",
+    "status": "MAPPED",
+    "evidence": "ROMM MOBYGAMES_PLATFORM_LIST (UPS.ATARI2600, API-derived) corroborates id 28; official MobyGames API /platforms contract defines platform_id as the join key"
+  },
+  {
+    "mobygamesPlatformId": 57,
+    "atpPlatformId": "atp-platform-msx",
+    "status": "MAPPED",
+    "evidence": "ROMM MOBYGAMES_PLATFORM_LIST (UPS.MSX, API-derived) corroborates id 57; official MobyGames API /platforms contract defines platform_id as the join key"
+  },
+  {
+    "mobygamesPlatformId": 152,
+    "status": "UNRESOLVED",
+    "reason": "NO_ATP_PLATFORM"
+  },
+  {
+    "mobygamesPlatformId": 120,
+    "status": "UNRESOLVED",
+    "reason": "NO_ATP_PLATFORM"
+  },
+  {
+    "manifestName": "Nintendo Switch 2",
+    "status": "UNRESOLVED",
+    "reason": "NO_MOBYGAMES_PLATFORM_ID"
+  }
+]

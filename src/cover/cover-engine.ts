@@ -254,6 +254,16 @@ export class CoverEngine {
 
     const discoveryResult = await this.deps.wikipediaCoverDiscovery.discoverCovers(query);
 
+    // Error propagation: a provider failure that yields no candidates must
+    // travel through the normal rejection channel (Promise.allSettled →
+    // errors[]) instead of masquerading as a legitimate empty result.
+    // An empty candidate set WITHOUT discovery errors remains valid and
+    // returns [] so the response keeps errors: [].
+    if (discoveryResult.candidates.length === 0 && discoveryResult.errors.length > 0) {
+      const first = discoveryResult.errors[0];
+      throw new SourceError('wikipedia', 'source_unavailable', first.message);
+    }
+
     const observations: {
       source: string;
       sourceId: string;

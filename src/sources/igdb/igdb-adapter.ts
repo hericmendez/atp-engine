@@ -1,14 +1,12 @@
 import { BaseAdapter, type BaseAdapterConfig } from '../base-adapter.js';
 import type { SearchOptions, SearchResult } from '../source-adapter.js';
-import type {
-  CatalogPage,
-  CatalogPageOptions,
-  CatalogSource,
-} from '../catalog-source.js';
+import type { CatalogPage, CatalogPageOptions, CatalogSource } from '../catalog-source.js';
 import type { RawCandidate } from '../raw-candidate.js';
 import { SourceError } from '../source-errors.js';
 import { logger } from '../../infrastructure/logger/logger.js';
 import { igdbGameStatusName, igdbGameTypeName } from './igdb-game-type.js';
+import { IGDB_CANONICAL_GAME_TYPE_IDS } from './igdb-game-type.js';
+import type { TokenBucketRateLimiter } from '../../infrastructure/rate-limiter.js';
 
 interface TwitchTokenResponse {
   access_token: string;
@@ -296,11 +294,19 @@ export type IgdbAdapterConfig = Omit<BaseAdapterConfig, 'baseUrl'> & {
   readonly clientId: string;
   readonly clientSecret: string;
   readonly baseUrl?: string;
+  /**
+   * Explicit request gate: every postApi call acquires a token first,
+   * so multi-call flows (getById + involved + companies) share one
+   * smooth stream. Absent by default — existing paths/tests keep their
+   * behavior; the enrichment CLI wires one explicitly.
+   */
+  readonly rateLimiter?: TokenBucketRateLimiter;
 };
 
 export class IgdbAdapter extends BaseAdapter implements CatalogSource {
   private readonly clientId: string;
   private readonly clientSecret: string;
+  private readonly rateLimiter: TokenBucketRateLimiter | undefined;
   private accessToken: string | null = null;
   private tokenExpiresAt: number = 0;
 
@@ -319,6 +325,7 @@ export class IgdbAdapter extends BaseAdapter implements CatalogSource {
     );
     this.clientId = config.clientId;
     this.clientSecret = config.clientSecret;
+    this.rateLimiter = config.rateLimiter;
   }
 
   async search(query: string, options?: SearchOptions): Promise<SearchResult> {
@@ -332,7 +339,13 @@ export class IgdbAdapter extends BaseAdapter implements CatalogSource {
       `fields ${IGDB_GAME_FIELDS};`,
       `limit ${limit};`,
       `offset ${offset};`,
-      'where category = 0;', // Main game category
+      // Canonically admissible types only (policy B: main_game,
+      // standalone_expansion, remake, remaster, expanded_game — see
+      // IGDB_CANONICAL_GAME_TYPE_IDS, parity-tested against the
+      // eligibility policy's CANONICAL_TYPES). The downstream policy
+      // gate remains the admission authority; the query only avoids
+      // fetching records that can never be canonical.
+      `where game_type = (${IGDB_CANONICAL_GAME_TYPE_IDS.join(',')});`,
     ].join(' ');
 
     const data = await this.postApi<IgdbGame[]>('/games', body, token);
@@ -346,6 +359,27 @@ export class IgdbAdapter extends BaseAdapter implements CatalogSource {
     };
   }
 
+  /**
+   * Minimal platform lookup for allowlist validation (name verification).
+   * Returns null for unknown IDs instead of throwing — callers report
+   * MISSING. Uses the same token/postApi path as game queries.
+   */
+  async getPlatformInfo(id: number): Promise<{ id: number; name: string } | null> {
+    if (!Number.isInteger(id) || id < 1) {
+      return null;
+    }
+    const token = await this.getAccessToken();
+    const data = await this.postApi<{ id: number; name: string }[]>(
+      '/platforms',
+      `where id = ${id}; fields name;`,
+      token,
+    );
+    if (!data || data.length === 0 || typeof data[0]?.name !== 'string') {
+      return null;
+    }
+    return { id: data[0].id, name: data[0].name };
+  }
+
   async getById(id: string): Promise<RawCandidate | null> {
     const igdbId = parseInt(id, 10);
     if (isNaN(igdbId)) {
@@ -354,10 +388,7 @@ export class IgdbAdapter extends BaseAdapter implements CatalogSource {
 
     const token = await this.getAccessToken();
 
-    const body = [
-      `where id = ${igdbId};`,
-      `fields ${IGDB_GAME_FIELDS};`,
-    ].join(' ');
+    const body = [`where id = ${igdbId};`, `fields ${IGDB_GAME_FIELDS};`].join(' ');
 
     const data = await this.postApi<IgdbGame[]>('/games', body, token);
 
@@ -388,10 +419,7 @@ export class IgdbAdapter extends BaseAdapter implements CatalogSource {
    * per game here — that is N+1 work for the ingestion job, which resolves
    * companies only for accepted records.
    */
-  async enumerateByPlatform(
-    platformId: number,
-    options: CatalogPageOptions,
-  ): Promise<CatalogPage> {
+  async enumerateByPlatform(platformId: number, options: CatalogPageOptions): Promise<CatalogPage> {
     if (!Number.isInteger(platformId) || platformId <= 0) {
       throw new Error(
         `IgdbAdapter.enumerateByPlatform: platformId must be a positive integer (got ${platformId})`,
@@ -489,6 +517,7 @@ export class IgdbAdapter extends BaseAdapter implements CatalogSource {
   }
 
   private async postApi<T>(endpoint: string, body: string, token: string): Promise<T> {
+    await this.rateLimiter?.acquire();
     const url = `${this.baseUrl}${endpoint}`;
     const startTime = Date.now();
 
@@ -593,7 +622,9 @@ export class IgdbAdapter extends BaseAdapter implements CatalogSource {
       // no company data rather than fabricated roles.
       const involvements = await this.postApi<IgdbInvolvement[]>(
         '/involved_companies',
-        [`where id = (${involvementIds.join(',')});`, 'fields company,developer,publisher;'].join(' '),
+        [`where id = (${involvementIds.join(',')});`, 'fields company,developer,publisher;'].join(
+          ' ',
+        ),
         token,
       );
 
@@ -640,15 +671,23 @@ export class IgdbAdapter extends BaseAdapter implements CatalogSource {
     // Prefer authoritative upstream platform names from expansion; the
     // static map is only a fallback for bare numeric IDs. An expanded
     // name is never collapsed (e.g. PlayStation 2 stays PlayStation 2).
+    // The numeric provider id travels alongside its name so downstream
+    // stages can record an exact external identity. Entries without a
+    // usable name are dropped entirely — no identifier is invented.
     const platforms = (game.platforms ?? [])
       .map((platform) => {
         if (typeof platform === 'object' && platform !== null) {
           const name = platform.name?.trim();
-          return name && name.length > 0 ? name : undefined;
+          return name && name.length > 0
+            ? { name, source: 'igdb', sourceId: platform.id }
+            : undefined;
         }
-        return IGDB_PLATFORM_MAP[platform];
+        const name = IGDB_PLATFORM_MAP[platform];
+        return name && name.length > 0 ? { name, source: 'igdb', sourceId: platform } : undefined;
       })
-      .filter((name): name is string => typeof name === 'string' && name.length > 0);
+      .filter(
+        (entry): entry is { name: string; source: string; sourceId: number } => entry !== undefined,
+      );
 
     const genres = (game.genres ?? [])
       .map((id) => IGDB_GENRE_MAP[id])
@@ -707,7 +746,7 @@ export class IgdbAdapter extends BaseAdapter implements CatalogSource {
         {
           category: 'GAME',
           confidence: 0.85,
-          evidence: `IGDB main game (category=0)`,
+          evidence: `IGDB game (game_type=${game.game_type ?? 'unknown'})`,
         },
       ],
       metadata: {

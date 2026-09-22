@@ -22,6 +22,14 @@ const envSchema = z.object({
     .default('false'),
   CATALOG_SYNC_INTERVAL_MS: z.coerce.number().int().positive().default(86_400_000),
   CATALOG_SYNC_LOOKBACK_DAYS: z.coerce.number().int().positive().default(30),
+  ADMIN_API_TOKEN: z
+    .string()
+    .optional()
+    .refine((val) => val === undefined || val.length >= 16, {
+      message: 'ADMIN_API_TOKEN must be at least 16 characters when set',
+    }),
+  ADMIN_USERNAME: z.string().min(1).default('admin'),
+  ADMIN_PASSWORD_HASH: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

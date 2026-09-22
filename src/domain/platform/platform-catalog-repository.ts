@@ -39,4 +39,6 @@ export interface PlatformCatalogRepository {
   findByCompany(company: string): Promise<readonly PlatformCatalogEntryWithGameCount[]>;
 
   upsert(entry: PlatformCatalogEntry): Promise<void>;
+
+  bulkUpsert(entries: readonly PlatformCatalogEntry[]): Promise<{ inserted: number; updated: number; errors: number }>;
 }

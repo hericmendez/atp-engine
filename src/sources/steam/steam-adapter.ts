@@ -1,6 +1,7 @@
 import { BaseAdapter, type BaseAdapterConfig } from '../base-adapter.js';
 import type { SearchOptions, SearchResult } from '../source-adapter.js';
 import type { RawCandidate } from '../raw-candidate.js';
+import { logger } from '../../infrastructure/logger/logger.js';
 
 interface SteamAppListResponse {
   applist: {
@@ -65,6 +66,12 @@ async function parallelMap<T, R>(
 
 export class SteamAdapter extends BaseAdapter {
   private appListCache: Map<number, string> | null = null;
+  private appListCacheExpiry: number | null = null;
+  private appListNegativeUntil: number | null = null;
+  private appListFetchPromise: Promise<Map<number, string>> | null = null;
+
+  private static readonly APP_LIST_TTL_MS = 60 * 60 * 1000; // 1h successful
+  private static readonly APP_LIST_NEGATIVE_TTL_MS = 60 * 60 * 1000; // 1h failure
 
   constructor(config: SteamAdapterConfig) {
     super(
@@ -159,25 +166,67 @@ export class SteamAdapter extends BaseAdapter {
     };
   }
 
+  /** For tests: clear in-memory applist cache. */
+  clearAppListCache(): void {
+    this.appListCache = null;
+    this.appListCacheExpiry = null;
+    this.appListNegativeUntil = null;
+    this.appListFetchPromise = null;
+  }
+
   private async getAppList(): Promise<Map<number, string>> {
-    if (this.appListCache) {
+    const now = Date.now();
+
+    // Successful cache hit
+    if (this.appListCache && this.appListCacheExpiry && now < this.appListCacheExpiry) {
       return this.appListCache;
     }
+    // Legacy non-TTL cache (backwards compat with existing tests that mock)
+    if (this.appListCache && this.appListCacheExpiry === null && this.appListNegativeUntil === null) {
+      return this.appListCache;
+    }
+    // Negative cache: recent failure, return empty without network
+    if (this.appListNegativeUntil && now < this.appListNegativeUntil) {
+      return this.appListCache ?? new Map();
+    }
+    // Deduplicate concurrent fetches
+    if (this.appListFetchPromise) {
+      return this.appListFetchPromise;
+    }
 
-    try {
-      const url = 'https://store.steampowered.com/api/applist';
-      const response = await this.fetchJson<SteamAppListResponse>(url);
-
-      this.appListCache = new Map();
-      for (const app of response.applist.apps) {
-        this.appListCache.set(app.appid, app.name);
+    const url = 'https://store.steampowered.com/api/applist';
+    this.appListFetchPromise = (async () => {
+      try {
+        const response = await this.fetchJson<SteamAppListResponse>(url);
+        // Steam now returns 403 with {"success":false} for this endpoint; treat missing applist as failure
+        if (!response?.applist?.apps || !Array.isArray(response.applist.apps)) {
+          throw new Error('Steam applist: missing applist.apps in response');
+        }
+        const map = new Map<number, string>();
+        for (const app of response.applist.apps) {
+          map.set(app.appid, app.name);
+        }
+        this.appListCache = map;
+        this.appListCacheExpiry = Date.now() + SteamAdapter.APP_LIST_TTL_MS;
+        this.appListNegativeUntil = null;
+        return map;
+      } catch (error) {
+        // Controlled failure: cache empty for NEGATIVE_TTL, do not retry per-game
+        // This prevents 1 request per game when endpoint is blocked (403) and saves ~200ms/game
+        logger.warn('steam.applist.unavailable', {
+          error: error instanceof Error ? error.message : String(error),
+          ttlMs: SteamAdapter.APP_LIST_NEGATIVE_TTL_MS,
+        });
+        this.appListCache = new Map();
+        this.appListCacheExpiry = Date.now() + SteamAdapter.APP_LIST_NEGATIVE_TTL_MS;
+        this.appListNegativeUntil = Date.now() + SteamAdapter.APP_LIST_NEGATIVE_TTL_MS;
+        return this.appListCache;
+      } finally {
+        this.appListFetchPromise = null;
       }
+    })();
 
-      return this.appListCache;
-    } catch {
-      this.appListCache = new Map();
-      return this.appListCache;
-    }
+    return this.appListFetchPromise;
   }
 
   private extractPlatforms(platforms?: {

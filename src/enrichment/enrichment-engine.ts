@@ -130,6 +130,7 @@ export function enrichGame(
   let enriched = game;
 
   enriched = enrichTitles(enriched, observations, changes, conflicts);
+  enriched = enrichDescription(enriched, observations, changes);
   enriched = enrichOrganizations(enriched, observations, changes, conflicts, 'developer');
   enriched = enrichOrganizations(enriched, observations, changes, conflicts, 'publisher');
   enriched = enrichGenres(enriched, observations, changes, conflicts);
@@ -157,6 +158,66 @@ export function enrichGame(
     conflicts,
     completeness,
   };
+}
+
+/**
+ * Deterministic description source precedence: IGDB first, then
+ * Steam, then Wikipedia. Order-independent: the priority list — not
+ * observation arrival order, network timing, or adapter sequence —
+ * decides. Rationale: IGDB summaries are curated catalog metadata;
+ * Steam descriptions are publisher-supplied; Wikipedia snippets are
+ * incidental search text.
+ */
+const DESCRIPTION_SOURCE_PRECEDENCE: readonly string[] = ['igdb', 'steam', 'wikipedia'];
+
+export function selectDescriptionByPriority(
+  observations: readonly {
+    readonly source: string;
+    readonly candidate: { readonly description: string | null };
+  }[],
+): { description: string; source: string } | null {
+  const bySource = new Map<string, string>();
+  for (const obs of observations) {
+    const text = obs.candidate.description?.trim() ?? '';
+    if (text.length === 0) continue;
+    if (!bySource.has(obs.source)) {
+      bySource.set(obs.source, text);
+    }
+  }
+  for (const source of DESCRIPTION_SOURCE_PRECEDENCE) {
+    const description = bySource.get(source);
+    if (description !== undefined) {
+      return { description, source };
+    }
+  }
+  return null;
+}
+
+function enrichDescription(
+  game: Game,
+  observations: readonly DiscoverySourceObservation[],
+  changes: EnrichmentChange[],
+): Game {
+  // Fill-only: an existing canonical description is never replaced.
+  // The nullish check also tolerates hand-built objects missing the
+  // field (undefined), treating them like null.
+  const current = game.description?.trim() ?? '';
+  if (current.length > 0) {
+    return game;
+  }
+  const selected = selectDescriptionByPriority(observations);
+  if (!selected) {
+    return game;
+  }
+  changes.push({
+    fieldType: 'description',
+    changeType: 'added',
+    source: selected.source,
+    reason: `Added description from ${selected.source}`,
+    previousValue: null,
+    newValue: selected.description,
+  });
+  return { ...game, description: selected.description };
 }
 
 function enrichTitles(

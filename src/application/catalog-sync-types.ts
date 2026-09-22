@@ -63,9 +63,30 @@ export interface ResolvedPlatform {
 export interface ResumableEnumerationOptions {
   readonly pageSize: number;
   readonly dryRun?: boolean;
+  /**
+   * Maximum number of candidates to process in this run (partial-run
+   * support for controlled validation: 10 → 100 → 1000 → full).
+   * The checkpoint still advances per fully-succeeded page, so a later
+   * run without (or with a larger) limit resumes exactly where this
+   * one stopped. A limit-reached run persists RUNNING, never COMPLETED.
+   */
+  readonly limit?: number;
+  /**
+   * Pause between fully-succeeded pages (IGDB rate-limit courtesy).
+   * Sleeps only when another page will follow; never delays the final
+   * checkpoint. No retries are attempted anywhere — a failing page
+   * pins the checkpoint to FAILED and rethrows.
+   */
+  readonly delayMs?: number;
+  /**
+   * Starting offset for scopes with no checkpoint row (controlled
+   * slices via CLI --offset). A stored checkpoint always wins over
+   * this value on resume — offsets are never silently reprocessed.
+   */
+  readonly initialOffset?: number;
 }
 
-export type ResumableEnumerationStatus = 'COMPLETED' | 'FAILED';
+export type ResumableEnumerationStatus = 'COMPLETED' | 'FAILED' | 'LIMIT_REACHED';
 
 /**
  * Run summary. Counters are cumulative across the whole scope when a
@@ -86,6 +107,16 @@ export interface ResumableEnumerationResult {
   readonly accepted: number;
   readonly quarantined: number;
   readonly errorCount: number;
+  /**
+   * Run-scoped split of accepted settlements (created = new canonical
+   * games, updated = enriched/port-folded, unchanged = already current).
+   * Unlike processed/accepted/quarantined above — which accumulate across
+   * runs while a checkpoint row exists — these always describe only the
+   * pages completed by this run, so per-platform reports add up exactly.
+   */
+  readonly newGames: number;
+  readonly existingGames: number;
+  readonly updatedGames: number;
   /** Pages fully completed by this run. */
   readonly pages: number;
   readonly dryRun: boolean;

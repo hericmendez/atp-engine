@@ -86,8 +86,14 @@ export class WikipediaAdapter extends BaseAdapter {
     const url = `${this.baseUrl}?${params.toString()}`;
     const response = await this.fetchJson<WikipediaSearchResponse>(url);
 
+    // Absent query.search is a malformed upstream response, not a zero-hit:
+    // MediaWiki always returns the search array (possibly empty) on success.
     if (!response.query?.search) {
-      return { candidates: [], hasMore: false };
+      throw new SourceError(
+        this.source,
+        'invalid_response',
+        'Wikipedia search response missing query.search',
+      );
     }
 
     const searchResults = response.query.search;
@@ -391,6 +397,14 @@ export class WikipediaAdapter extends BaseAdapter {
         return this.extractTemplateValues(inner);
       });
     }
+
+    // Unbalanced leftovers can never be trusted as metadata. Field
+    // values truncated mid-template (e.g. `{{Hlist` with no closing
+    // `}}`, from single-line infobox extraction) survive the balanced
+    // loop above untouched and would otherwise escape verbatim into
+    // normalized platforms/developers/publishers. Drop the fragment
+    // instead of guessing its values.
+    cleaned = cleaned.replace(/\{\{[^{}]*$/g, '');
 
     cleaned = cleaned.replace(/'''?/g, '');
     cleaned = cleaned.replace(/<ref[^>]*>.*?<\/ref>/gi, '');

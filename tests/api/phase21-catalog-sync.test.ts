@@ -28,6 +28,8 @@ import { QuarantineService } from '../../src/application/quarantine-service.js';
 import type { CatalogSyncHistoryRepository } from '../../src/application/catalog-sync-history-repository.js';
 import type { QuarantineRepository } from '../../src/application/quarantine-repository.js';
 import type { QuarantinedCandidate } from '../../src/application/quarantine-types.js';
+import { loadConfig, resetConfig } from '../../src/infrastructure/config/config.js';
+const ADMIN_TOKEN = 'test-admin-token-1234567890123456';
 
 function createTestGame(overrides: Partial<Game> = {}): Game {
   const id = overrides.id ?? createGameId('test-game-1');
@@ -725,7 +727,7 @@ describe('POST /api/v1/catalog/sync', () => {
   let mockCatalogSyncService: CatalogSyncService;
 
   beforeEach(async () => {
-    vi.clearAllMocks();
+    resetConfig(); loadConfig({ ADMIN_API_TOKEN: ADMIN_TOKEN }); vi.clearAllMocks();
 
     mockCatalogSyncService = {
       sync: vi.fn(),
@@ -830,7 +832,7 @@ describe('POST /api/v1/catalog/sync', () => {
     });
 
     const res = await request(app)
-      .post('/api/v1/catalog/sync')
+      .post('/api/v1/catalog/sync').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
       .send({
         platforms: ['nintendo-switch'],
         from: '2025-01-01',
@@ -846,7 +848,7 @@ describe('POST /api/v1/catalog/sync', () => {
 
   it('returns validation error when neither platforms nor activeOnly', async () => {
     const request = (await import('supertest')).default;
-    const res = await request(app).post('/api/v1/catalog/sync').send({
+    const res = await request(app).post('/api/v1/catalog/sync').set('Authorization', `Bearer ${ADMIN_TOKEN}`).send({
       from: '2025-01-01',
       to: '2025-12-31',
     });
@@ -871,7 +873,7 @@ describe('POST /api/v1/catalog/sync', () => {
       durationMs: 0,
     });
 
-    const res = await request(app).post('/api/v1/catalog/sync').send({
+    const res = await request(app).post('/api/v1/catalog/sync').set('Authorization', `Bearer ${ADMIN_TOKEN}`).send({
       activeOnly: true,
       from: '2025-01-01',
       to: '2025-12-31',
@@ -890,7 +892,7 @@ describe('POST /api/v1/catalog/sync', () => {
   it('returns 400 for invalid date', async () => {
     const request = (await import('supertest')).default;
     const res = await request(app)
-      .post('/api/v1/catalog/sync')
+      .post('/api/v1/catalog/sync').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
       .send({
         platforms: ['nintendo-switch'],
         from: 'not-a-date',
@@ -903,7 +905,7 @@ describe('POST /api/v1/catalog/sync', () => {
   it('returns 400 when from date is after to date', async () => {
     const request = (await import('supertest')).default;
     const res = await request(app)
-      .post('/api/v1/catalog/sync')
+      .post('/api/v1/catalog/sync').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
       .send({
         platforms: ['nintendo-switch'],
         from: '2025-12-31',
@@ -931,7 +933,7 @@ describe('POST /api/v1/catalog/sync', () => {
     });
 
     await request(app)
-      .post('/api/v1/catalog/sync')
+      .post('/api/v1/catalog/sync').set('Authorization', `Bearer ${ADMIN_TOKEN}`)
       .send({
         platforms: ['nintendo-switch'],
         from: '2025-01-01',

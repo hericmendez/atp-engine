@@ -100,11 +100,13 @@ describe('WikipediaAdapter', () => {
       expect(result.hasMore).toBe(false);
     });
 
-    it('returns empty result when query has no search key', async () => {
+    it('throws invalid_response SourceError when query has no search key', async () => {
       mockFetch({ query: {} });
 
-      const result = await adapter.search('test');
-      expect(result.candidates).toEqual([]);
+      const error = await adapter.search('test').catch((e) => e);
+      expect(error).toBeInstanceOf(SourceError);
+      expect(error.source).toBe('wikipedia');
+      expect(error.errorType).toBe('invalid_response');
     });
 
     it('calculates hasMore based on offset and limit', async () => {
@@ -354,6 +356,115 @@ describe('WikipediaAdapter', () => {
       expect(result).not.toBeNull();
       expect(result!.publishers).toContain('Bandai Namco Entertainment');
       expect(result!.developers).toContain('FromSoftware');
+    });
+
+    it('resolves a simple template to its values', async () => {
+      mockFetchSequence([
+        titleLookupResponse('Simple Game'),
+        {
+          parse: {
+            pageid: 50003,
+            title: 'Simple Game',
+            wikitext: {
+              '*':
+                '{{Infobox video game\n' +
+                '| title = Simple Game\n' +
+                '| developer = {{plain|Test Dev}}\n' +
+                '}}',
+            },
+            categories: [],
+          },
+        },
+        { query: { pages: {} } },
+      ]);
+
+      const result = await adapter.getById('50003');
+      expect(result).not.toBeNull();
+      expect(result!.developers).toEqual(['Test Dev']);
+    });
+
+    it('resolves nested templates innermost-first', async () => {
+      mockFetchSequence([
+        titleLookupResponse('Nested Game'),
+        {
+          parse: {
+            pageid: 50004,
+            title: 'Nested Game',
+            wikitext: {
+              '*':
+                '{{Infobox video game\n' +
+                '| title = Nested Game\n' +
+                '| developer = {{outer|pre={{inner|Test Dev}}}}\n' +
+                '}}',
+            },
+            categories: [],
+          },
+        },
+        { query: { pages: {} } },
+      ]);
+
+      const result = await adapter.getById('50004');
+      expect(result).not.toBeNull();
+      expect(result!.developers).toEqual(['Test Dev']);
+    });
+
+    it('drops a truncated template fragment instead of persisting it', async () => {
+      // Evidenced shape from legacy data: a field value cut mid-template
+      // (`{{Hlist` with no closing braces) reached normalized metadata
+      // verbatim. Unbalanced leftovers are untrustworthy by construction
+      // and must be removed, never stored.
+      mockFetchSequence([
+        titleLookupResponse('Truncated Game'),
+        {
+          parse: {
+            pageid: 50005,
+            title: 'Truncated Game',
+            wikitext: {
+              '*':
+                '{{Infobox video game\n' +
+                '| title = Truncated Game\n' +
+                '| platforms = {{Hlist\n' +
+                '| developer = [[Test Dev]]\n' +
+                '}}',
+            },
+            categories: [],
+          },
+        },
+        { query: { pages: {} } },
+      ]);
+
+      const result = await adapter.getById('50005');
+      expect(result).not.toBeNull();
+      expect(result!.platforms ?? []).toEqual([]);
+      expect(
+        (result!.platforms ?? []).some((p) => p.includes('{{') || p.includes('Hlist')),
+      ).toBe(false);
+      expect(result!.developers).toEqual(['Test Dev']);
+    });
+
+    it('resolves triply nested templates', async () => {
+      mockFetchSequence([
+        titleLookupResponse('Deep Game'),
+        {
+          parse: {
+            pageid: 50006,
+            title: 'Deep Game',
+            wikitext: {
+              '*':
+                '{{Infobox video game\n' +
+                '| title = Deep Game\n' +
+                '| developer = {{a|x={{b|y={{c|z}}}}}}\n' +
+                '}}',
+            },
+            categories: [],
+          },
+        },
+        { query: { pages: {} } },
+      ]);
+
+      const result = await adapter.getById('50006');
+      expect(result).not.toBeNull();
+      expect(result!.developers).toEqual(['z']);
     });
   });
 });

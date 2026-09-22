@@ -585,6 +585,15 @@ describe('Phase 17 — Platform Catalog & Advanced Game Queries', () => {
         expect(names).toEqual(sorted);
       });
 
+      it('sorts by name descending', async () => {
+        const res = await request(app).get('/api/v1/platforms/summary?sort=name&order=desc');
+
+        expect(res.status).toBe(200);
+        const names = res.body.data.map((p: { name: string }) => p.name);
+        const sorted = [...names].sort((a: string, b: string) => b.localeCompare(a));
+        expect(names).toEqual(sorted);
+      });
+
       it('sorts by releaseYear descending', async () => {
         const res = await request(app).get('/api/v1/platforms/summary?sort=releaseYear&order=desc');
 

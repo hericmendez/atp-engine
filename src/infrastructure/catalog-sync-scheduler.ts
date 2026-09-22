@@ -176,6 +176,31 @@ export class IntervalCatalogSyncScheduler implements CatalogSyncScheduler {
 
       return result;
     } catch (error) {
+      const isConflict =
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        (error as { code: string }).code === 'CONFLICT';
+      if (isConflict) {
+        logger.warn('catalog.sync.lock.busy', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        return {
+          status: 'failed',
+          platforms: [],
+          totals: {
+            candidatesFound: 0,
+            newGames: 0,
+            existingGames: 0,
+            updatedGames: 0,
+            rejected: 0,
+            errors: 0,
+          },
+          dryRun: false,
+          durationMs: Date.now() - startTime,
+        };
+      }
+
       const errorResult: SyncResult = {
         status: 'failed',
         platforms: [],

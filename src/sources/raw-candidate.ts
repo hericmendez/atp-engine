@@ -9,6 +9,21 @@ export interface RawClassificationHint {
   readonly evidence: string;
 }
 
+/**
+ * One platform entry of a raw candidate. Plain strings keep working
+ * for sources without platform identities (Wikipedia, Steam, manual):
+ * only the name travels. Object form additionally carries the
+ * provider-scoped identity that produced the name — today only the
+ * IGDB adapter emits it (`source: 'igdb'`, numeric provider id as
+ * string). Identity is co-located with its name: no positional or
+ * fuzzy correlation is ever needed.
+ */
+export interface RawPlatform {
+  readonly name: string;
+  readonly source?: string;
+  readonly sourceId?: string | number;
+}
+
 export interface RawCandidate {
   readonly source: string;
   readonly sourceId: string;
@@ -16,7 +31,7 @@ export interface RawCandidate {
   readonly title?: string;
   readonly alternateTitles?: readonly string[];
 
-  readonly platforms?: readonly string[];
+  readonly platforms?: readonly (string | RawPlatform)[];
   readonly regions?: readonly string[];
 
   readonly developers?: readonly string[];

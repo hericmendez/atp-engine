@@ -1,0 +1,1086 @@
+{
+  "info": {
+    "name": "ATP Engine",
+    "description": "API collection for ATP Engine - Game Catalog API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Service health. No parameters. Returns status (ok, degraded when Mongo is disconnected, error), timestamp, version, dependency states (database, ai) and uptime."
+          },
+          "response": [
+            {
+              "name": "Healthy",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"timestamp\": \"2025-01-01T00:00:00.000Z\",\n  \"version\": \"0.1.0\",\n  \"dependencies\": {\n    \"database\": \"connected\",\n    \"ai\": \"not_configured\"\n  },\n  \"uptime\": 123.4\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Games",
+      "item": [
+        {
+          "name": "List Games",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number. Optional, integer >= 1, default 1."
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Page size. Optional, integer 1-100, default 20."
+                },
+                {
+                  "key": "sort",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Sort field. Game endpoints: title, createdAt, updatedAt, completeness, releaseDate, name. Platform summary: name, releaseYear, gameCount. Sync history: startedAt, completedAt, status, trigger."
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "disabled": true,
+                  "description": "Sort direction asc/desc. Default desc (games, sync history) / asc (platforms)."
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Free-text match against titles, developers and publishers (comma-separated values not applicable)."
+                },
+                {
+                  "key": "title",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filter by game title (partial match)."
+                },
+                {
+                  "key": "platform",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filter by platform name; accepts comma-separated list."
+                },
+                {
+                  "key": "platformFamily",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filter by platform family."
+                },
+                {
+                  "key": "developer",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filter by developer; accepts comma-separated list."
+                },
+                {
+                  "key": "publisher",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filter by publisher; accepts comma-separated list."
+                },
+                {
+                  "key": "genre",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filter by genre; accepts comma-separated list."
+                },
+                {
+                  "key": "classification",
+                  "value": "",
+                  "disabled": true,
+                  "description": "GAME, DLC, EXPANSION, MOVIE, TV_SHOW, ANIME, SOUNDTRACK, BOOK, HARDWARE, PROMOTIONAL, CHARACTER, FRANCHISE, PERSON, EVENT, UNKNOWN."
+                },
+                {
+                  "key": "completeness",
+                  "value": "",
+                  "disabled": true,
+                  "description": "NOT_FOUND, FOUND_PARTIAL, FOUND_SUFFICIENT, FOUND_COMPLETE."
+                },
+                {
+                  "key": "releaseYear",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Exact release year 1950-2100."
+                },
+                {
+                  "key": "releaseYearFrom",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Release-year range start 1950-2100."
+                },
+                {
+                  "key": "releaseYearTo",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Release-year range end 1950-2100."
+                }
+              ]
+            },
+            "description": "List canonical games from MongoDB (pure database read, never contacts providers). All filters optional and composable; platform/developer/publisher/genre accept comma-separated lists. sort fields: title, createdAt, updatedAt, completeness, releaseDate, name (default order desc)."
+          },
+          "response": [
+            {
+              "name": "Game list",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"atp-igdb-12345\",\n      \"titles\": [\n        {\n          \"value\": \"Example Game\",\n          \"type\": \"primary\"\n        }\n      ],\n      \"releases\": [],\n      \"developers\": [\n        {\n          \"name\": \"Example Studio\"\n        }\n      ],\n      \"publishers\": [\n        {\n          \"name\": \"Example Publisher\"\n        }\n      ],\n      \"genres\": [\n        {\n          \"name\": \"Action\"\n        }\n      ],\n      \"externalIdentifiers\": [\n        {\n          \"source\": \"igdb\",\n          \"id\": \"12345\"\n        }\n      ],\n      \"relationships\": [],\n      \"evidence\": [\n        {\n          \"source\": \"igdb\",\n          \"externalId\": \"12345\",\n          \"retrievedAt\": \"2025-01-01T00:00:00.000Z\",\n          \"rawTitle\": \"Example Game\"\n        }\n      ],\n      \"classification\": \"GAME\",\n      \"completeness\": \"FOUND_SUFFICIENT\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 1,\n    \"totalPages\": 1\n  },\n  \"origin\": \"database\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Search Games",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/search?q= mega man",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": " mega man",
+                  "description": "Search text. Required, non-empty (covers: max 200 chars)."
+                },
+                {
+                  "key": "source",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Accepted by validation but currently not forwarded to the game search service (unused). On covers/search it optionally restricts to one provider source."
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true,
+                  "description": "Page number. Optional, integer >= 1, default 1."
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true,
+                  "description": "Page size. Optional, integer 1-100, default 20."
+                },
+                {
+                  "key": "sort",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Sort field. Game endpoints: title, createdAt, updatedAt, completeness, releaseDate, name. Platform summary: name, releaseYear, gameCount. Sync history: startedAt, completedAt, status, trigger."
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "disabled": true,
+                  "description": "Sort direction asc/desc. Default desc (games, sync history) / asc (platforms)."
+                },
+                {
+                  "key": "discover",
+                  "value": "true",
+                  "disabled": true,
+                  "description": "Opt-in live discovery on a miss. When discovery runs, provider failures surface as a top-level errors[] (sanitized, no upstream URLs)."
+                }
+              ]
+            },
+            "description": "Database-first game search. 1) DB hit returns origin database without contacting providers. 2) DB miss without discover returns empty origin database. 3) DB miss with discover=true runs provider discovery: persisted candidates return origin database; nothing persistable returns origin scraper. Validated candidates are persisted; rejected ones go to quarantine. When discovery runs, provider failures appear as a sanitized top-level errors[] (source, errorType, message, retryable); errors: [] means discovery ran cleanly. HTTP stays 200 for partial or total provider failure. The errors field is absent unless discovery ran."
+          },
+          "response": [
+            {
+              "name": "Database hit",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"atp-igdb-12345\",\n      \"titles\": [\n        {\n          \"value\": \"Example Game\",\n          \"type\": \"primary\"\n        }\n      ],\n      \"releases\": [],\n      \"developers\": [\n        {\n          \"name\": \"Example Studio\"\n        }\n      ],\n      \"publishers\": [\n        {\n          \"name\": \"Example Publisher\"\n        }\n      ],\n      \"genres\": [\n        {\n          \"name\": \"Action\"\n        }\n      ],\n      \"externalIdentifiers\": [\n        {\n          \"source\": \"igdb\",\n          \"id\": \"12345\"\n        }\n      ],\n      \"relationships\": [],\n      \"evidence\": [\n        {\n          \"source\": \"igdb\",\n          \"externalId\": \"12345\",\n          \"retrievedAt\": \"2025-01-01T00:00:00.000Z\",\n          \"rawTitle\": \"Example Game\"\n        }\n      ],\n      \"classification\": \"GAME\",\n      \"completeness\": \"FOUND_SUFFICIENT\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 1,\n    \"totalPages\": 1\n  },\n  \"origin\": \"database\"\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "Database miss without discover",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 0,\n    \"totalPages\": 1\n  },\n  \"origin\": \"database\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Search Games — discovery enabled",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/search?q= mega man",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "zelda",
+                  "description": "Search text. Required, non-empty (covers: max 200 chars)."
+                },
+                {
+                  "key": "source",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Accepted by validation but currently not forwarded to the game search service (unused). On covers/search it optionally restricts to one provider source."
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true,
+                  "description": "Page number. Optional, integer >= 1, default 1."
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "disabled": true,
+                  "description": "Page size. Optional, integer 1-100, default 20."
+                },
+                {
+                  "key": "sort",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Sort field. Game endpoints: title, createdAt, updatedAt, completeness, releaseDate, name. Platform summary: name, releaseYear, gameCount. Sync history: startedAt, completedAt, status, trigger."
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "disabled": true,
+                  "description": "Sort direction asc/desc. Default desc (games, sync history) / asc (platforms)."
+                },
+                {
+                  "key": "discover",
+                  "value": "true",
+                  "disabled": false,
+                  "description": "Opt-in live discovery on a miss. When discovery runs, provider failures surface as a top-level errors[] (sanitized, no upstream URLs)."
+                }
+              ]
+            },
+            "description": "Same endpoint with discover=true. On a catalog miss, runs provider discovery: validated candidates are persisted (origin database), rejections go to quarantine, and provider failures appear as sanitized top-level errors[] (HTTP stays 200). errors: [] means discovery ran cleanly."
+          },
+          "response": [
+            {
+              "name": "Clean discovery, nothing persistable",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 0,\n    \"totalPages\": 1\n  },\n  \"origin\": \"scraper\",\n  \"errors\": []\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "Partial provider failure with results",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"atp-igdb-12345\",\n      \"titles\": [\n        {\n          \"value\": \"Example Game\",\n          \"type\": \"primary\"\n        }\n      ],\n      \"releases\": [],\n      \"developers\": [\n        {\n          \"name\": \"Example Studio\"\n        }\n      ],\n      \"publishers\": [\n        {\n          \"name\": \"Example Publisher\"\n        }\n      ],\n      \"genres\": [\n        {\n          \"name\": \"Action\"\n        }\n      ],\n      \"externalIdentifiers\": [\n        {\n          \"source\": \"igdb\",\n          \"id\": \"12345\"\n        }\n      ],\n      \"relationships\": [],\n      \"evidence\": [\n        {\n          \"source\": \"igdb\",\n          \"externalId\": \"12345\",\n          \"retrievedAt\": \"2025-01-01T00:00:00.000Z\",\n          \"rawTitle\": \"Example Game\"\n        }\n      ],\n      \"classification\": \"GAME\",\n      \"completeness\": \"FOUND_SUFFICIENT\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 1,\n    \"totalPages\": 1\n  },\n  \"origin\": \"database\",\n  \"errors\": [\n    {\n      \"source\": \"steam\",\n      \"errorType\": \"invalid_response\",\n      \"message\": \"HTTP 403:\",\n      \"retryable\": true\n    }\n  ]\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Search Games — paginated discovery",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/search?q= mega man",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "zelda",
+                  "description": "Search text. Required, non-empty (covers: max 200 chars)."
+                },
+                {
+                  "key": "source",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Accepted by validation but currently not forwarded to the game search service (unused). On covers/search it optionally restricts to one provider source."
+                },
+                {
+                  "key": "page",
+                  "value": "2",
+                  "disabled": false,
+                  "description": "Page number. Optional, integer >= 1, default 1."
+                },
+                {
+                  "key": "limit",
+                  "value": "5",
+                  "disabled": false,
+                  "description": "Page size. Optional, integer 1-100, default 20."
+                },
+                {
+                  "key": "sort",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Sort field. Game endpoints: title, createdAt, updatedAt, completeness, releaseDate, name. Platform summary: name, releaseYear, gameCount. Sync history: startedAt, completedAt, status, trigger."
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "disabled": true,
+                  "description": "Sort direction asc/desc. Default desc (games, sync history) / asc (platforms)."
+                },
+                {
+                  "key": "discover",
+                  "value": "true",
+                  "disabled": false,
+                  "description": "Opt-in live discovery on a miss. When discovery runs, provider failures surface as a top-level errors[] (sanitized, no upstream URLs)."
+                }
+              ]
+            },
+            "description": "Discovery with explicit pagination (page/limit apply to persisted results). Demonstrates the empty+error case: all providers failed, nothing persisted."
+          },
+          "response": [
+            {
+              "name": "Empty result with provider error",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [],\n  \"pagination\": {\n    \"page\": 2,\n    \"limit\": 5,\n    \"total\": 0,\n    \"totalPages\": 1\n  },\n  \"origin\": \"scraper\",\n  \"errors\": [\n    {\n      \"source\": \"wikipedia\",\n      \"errorType\": \"timeout\",\n      \"message\": \"Request timed out after 5000ms\",\n      \"retryable\": true\n    }\n  ]\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Get Game by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "game_id_here"
+                }
+              ]
+            },
+            "description": "Get one canonical game by its ATP id (e.g. atp-igdb-100). 404 ATP_GAME_NOT_FOUND when unknown."
+          },
+          "response": [
+            {
+              "name": "Game found",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"atp-igdb-12345\",\n    \"titles\": [\n      {\n        \"value\": \"Example Game\",\n        \"type\": \"primary\"\n      }\n    ],\n    \"releases\": [],\n    \"developers\": [\n      {\n        \"name\": \"Example Studio\"\n      }\n    ],\n    \"publishers\": [\n      {\n        \"name\": \"Example Publisher\"\n      }\n    ],\n    \"genres\": [\n      {\n        \"name\": \"Action\"\n      }\n    ],\n    \"externalIdentifiers\": [\n      {\n        \"source\": \"igdb\",\n        \"id\": \"12345\"\n      }\n    ],\n    \"relationships\": [],\n    \"evidence\": [\n      {\n        \"source\": \"igdb\",\n        \"externalId\": \"12345\",\n        \"retrievedAt\": \"2025-01-01T00:00:00.000Z\",\n        \"rawTitle\": \"Example Game\"\n      }\n    ],\n    \"classification\": \"GAME\",\n    \"completeness\": \"FOUND_SUFFICIENT\"\n  },\n  \"origin\": \"database\"\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "Not found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Game with ID atp-igdb-999 not found\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Covers",
+      "item": [
+        {
+          "name": "Search Covers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/covers/search?q= mega man&type=cover&limit=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "covers",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": " mega man",
+                  "description": "Search text. Required, non-empty (covers: max 200 chars)."
+                },
+                {
+                  "key": "type",
+                  "value": "cover",
+                  "description": "Cover search type: cover (default), logo, all."
+                },
+                {
+                  "key": "limit",
+                  "value": "1",
+                  "description": "Max candidates. Optional, integer 1-9, default 1."
+                },
+                {
+                  "key": "source",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Accepted by validation but currently not forwarded to the game search service (unused). On covers/search it optionally restricts to one provider source."
+                }
+              ]
+            },
+            "description": "Cover discovery across cover-capable providers (Wikipedia cover discovery, Steam). Returns selected best candidate plus ranked candidates and a data.errors array surfacing provider failures. Empty candidates with empty errors means no eligible cover was found."
+          },
+          "response": [
+            {
+              "name": "Cover found",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"query\": \"example game\",\n    \"type\": \"cover\",\n    \"limit\": 1,\n    \"selected\": {\n      \"url\": \"https://en.wikipedia.org/wiki/Special:FilePath/Example.jpg\",\n      \"source\": \"wikipedia\",\n      \"sourceId\": \"12345\",\n      \"width\": null,\n      \"height\": null,\n      \"type\": \"unknown\"\n    },\n    \"candidates\": [\n      {\n        \"url\": \"https://en.wikipedia.org/wiki/Special:FilePath/Example.jpg\",\n        \"source\": \"wikipedia\",\n        \"sourceId\": \"12345\",\n        \"width\": null,\n        \"height\": null,\n        \"type\": \"unknown\",\n        \"ranking\": {\n          \"sourceScore\": 0.8,\n          \"typeScore\": 0.6,\n          \"qualityScore\": 0.5,\n          \"aspectRatioScore\": 0.5,\n          \"relevanceScore\": 1,\n          \"totalScore\": 0.775\n        }\n      }\n    ],\n    \"errors\": []\n  },\n  \"origin\": \"scraper\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Get Game Cover",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/:id/cover",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                ":id",
+                "cover"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "game_id_here"
+                }
+              ]
+            },
+            "description": "Cover for a known canonical game id. Returns the stored cover when present (origin database), otherwise runs cover discovery for the game title and persists the selected cover. 404 when the game id is unknown."
+          },
+          "response": [
+            {
+              "name": "Stored cover",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"gameId\": \"atp-igdb-12345\",\n    \"query\": \"Example Game\",\n    \"type\": \"cover\",\n    \"limit\": 1,\n    \"selected\": {\n      \"url\": \"https://en.wikipedia.org/wiki/Special:FilePath/Example.jpg\",\n      \"source\": \"wikipedia\",\n      \"sourceId\": \"12345\",\n      \"width\": null,\n      \"height\": null,\n      \"type\": \"unknown\"\n    },\n    \"candidates\": [],\n    \"errors\": []\n  },\n  \"origin\": \"database\"\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "Not found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Game with ID atp-igdb-999 not found\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Platforms",
+      "item": [
+        {
+          "name": "Platform Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/platforms/summary?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "platforms",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number. Optional, integer >= 1, default 1."
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Page size. Optional, integer 1-100, default 20."
+                },
+                {
+                  "key": "companyName",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Filter platforms by company name."
+                },
+                {
+                  "key": "platformStatus",
+                  "value": "",
+                  "disabled": true,
+                  "description": "active, inactive, discontinued."
+                },
+                {
+                  "key": "releaseYear",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Exact release year 1950-2100."
+                },
+                {
+                  "key": "releaseYearRange",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Release-year range as YYYY-YYYY."
+                },
+                {
+                  "key": "showEmptyPlatforms",
+                  "value": "",
+                  "disabled": true,
+                  "description": "true to include platforms with zero games."
+                },
+                {
+                  "key": "sort",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Sort field. Game endpoints: title, createdAt, updatedAt, completeness, releaseDate, name. Platform summary: name, releaseYear, gameCount. Sync history: startedAt, completedAt, status, trigger."
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "disabled": true,
+                  "description": "Sort direction asc/desc. Default desc (games, sync history) / asc (platforms)."
+                }
+              ]
+            },
+            "description": "Paginated platform catalog listing from MongoDB. sort fields: name, releaseYear, gameCount (default order asc). releaseYearRange uses YYYY-YYYY format. showEmptyPlatforms=true includes platforms with zero games."
+          },
+          "response": [
+            {
+              "name": "Platform list",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"nintendo-switch\",\n      \"name\": \"Nintendo Switch\",\n      \"company\": \"Nintendo\",\n      \"releaseYear\": 2017,\n      \"status\": \"active\",\n      \"family\": \"Nintendo\",\n      \"type\": \"handheld\",\n      \"thumb\": null,\n      \"gameCount\": 42\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 1,\n    \"totalPages\": 1\n  },\n  \"origin\": \"database\"\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Get Platform by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/platforms/:platformId",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "platforms",
+                ":platformId"
+              ],
+              "variable": [
+                {
+                  "key": "platformId",
+                  "value": "platform_id_here"
+                }
+              ]
+            },
+            "description": "One platform catalog entry by id (e.g. nintendo-switch). 404 when unknown."
+          },
+          "response": [
+            {
+              "name": "Platform found",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"nintendo-switch\",\n    \"name\": \"Nintendo Switch\",\n    \"company\": \"Nintendo\",\n    \"releaseYear\": 2017,\n    \"status\": \"active\",\n    \"family\": \"Nintendo\",\n    \"type\": \"handheld\",\n    \"thumb\": null,\n    \"gameCount\": 42\n  },\n  \"origin\": \"database\"\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "Not found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Platform not found\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Catalog Sync",
+      "item": [
+        {
+          "name": "Trigger Sync",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/catalog/sync",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "catalog",
+                "sync"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"platforms\": [\"PlayStation 4\"],\n  \"activeOnly\": false,\n  \"from\": \"2024-01-01T00:00:00.000Z\",\n  \"to\": \"2024-12-31T23:59:59.999Z\",\n  \"dryRun\": true\n}"
+            },
+            "description": "Bulk catalog sync from providers for explicit platforms or all active platforms. trigger is forced to manual server-side. dryRun=true reports counts without writing. Response data carries per-platform and total counters (candidatesFound, newGames, existingGames, updatedGames, rejected, errors)."
+          },
+          "response": [
+            {
+              "name": "Sync completed",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"status\": \"completed\",\n    \"platforms\": [\n      {\n        \"platformId\": \"nintendo-switch\",\n        \"platformName\": \"Nintendo Switch\",\n        \"candidatesFound\": 3,\n        \"newGames\": 1,\n        \"existingGames\": 1,\n        \"updatedGames\": 0,\n        \"rejected\": 1,\n        \"errors\": 0,\n        \"status\": \"completed\",\n        \"error\": null\n      }\n    ],\n    \"totals\": {\n      \"candidatesFound\": 3,\n      \"newGames\": 1,\n      \"existingGames\": 1,\n      \"updatedGames\": 0,\n      \"rejected\": 1,\n      \"errors\": 0\n    },\n    \"dryRun\": true,\n    \"durationMs\": 1234\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Get Sync History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/catalog/sync/history?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "catalog",
+                "sync",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number. Optional, integer >= 1, default 1."
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Page size. Optional, integer 1-100, default 20."
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Sync run status: running, completed, partial, failed."
+                },
+                {
+                  "key": "trigger",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Sync run trigger: manual, scheduled."
+                },
+                {
+                  "key": "platformId",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Platform id filter (history) / path id (platform lookup)."
+                },
+                {
+                  "key": "from",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Range start (date string; sync body requires valid date with from <= to)."
+                },
+                {
+                  "key": "to",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Range end (date string)."
+                },
+                {
+                  "key": "sort",
+                  "value": "",
+                  "disabled": true,
+                  "description": "Sort field. Game endpoints: title, createdAt, updatedAt, completeness, releaseDate, name. Platform summary: name, releaseYear, gameCount. Sync history: startedAt, completedAt, status, trigger."
+                },
+                {
+                  "key": "order",
+                  "value": "desc",
+                  "disabled": true,
+                  "description": "Sort direction asc/desc. Default desc (games, sync history) / asc (platforms)."
+                }
+              ]
+            },
+            "description": "Paginated catalog sync run history. status: running, completed, partial, failed. trigger: manual, scheduled. sort fields: startedAt, completedAt, status, trigger (default startedAt desc)."
+          },
+          "response": [
+            {
+              "name": "History list",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"hist-1\",\n      \"startedAt\": \"2025-01-01T00:00:00.000Z\",\n      \"completedAt\": \"2025-01-01T00:01:00.000Z\",\n      \"trigger\": \"manual\",\n      \"status\": \"completed\",\n      \"dryRun\": true,\n      \"from\": \"2025-01-01\",\n      \"to\": \"2025-12-31\",\n      \"requestedPlatformIds\": [\n        \"nintendo-switch\"\n      ],\n      \"resolvedPlatformNames\": [\n        \"Nintendo Switch\"\n      ],\n      \"totals\": {\n        \"candidatesFound\": 3,\n        \"newGames\": 1,\n        \"existingGames\": 1,\n        \"updatedGames\": 0,\n        \"rejected\": 1,\n        \"errors\": 0\n      },\n      \"platformResults\": [],\n      \"error\": null,\n      \"durationMs\": 60000\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 1,\n    \"totalPages\": 1\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Get Sync History by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/catalog/sync/history/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "catalog",
+                "sync",
+                "history",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "sync_id_here"
+                }
+              ]
+            },
+            "description": "One catalog sync history record by id. 404 when unknown."
+          },
+          "response": [
+            {
+              "name": "History record",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"hist-1\",\n    \"startedAt\": \"2025-01-01T00:00:00.000Z\",\n    \"completedAt\": \"2025-01-01T00:01:00.000Z\",\n    \"trigger\": \"manual\",\n    \"status\": \"completed\",\n    \"dryRun\": true,\n    \"from\": \"2025-01-01\",\n    \"to\": \"2025-12-31\",\n    \"requestedPlatformIds\": [\n      \"nintendo-switch\"\n    ],\n    \"resolvedPlatformNames\": [\n      \"Nintendo Switch\"\n    ],\n    \"totals\": {\n      \"candidatesFound\": 3,\n      \"newGames\": 1,\n      \"existingGames\": 1,\n      \"updatedGames\": 0,\n      \"rejected\": 1,\n      \"errors\": 0\n    },\n    \"platformResults\": [],\n    \"error\": null,\n    \"durationMs\": 60000\n  }\n}",
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "name": "Not found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Sync history record not found\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin Games",
+      "item": [
+        {
+          "name": "Create Game",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "games"
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titles\": [{ \"value\": \"Test Game\" }],\n  \"developers\": [{ \"name\": \"Test Developer\" }],\n  \"publishers\": [{ \"name\": \"Test Publisher\" }],\n  \"genres\": [{ \"name\": \"Action\" }],\n  \"externalIdentifiers\": [],\n  \"classification\": \"GAME\",\n  \"completeness\": \"FOUND_COMPLETE\"\n}"
+            },
+            "description": "Explicitly create a canonical game (admin Jue prefix id). titles (min 1) required; developers, publishers, genres, externalIdentifiers default to []; classification and completeness optional. Returns 201 with the created game."
+          },
+          "response": [
+            {
+              "name": "Game created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"admin-1700000000000-a1b2c3\",\n    \"titles\": [\n      {\n        \"value\": \"Example Game\",\n        \"type\": \"primary\"\n      }\n    ],\n    \"releases\": [],\n    \"developers\": [\n      {\n        \"name\": \"Example Studio\"\n      }\n    ],\n    \"publishers\": [\n      {\n        \"name\": \"Example Publisher\"\n      }\n    ],\n    \"genres\": [\n      {\n        \"name\": \"Action\"\n      }\n    ],\n    \"externalIdentifiers\": [\n      {\n        \"source\": \"igdb\",\n        \"id\": \"12345\"\n      }\n    ],\n    \"relationships\": [],\n    \"evidence\": [\n      {\n        \"source\": \"igdb\",\n        \"externalId\": \"12345\",\n        \"retrievedAt\": \"2025-01-01T00:00:00.000Z\",\n        \"rawTitle\": \"Example Game\"\n      }\n    ],\n    \"classification\": \"GAME\",\n    \"completeness\": \"FOUND_SUFFICIENT\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Update Game",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/games/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "games",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "game_id_here"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titles\": [{ \"value\": \"Updated Game Title\" }]\n}"
+            },
+            "description": "Partially update a canonical game. All body fields optional (titles min 1 when present)."
+          },
+          "response": [
+            {
+              "name": "Game updated",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"id\": \"atp-igdb-12345\",\n    \"titles\": [\n      {\n        \"value\": \"Example Game\",\n        \"type\": \"primary\"\n      }\n    ],\n    \"releases\": [],\n    \"developers\": [\n      {\n        \"name\": \"Example Studio\"\n      }\n    ],\n    \"publishers\": [\n      {\n        \"name\": \"Example Publisher\"\n      }\n    ],\n    \"genres\": [\n      {\n        \"name\": \"Action\"\n      }\n    ],\n    \"externalIdentifiers\": [\n      {\n        \"source\": \"igdb\",\n        \"id\": \"12345\"\n      }\n    ],\n    \"relationships\": [],\n    \"evidence\": [\n      {\n        \"source\": \"igdb\",\n        \"externalId\": \"12345\",\n        \"retrievedAt\": \"2025-01-01T00:00:00.000Z\",\n        \"rawTitle\": \"Example Game\"\n      }\n    ],\n    \"classification\": \"GAME\",\n    \"completeness\": \"FOUND_SUFFICIENT\"\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Delete Game",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/games/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "games",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "game_id_here"
+                }
+              ]
+            },
+            "description": "Delete a canonical game. Returns 204 with no body."
+          },
+          "response": [
+            {
+              "name": "Deleted (empty 204 body)",
+              "status": "No Content",
+              "code": 204,
+              "header": [],
+              "body": "",
+              "_postman_previewlanguage": "text"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

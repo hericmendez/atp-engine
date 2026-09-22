@@ -206,6 +206,30 @@ describe('SteamAdapter', () => {
       expect(result.hasMore).toBe(false);
     });
 
+    it('caches app-list failure and returns empty without per-game retry', async () => {
+      mockFetchError(500);
+
+      const result1 = await adapter.search('Resident Evil 4');
+      expect(result1.candidates).toEqual([]);
+      expect(result1.hasMore).toBe(false);
+
+      const result2 = await adapter.search('Resident Evil 4');
+      expect(result2.candidates).toEqual([]);
+
+      // Only 1 network call for applist despite 2 searches (negative cache)
+      const fetchCalls = vi.mocked(globalThis.fetch).mock.calls;
+      const appListCalls = fetchCalls.filter(([url]) => String(url).includes('applist'));
+      expect(appListCalls).toHaveLength(1);
+    });
+
+    it('treats a successful empty app list as a legitimate empty result', async () => {
+      mockFetchSingle({ applist: { apps: [] } });
+
+      const result = await adapter.search('Resident Evil 4');
+      expect(result.candidates).toEqual([]);
+      expect(result.hasMore).toBe(false);
+    });
+
     it('performs case-insensitive search', async () => {
       mockFetchSequence([STEAM_APP_LIST_RESPONSE, STEAM_APP_DETAILS_RESPONSE]);
 
