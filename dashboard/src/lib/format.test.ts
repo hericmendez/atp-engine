@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatEtaPrecise, formatRate, formatTimeAgo, getLeaseHealth, friendlyConflictMessage } from './format';
+import { formatEtaPrecise, formatRate, formatTimeAgo, getLeaseHealth, friendlyConflictMessage, formatBytes } from './format';
 
 describe('format helpers', () => {
   it('formatEtaPrecise null → —', () => expect(formatEtaPrecise(null)).toBe('—'));
@@ -33,5 +33,26 @@ describe('format helpers', () => {
   });
   it('friendlyConflictMessage non-409 passthrough', () => {
     expect(friendlyConflictMessage('NOT_FOUND', 'not found', 404)).toBe('not found');
+  });
+});
+
+describe('formatBytes', () => {
+  it('0 B', () => expect(formatBytes(0)).toBe('0 B'));
+  it('bytes', () => expect(formatBytes(500)).toBe('500 B'));
+  it('KB', () => expect(formatBytes(1024)).toBe('1.0 KB'));
+  it('KB with decimal', () => expect(formatBytes(1536)).toBe('1.5 KB'));
+  it('MB', () => expect(formatBytes(1024 * 1024)).toBe('1.0 MB'));
+  it('MB with decimal', () => expect(formatBytes(1500000)).toBe('1.4 MB'));
+  it('GB', () => expect(formatBytes(1024 * 1024 * 1024)).toBe('1.00 GB'));
+  it('GB large', () => expect(formatBytes(5 * 1024 * 1024 * 1024)).toBe('5.00 GB'));
+  it('valores grandes', () => expect(formatBytes(2 * 1024 * 1024 * 1024 * 1024)).toBe('2.00 TB'));
+  it('limites de unidade', () => {
+    expect(formatBytes(1023)).toBe('1023 B');
+    expect(formatBytes(1024)).toBe('1.0 KB');
+    expect(formatBytes(1024 * 1024 - 1)).toBe('1024.0 KB');
+  });
+  it('null/undefined', () => {
+    expect(formatBytes(null)).toBe('—');
+    expect(formatBytes(undefined)).toBe('—');
   });
 });

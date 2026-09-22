@@ -4,7 +4,7 @@ import { api, ApiClientError } from '../api/client';
 import type { EnrichmentJobDto } from '../api/types';
 import { Loading, ErrorBox } from '../components/Layout';
 import { StatusBadge } from '../components/StatusBadge';
-import { formatRate, formatEtaPrecise, formatTimeAgo } from '../lib/format';
+import { formatRate, formatEtaPrecise, formatTimeAgo, formatBytes } from '../lib/format';
 
 function usePolling<T>(fetcher: () => Promise<T>, intervalMs: number, active: boolean, deps: unknown[] = []) {
   const [data, setData] = useState<T | null>(null);
@@ -110,6 +110,20 @@ export function Overview() {
     return Math.round((v / total) * 1000) / 10;
   };
 
+  type DatabaseStats = {
+    dataSize: number;
+    storageSize: number;
+    indexSize: number;
+    totalSize: number;
+    objects: number;
+    collections: number;
+    avgObjSize: number;
+    collectionsStats: readonly { name: string; count: number; size: number; storageSize: number; totalIndexSize: number }[];
+  };
+  const dbFetcher = () => api.get<{ data: DatabaseStats }>('/api/v1/admin/database/stats');
+  const { data: dbRes, error: dbError, loading: dbLoading } = usePolling(dbFetcher, 30000, true, []);
+  const dbStats = dbRes?.data && typeof dbRes.data === 'object' && !Array.isArray(dbRes.data) && 'dataSize' in dbRes.data ? (dbRes.data as DatabaseStats) : null;
+
   return (
     <div>
       <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>Overview</h2>
@@ -130,6 +144,38 @@ export function Overview() {
         {metrics && (
           <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 6 }}>
             Click a card to investigate in Games. Percentages frontend-only: withX / total. Without cover ≈ {metrics.total - metrics.withCover} (hasCover=false).
+          </div>
+        )}
+      </section>
+
+      <section style={{ marginBottom: 24 }}>
+        <h3 style={{ fontWeight: 600, marginBottom: 8 }}>Database — storage</h3>
+        {dbLoading && <Loading />}
+        {dbError && <ErrorBox message={dbError.message} requestId={dbError.requestId} />}
+        {dbStats && (
+          <div style={{ border: '1px solid var(--card-border)', borderRadius: 8, padding: 16, background: 'var(--card-bg)' }}>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Data</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{formatBytes(dbStats.dataSize)}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>Data</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, fontSize: 13 }}>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Allocated</div>
+                <div style={{ fontWeight: 600 }}>{formatBytes(dbStats.storageSize)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Indexes</div>
+                <div style={{ fontWeight: 600 }}>{formatBytes(dbStats.indexSize)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Documents</div>
+                <div style={{ fontWeight: 600 }}>{dbStats.objects.toLocaleString()}</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 8, fontSize: 11, color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
+              <span>Total logical: {formatBytes(dbStats.totalSize)}</span>
+              <span>Collections: {dbStats.collections}</span>
+              <span>Updated: {formatTimeAgo(new Date().toISOString())}</span>
+            </div>
           </div>
         )}
       </section>

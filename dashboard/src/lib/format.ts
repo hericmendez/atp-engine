@@ -79,3 +79,20 @@ export function friendlyConflictMessage(code: string, message: string, status: n
   if (m.includes('cannot acquire lease')) return 'This job cannot be resumed while another worker holds its lease.';
   return message;
 }
+
+export function formatBytes(bytes: number | null | undefined): string {
+  if (bytes === null || bytes === undefined) return '—';
+  if (bytes === 0) return '0 B';
+  if (bytes < 0) return '—';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let i = 0;
+  let v = bytes;
+  while (v >= 1024 && i < units.length - 1) {
+    v /= 1024;
+    i++;
+  }
+  if (i === 0) return `${v} B`;
+  if (i === 1) return `${v.toFixed(1)} ${units[i]}`;
+  if (i === 2) return `${v.toFixed(1)} ${units[i]}`;
+  return `${v.toFixed(2)} ${units[i]}`;
+}

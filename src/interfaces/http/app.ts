@@ -26,6 +26,7 @@ import {
   adminCatalogSyncRouter,
   type AdminCatalogSyncRouterDependencies,
 } from './routes/admin-catalog-sync.js';
+import { adminDatabaseStatsRouter } from './routes/admin-database-stats.js';
 import cookieParser from 'cookie-parser';
 import { adminAuthRoutes } from './routes/admin-auth-routes.js';
 import { errorHandler } from './middleware/error-handler.js';
@@ -88,6 +89,7 @@ export function createApp(deps: AppDependencies): express.Express {
   if (deps.adminCatalogSync) {
     adminApi.use(adminCatalogSyncRouter(deps.adminCatalogSync));
   }
+  adminApi.use(adminDatabaseStatsRouter());
   app.use('/api/v1/admin', adminApi);
 
   // Dashboard SPA — served at /admin (frontend). API remains at /api/v1/admin/*.
