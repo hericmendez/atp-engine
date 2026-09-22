@@ -32,6 +32,7 @@ export function Enrichment() {
   // Start Enrichment modal state
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const [typeInput, setTypeInput] = useState<'cover' | 'description'>('cover');
   const [limitInput, setLimitInput] = useState('100');
   const [batchInput, setBatchInput] = useState('50');
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -41,6 +42,7 @@ export function Enrichment() {
   const startBtnRef = useRef<HTMLButtonElement>(null);
 
   const openModal = () => {
+    setTypeInput('cover');
     setLimitInput('100');
     setBatchInput('50');
     setShowAdvanced(false);
@@ -78,7 +80,7 @@ export function Enrichment() {
     setCreateLoading(true);
     setCreateError(null);
     try {
-      const payload: Record<string, unknown> = { type: 'cover', batchSize: batchNum };
+      const payload: Record<string, unknown> = { type: typeInput, batchSize: batchNum };
       if (limitVal !== undefined) payload.limit = limitVal;
       const res = await api.post<{ data: EnrichmentJobDto }>('/api/v1/admin/enrichment/jobs', payload);
       setCreateLoading(false);
@@ -251,7 +253,10 @@ export function Enrichment() {
             <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13 }}>
                 Type
-                <input value="Cover" readOnly disabled style={{ ...inp, background: 'var(--bg-soft)', color: 'var(--text-secondary)' }} aria-label="Type" />
+                <select value={typeInput} onChange={(e) => setTypeInput(e.target.value as 'cover' | 'description')} style={inp} aria-label="Type">
+                  <option value="cover">Cover</option>
+                  <option value="description">Description</option>
+                </select>
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 13 }}>
                 Limit

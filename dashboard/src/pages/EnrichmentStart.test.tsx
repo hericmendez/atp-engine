@@ -55,13 +55,16 @@ describe('Enrichment Start', () => {
     await waitFor(() => expect(screen.getByText('Enrichment Jobs')).toBeDefined());
     fireEvent.click(screen.getAllByText('Start Enrichment')[0]);
     expect(await screen.findByText('Start Enrichment', { selector: 'h3' })).toBeDefined();
-    expect(screen.getByDisplayValue('Cover')).toBeDefined();
+    expect((screen.getByLabelText('Type') as HTMLSelectElement).value).toBe('cover');
   });
 
   it('type mostra Cover', async () => {
     render(<MemoryRouter><Enrichment /></MemoryRouter>);
     fireEvent.click((await screen.findAllByText('Start Enrichment'))[0]);
-    expect(await screen.findByDisplayValue('Cover')).toBeDefined();
+    const sel = (await screen.findByLabelText('Type')) as HTMLSelectElement;
+    expect(sel.value).toBe('cover');
+    expect(screen.getByText('Cover')).toBeDefined();
+    expect(screen.getByText('Description')).toBeDefined();
   });
 
   it('limit inicia em 100', async () => {
@@ -251,5 +254,43 @@ describe('Enrichment Start', () => {
     fireEvent.click((await screen.findAllByText('Start Enrichment'))[0]);
     const dialog = screen.getByRole('dialog');
     expect(dialog.style.background).toBe('var(--card-bg)');
+  });
+
+  it('selecionar Description envia type description', async () => {
+    render(<MemoryRouter><Enrichment /></MemoryRouter>);
+    fireEvent.click((await screen.findAllByText('Start Enrichment'))[0]);
+    fireEvent.change(screen.getByLabelText('Type') as HTMLSelectElement, { target: { value: 'description' } });
+    fireEvent.change(screen.getByLabelText('Limit') as HTMLInputElement, { target: { value: '50' } });
+    fireEvent.click(screen.getByText('Start'));
+    await waitFor(() => expect(mockPost).toHaveBeenCalledWith('/api/v1/admin/enrichment/jobs', { type: 'description', limit: 50, batchSize: 50 }));
+  });
+
+  it('mode não é enviado', async () => {
+    render(<MemoryRouter><Enrichment /></MemoryRouter>);
+    fireEvent.click((await screen.findAllByText('Start Enrichment'))[0]);
+    fireEvent.change(screen.getByLabelText('Limit') as HTMLInputElement, { target: { value: '10' } });
+    fireEvent.click(screen.getByText('Start'));
+    await waitFor(() => expect(mockPost).toHaveBeenCalled());
+    const payload = mockPost.mock.calls[0][1] as Record<string, unknown>;
+    expect(payload).not.toHaveProperty('mode');
+    expect(payload).not.toHaveProperty('cursor');
+  });
+
+  it('Cover continua enviando type cover', async () => {
+    render(<MemoryRouter><Enrichment /></MemoryRouter>);
+    fireEvent.click((await screen.findAllByText('Start Enrichment'))[0]);
+    // default is cover
+    fireEvent.change(screen.getByLabelText('Limit') as HTMLInputElement, { target: { value: '20' } });
+    fireEvent.click(screen.getByText('Start'));
+    await waitFor(() => expect(mockPost).toHaveBeenCalledWith('/api/v1/admin/enrichment/jobs', { type: 'cover', limit: 20, batchSize: 50 }));
+  });
+
+  it('201 de Description navega para detalhe', async () => {
+    mockPost.mockResolvedValue({ data: { id: 'job-desc-123', type: 'description', mode: 'needs-description', status: 'RUNNING' } } as never);
+    render(<MemoryRouter><Enrichment /></MemoryRouter>);
+    fireEvent.click((await screen.findAllByText('Start Enrichment'))[0]);
+    fireEvent.change(screen.getByLabelText('Type') as HTMLSelectElement, { target: { value: 'description' } });
+    fireEvent.click(screen.getByText('Start'));
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/admin/enrichment/job-desc-123'));
   });
 });
