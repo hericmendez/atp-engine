@@ -61,10 +61,40 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return json as T;
 }
 
+async function getBlob(path: string): Promise<{ blob: Blob; filename: string | null }> {
+  const base = getBaseUrl();
+  const url = `${base}${path}`;
+  const res = await fetch(url, { method: 'GET', credentials: 'include' });
+  if (!res.ok) {
+    const text = await res.text();
+    let json: unknown = null;
+    try {
+      json = text ? JSON.parse(text) : null;
+    } catch {
+      json = null;
+    }
+    const err = (json as { error?: { code?: string; message?: string; requestId?: string } } | null)?.error;
+    if (res.status === 401 && !path.includes('/admin/login') && typeof window !== 'undefined' && window.location.pathname !== '/admin/login') {
+      const returnTo = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.replace(`/admin/login?returnTo=${returnTo}`);
+    }
+    throw new ApiClientError(err?.code ?? `HTTP_${res.status}`, err?.message ?? res.statusText, res.status, err?.requestId);
+  }
+  const blob = await res.blob();
+  const disposition = res.headers.get('Content-Disposition');
+  let filename: string | null = null;
+  if (disposition) {
+    const match = disposition.match(/filename="(.+)"/) ?? disposition.match(/filename=(.+)/);
+    if (match) filename = match[1].replace(/"/g, '');
+  }
+  return { blob, filename };
+}
+
 export const api = {
   get: <T>(path: string) => request<T>(path, { method: 'GET' }),
   post: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'POST', body: body ? JSON.stringify(body) : undefined }),
+  getBlob: (path: string) => getBlob(path),
 };
 
 // Typed helpers

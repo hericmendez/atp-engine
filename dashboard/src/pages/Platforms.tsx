@@ -17,6 +17,8 @@ export function Platforms() {
   const [pagination, setPagination] = useState<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ApiClientError | null>(null);
+  const [exporting, setExporting] = useState<Record<string, 'csv' | 'json' | null>>({});
+  const [exportError, setExportError] = useState<ApiClientError | null>(null);
 
   const page = parseInt(getParam(searchParams, 'page', '1'), 10) || 1;
   const limit = parseInt(getParam(searchParams, 'limit', '20'), 10) || 20;
@@ -81,6 +83,31 @@ export function Platforms() {
     setSearchParams(new URLSearchParams({ sort: 'name', order: 'asc', showEmptyPlatforms: 'false', page: '1', limit: '20' }));
   };
 
+  const handleExport = async (platform: PlatformDto, format: 'csv' | 'json') => {
+    const key = `${platform.id}:${format}`;
+    setExporting((prev) => ({ ...prev, [key]: format }));
+    setExportError(null);
+    try {
+      const { blob, filename } = await api.getBlob(`/api/v1/platforms/${encodeURIComponent(platform.name)}/games/export?format=${format}`);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename ?? `atp-${platform.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-games.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setExportError(e as ApiClientError);
+    } finally {
+      setExporting((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }
+  };
+
   return (
     <div>
       <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12 }}>Platforms</h2>
@@ -101,6 +128,7 @@ export function Platforms() {
 
       {loading && <Loading />}
       {error && <ErrorBox message={error.message} requestId={error.requestId} />}
+      {exportError && <ErrorBox message={exportError.message} requestId={exportError.requestId} />}
       {!loading && !error && data.length === 0 && <Empty message={hasActiveFilters ? 'No platforms match the selected filters.' : 'No platforms found.'} />}
 
       {!loading && !error && data.length > 0 && (
@@ -116,21 +144,50 @@ export function Platforms() {
                 <th style={th}>type</th>
                 <th style={th}>status</th>
                 <SortableHeader field="gameCount" label="gameCount" sort={sort} order={order} onSort={handleSort} />
+                <th scope="col" style={th}>Export</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((p) => (
-                <tr key={p.id}>
-                  <td style={{ ...td, fontFamily: 'monospace', fontSize: 11 }}><Link to={`/admin/games?platform=${encodeURIComponent(p.name)}`} style={{ color: 'var(--link)' }}>{p.id}</Link></td>
-                  <td style={td}><Link to={`/admin/games?platform=${encodeURIComponent(p.name)}`} style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{p.name}</Link></td>
-                  <td style={td}>{p.company}</td>
-                  <td style={td}>{p.releaseYear ?? '—'}</td>
-                  <td style={td}>{p.family ?? '—'}</td>
-                  <td style={td}>{p.type ?? '—'}</td>
-                  <td style={td}>{p.status}</td>
-                  <td style={{ ...td, fontWeight: 600 }} title="Game count from catalog releases">{p.gameCount}</td>
-                </tr>
-              ))}
+              {data.map((p) => {
+                const csvKey = `${p.id}:csv`;
+                const jsonKey = `${p.id}:json`;
+                const csvLoading = exporting[csvKey] === 'csv';
+                const jsonLoading = exporting[jsonKey] === 'json';
+                return (
+                  <tr key={p.id}>
+                    <td style={{ ...td, fontFamily: 'monospace', fontSize: 11 }}><Link to={`/admin/games?platform=${encodeURIComponent(p.name)}`} style={{ color: 'var(--link)' }}>{p.id}</Link></td>
+                    <td style={td}><Link to={`/admin/games?platform=${encodeURIComponent(p.name)}`} style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{p.name}</Link></td>
+                    <td style={td}>{p.company}</td>
+                    <td style={td}>{p.releaseYear ?? '—'}</td>
+                    <td style={td}>{p.family ?? '—'}</td>
+                    <td style={td}>{p.type ?? '—'}</td>
+                    <td style={td}>{p.status}</td>
+                    <td style={{ ...td, fontWeight: 600 }} title="Game count from catalog releases">{p.gameCount}</td>
+                    <td style={td}>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          onClick={() => handleExport(p, 'csv')}
+                          disabled={csvLoading || jsonLoading}
+                          aria-label={`Export ${p.name} as CSV`}
+                          aria-busy={csvLoading}
+                          style={{ padding: '4px 8px', fontSize: 11, border: '1px solid var(--card-border)', borderRadius: 4, background: 'var(--card-bg)', color: 'var(--text-primary)', cursor: csvLoading ? 'wait' : 'pointer', opacity: csvLoading ? 0.6 : 1 }}
+                        >
+                          {csvLoading ? 'CSV…' : 'CSV'}
+                        </button>
+                        <button
+                          onClick={() => handleExport(p, 'json')}
+                          disabled={csvLoading || jsonLoading}
+                          aria-label={`Export ${p.name} as JSON`}
+                          aria-busy={jsonLoading}
+                          style={{ padding: '4px 8px', fontSize: 11, border: '1px solid var(--card-border)', borderRadius: 4, background: 'var(--card-bg)', color: 'var(--text-primary)', cursor: jsonLoading ? 'wait' : 'pointer', opacity: jsonLoading ? 0.6 : 1 }}
+                        >
+                          {jsonLoading ? 'JSON…' : 'JSON'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
           {pagination && (
