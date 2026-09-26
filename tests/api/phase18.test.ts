@@ -376,6 +376,23 @@ describe('Phase 18 — Platform Seed & Catalog Completeness', () => {
           if (!platform) throw new NotFoundError(`Platform ${id} not found`);
           return { data: platform, origin: 'database' as const };
         },
+        getPlatformStats: async () => {
+          const total = mockPlatforms.length;
+          const notEmpty = mockPlatforms.filter((p) => p.gameCount > 0).length;
+          return {
+            data: {
+              total,
+              notEmpty,
+              empty: total - notEmpty,
+              byStatus: {
+                active: mockPlatforms.filter((p) => p.status === 'active').length,
+                inactive: mockPlatforms.filter((p) => p.status === 'inactive').length,
+                discontinued: mockPlatforms.filter((p) => p.status === 'discontinued').length,
+              },
+            },
+            origin: 'database' as const,
+          };
+        },
       };
 
       app = createApp({

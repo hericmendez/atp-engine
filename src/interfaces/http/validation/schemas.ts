@@ -202,6 +202,10 @@ export const PlatformCatalogQuerySchema = PaginationSchema.extend({
     .string()
     .optional()
     .transform((val) => val === 'true'),
+  groupByFamily: z
+    .string()
+    .optional()
+    .transform((val) => val === 'true'),
 })
   .merge(PlatformSortSchema)
   .transform((val) => {

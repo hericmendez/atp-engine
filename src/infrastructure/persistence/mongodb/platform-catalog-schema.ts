@@ -8,21 +8,30 @@ export interface PlatformCatalogDocument extends Document {
   status: string;
   family: string | null;
   type: string | null;
-  thumb: string | null;
+  thumb: { logo: string | null; image: string | null } | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const platformCatalogSchema = new Schema<PlatformCatalogDocument>(
   {
-    platformId: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
-    company: { type: String, required: true },
-    releaseYear: { type: Number, default: null },
-    status: { type: String, required: true, enum: ['active', 'inactive', 'discontinued'] },
-    family: { type: String, default: null },
-    type: { type: String, default: null },
-    thumb: { type: String, default: null },
+  platformId: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  company: { type: String, required: true },
+  releaseYear: { type: Number, default: null },
+  status: { type: String, required: true, enum: ['active', 'inactive', 'discontinued'] },
+  family: { type: String, default: null },
+  type: { type: String, default: null },
+  thumb: {
+    type: new Schema(
+      {
+        logo: { type: String, default: null },
+        image: { type: String, default: null },
+      },
+      { _id: false },
+    ),
+    default: null,
+  },
   },
   {
     timestamps: true,

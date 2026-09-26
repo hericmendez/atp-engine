@@ -693,7 +693,48 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"data\": [\n    {\n      \"id\": \"nintendo-switch\",\n      \"name\": \"Nintendo Switch\",\n      \"company\": \"Nintendo\",\n      \"releaseYear\": 2017,\n      \"status\": \"active\",\n      \"family\": \"Nintendo\",\n      \"type\": \"handheld\",\n      \"thumb\": null,\n      \"gameCount\": 42\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 1,\n    \"totalPages\": 1\n  },\n  \"origin\": \"database\"\n}",
+              "body": "{\n  \"data\": [\n    {\n      \"id\": \"nintendo-switch\",\n      \"name\": \"Nintendo Switch\",\n      \"company\": \"Nintendo\",\n      \"releaseYear\": 2017,\n      \"status\": \"active\",\n      \"family\": \"Nintendo\",\n      \"type\": \"handheld\",\n      \"thumb\": null,\n      \"gameCount\": 42\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 1,\n    \"totalPages\": 1\n  },\n  \"origin\": \"database\",\n  \"stats\": {\n    \"total\": 181,\n    \"notEmpty\": 58,\n    \"empty\": 123,\n    \"byStatus\": {\n      \"active\": 46,\n      \"inactive\": 0,\n      \"discontinued\": 135\n    }\n  }\n}",
+              "_postman_previewlanguage": "json"
+            }
+          ]
+        },
+        {
+          "name": "Platform Summary Grouped by Family",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/platforms/summary?groupByFamily=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "platforms",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "groupByFamily",
+                  "value": "true",
+                  "description": "When true, returns all 181 platforms grouped by family (families + ungrouped) with pagination total. No pagination applied. family null/empty goes to ungrouped."
+                }
+              ]
+            },
+            "description": "Platform catalog grouped by family. Returns {data:{families:[{name,platforms:[]}], ungrouped:[]}, pagination:{total,page,limit,totalPages}, origin, stats:{total,notEmpty,empty,byStatus}}. Families sorted name ASC, platforms inside sorted name ASC. No pagination when grouped. stats is global and independent of filters/pagination."
+          },
+          "response": [
+            {
+              "name": "Grouped platforms",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"families\": [\n      {\n        \"name\": \"Nintendo\",\n        \"platforms\": [\n          {\n            \"id\": \"nintendo-switch\",\n            \"name\": \"Nintendo Switch\",\n            \"company\": \"Nintendo\",\n            \"releaseYear\": 2017,\n            \"status\": \"active\",\n            \"family\": \"Nintendo\",\n            \"type\": \"handheld\",\n            \"thumb\": null,\n            \"gameCount\": 42\n          }\n        ]\n      }\n    ],\n    \"ungrouped\": [],\n    \"pagination\": {\n      \"total\": 181,\n      \"page\": 1,\n      \"limit\": 181,\n      \"totalPages\": 1\n    },\n    \"origin\": \"database\",\n    \"stats\": {\n      \"total\": 181,\n      \"notEmpty\": 58,\n      \"empty\": 123,\n      \"byStatus\": {\n        \"active\": 46,\n        \"inactive\": 0,\n        \"discontinued\": 135\n      }\n    }\n  }\n}",
               "_postman_previewlanguage": "json"
             }
           ]
@@ -733,7 +774,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"data\": {\n    \"id\": \"nintendo-switch\",\n    \"name\": \"Nintendo Switch\",\n    \"company\": \"Nintendo\",\n    \"releaseYear\": 2017,\n    \"status\": \"active\",\n    \"family\": \"Nintendo\",\n    \"type\": \"handheld\",\n    \"thumb\": null,\n    \"gameCount\": 42\n  },\n  \"origin\": \"database\"\n}",
+              "body": "{\n  \"data\": {\n    \"id\": \"nintendo-switch\",\n    \"name\": \"Nintendo Switch\",\n    \"company\": \"Nintendo\",\n    \"releaseYear\": 2017,\n    \"status\": \"active\",\n    \"family\": \"Nintendo\",\n    \"type\": \"handheld\",\n    \"thumb\": {\n      \"logo\": \"https://images.igdb.com/igdb/image/upload/t_logo_med/example.png\",\n      \"image\": \"https://upload.wikimedia.org/example.jpg\"\n    },\n    \"gameCount\": 42\n  },\n  \"origin\": \"database\"\n}",
               "_postman_previewlanguage": "json"
             },
             {

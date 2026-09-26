@@ -100,6 +100,29 @@ function buildAppWithPlatforms(platforms: PlatformCatalogEntryWithGameCount[]) {
       const r = await this.repo.findMany(q);
       return { data: r, origin: 'database' as const };
     }
+    async getPlatformStats() {
+      const limit = 100;
+      let page = 1;
+      let items: PlatformCatalogEntryWithGameCount[] = [];
+      let total = 0;
+      do {
+        const r = await this.repo.findMany({ page, limit, sort: { field: 'name', direction: 'asc' } });
+        total = r.total;
+        items = [...items, ...r.items];
+        page += 1;
+      } while (items.length < total);
+      let notEmpty = 0;
+      let active = 0;
+      let inactive = 0;
+      let discontinued = 0;
+      for (const p of items) {
+        if (p.gameCount > 0) notEmpty += 1;
+        if (p.status === 'active') active += 1;
+        else if (p.status === 'inactive') inactive += 1;
+        else if (p.status === 'discontinued') discontinued += 1;
+      }
+      return { data: { total, notEmpty, empty: total - notEmpty, byStatus: { active, inactive, discontinued } }, origin: 'database' as const };
+    }
     async getPlatformById() {
       throw new Error('not needed');
     }

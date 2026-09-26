@@ -33,6 +33,11 @@ export interface GameDto {
   updatedAt: string | null;
 }
 
+export interface PlatformThumbDto {
+  logo: string | null;
+  image: string | null;
+}
+
 export interface PlatformDto {
   id: string;
   name: string;
@@ -41,6 +46,17 @@ export interface PlatformDto {
   status: string;
   family: string | null;
   type: string | null;
-  thumb: string | null;
+  thumb: PlatformThumbDto | null;
   gameCount: number;
+}
+
+export interface PlatformStatsDto {
+  total: number;
+  notEmpty: number;
+  empty: number;
+  byStatus: {
+    active: number;
+    inactive: number;
+    discontinued: number;
+  };
 }

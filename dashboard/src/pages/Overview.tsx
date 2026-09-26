@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, ApiClientError } from '../api/client';
-import type { EnrichmentJobDto } from '../api/types';
+import type { EnrichmentJobDto, PlatformStatsDto } from '../api/types';
 import { Loading, ErrorBox } from '../components/Layout';
 import { StatusBadge } from '../components/StatusBadge';
 import { formatRate, formatEtaPrecise, formatTimeAgo, formatBytes } from '../lib/format';
@@ -49,6 +49,9 @@ export function Overview() {
   const [metrics, setMetrics] = useState<{ total: number; withCover: number; withDescription: number; withDevelopers: number; withPublishers: number } | null>(null);
   const [metricsError, setMetricsError] = useState<ApiClientError | null>(null);
   const [metricsLoading, setMetricsLoading] = useState(true);
+  const [platformStats, setPlatformStats] = useState<PlatformStatsDto | null>(null);
+  const [platformStatsError, setPlatformStatsError] = useState<ApiClientError | null>(null);
+  const [platformStatsLoading, setPlatformStatsLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -76,6 +79,29 @@ export function Overview() {
         if (!cancelled) {
           setMetricsError(e as ApiClientError);
           setMetricsLoading(false);
+        }
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        // Single request; only response.stats is used (limit=1 keeps data minimal).
+        const res = await api.get<{ stats?: PlatformStatsDto }>('/api/v1/platforms/summary?limit=1');
+        if (!cancelled) {
+          setPlatformStats(res.stats ?? null);
+          setPlatformStatsLoading(false);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setPlatformStatsError(e as ApiClientError);
+          setPlatformStatsLoading(false);
         }
       }
     };
@@ -134,11 +160,24 @@ export function Overview() {
         {metricsError && <ErrorBox message={metricsError.message} requestId={metricsError.requestId} />}
         {metrics && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12 }}>
-            <CardLink to="/admin/games" label="Total games" value={metrics.total} sub={undefined} />
+            <CardLink
+              to="/admin/games"
+              label="Total games"
+              value={metrics.total}
+              sub={undefined}
+              subText={platformStats ? `In ${platformStats.notEmpty.toLocaleString()} platforms` : undefined}
+            />
             <CardLink to="/admin/games?hasCover=true" label="With cover" value={metrics.withCover} sub={pct(metrics.withCover, metrics.total)} />
             <CardLink to="/admin/games?hasDescription=true" label="With description" value={metrics.withDescription} sub={pct(metrics.withDescription, metrics.total)} />
             <CardLink to="/admin/games?hasDevelopers=true" label="With developers" value={metrics.withDevelopers} sub={pct(metrics.withDevelopers, metrics.total)} />
             <CardLink to="/admin/games?hasPublishers=true" label="With publishers" value={metrics.withPublishers} sub={pct(metrics.withPublishers, metrics.total)} />
+          </div>
+        )}
+        {platformStatsLoading && <div style={{ marginTop: 12 }}><Loading /></div>}
+        {platformStatsError && <ErrorBox message={platformStatsError.message} requestId={platformStatsError.requestId} />}
+        {platformStats && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12, marginTop: 12 }}>
+            <StatCard stats={platformStats} />
           </div>
         )}
         {metrics && (
@@ -225,12 +264,30 @@ export function Overview() {
   );
 }
 
-function CardLink({ label, value, sub, to }: { label: string; value: number; sub: number | null | undefined; to: string }) {
+function CardLink({ label, value, sub, subText, to }: { label: string; value: number; sub: number | null | undefined; subText?: string; to: string }) {
   return (
     <Link to={to} style={{ textDecoration: 'none', border: '1px solid var(--card-border)', borderRadius: 8, padding: 16, background: 'var(--card-bg)', display: 'block' }}>
       <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{label}</div>
       <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{value.toLocaleString()}</div>
       {sub !== undefined && sub !== null && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{sub}% coverage</div>}
+      {subText !== undefined && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{subText}</div>}
     </Link>
+  );
+}
+
+function StatCard({ stats }: { stats: PlatformStatsDto }) {
+  return (
+    <div style={{ border: '1px solid var(--card-border)', borderRadius: 8, padding: 16, background: 'var(--card-bg)' }}>
+      <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Total platforms</div>
+      <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>
+        {stats.notEmpty.toLocaleString()}/{stats.total.toLocaleString()}
+      </div>
+      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>not empty / empty</div>
+      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Active: {stats.byStatus.active.toLocaleString()}</div>
+      {stats.byStatus.inactive > 0 && (
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Inactive: {stats.byStatus.inactive.toLocaleString()}</div>
+      )}
+      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Discontinued: {stats.byStatus.discontinued.toLocaleString()}</div>
+    </div>
   );
 }

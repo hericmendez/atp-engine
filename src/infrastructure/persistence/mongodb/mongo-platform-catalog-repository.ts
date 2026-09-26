@@ -4,7 +4,7 @@ import type {
   PaginatedPlatformResult,
   PlatformCatalogEntryWithGameCount,
 } from '../../../domain/platform/platform-catalog-repository.js';
-import type { PlatformCatalogEntry } from '../../../domain/platform/platform-catalog.js';
+import type { PlatformCatalogEntry, PlatformThumb } from '../../../domain/platform/platform-catalog.js';
 import { PlatformCatalogModel } from './platform-catalog-schema.js';
 import { GameModel } from './game-schema.js';
 import { PersistenceError } from '../../../shared/errors/errors.js';
@@ -122,20 +122,26 @@ export class MongoPlatformCatalogRepository implements PlatformCatalogRepository
 
   async upsert(entry: PlatformCatalogEntry): Promise<void> {
     try {
+      const update: Record<string, unknown> = {
+        $set: {
+          platformId: entry.id,
+          name: entry.name,
+          company: entry.company,
+          releaseYear: entry.releaseYear,
+          status: entry.status,
+          family: entry.family,
+          type: entry.type,
+        },
+      };
+      // Preserve existing thumb if entry.thumb is null (seed), but allow enrichment to set thumb when provided
+      if (entry.thumb !== null) {
+        (update.$set as Record<string, unknown>).thumb = entry.thumb;
+      } else {
+        update.$setOnInsert = { thumb: null };
+      }
       await PlatformCatalogModel.findOneAndUpdate(
         { platformId: entry.id },
-        {
-          $set: {
-            platformId: entry.id,
-            name: entry.name,
-            company: entry.company,
-            releaseYear: entry.releaseYear,
-            status: entry.status,
-            family: entry.family,
-            type: entry.type,
-            thumb: entry.thumb,
-          },
-        },
+        update as never,
         { upsert: true, runValidators: true },
       );
     } catch (error) {
@@ -158,6 +164,8 @@ export class MongoPlatformCatalogRepository implements PlatformCatalogRepository
               status: entry.status,
               family: entry.family,
               type: entry.type,
+            },
+            $setOnInsert: {
               thumb: entry.thumb,
             },
           },
@@ -248,7 +256,7 @@ export class MongoPlatformCatalogRepository implements PlatformCatalogRepository
       status: string;
       family: string | null;
       type: string | null;
-      thumb: string | null;
+      thumb: PlatformThumb | null;
     }>,
   ): Promise<PlatformCatalogEntryWithGameCount[]> {
     // Batch count games for all platforms
@@ -293,7 +301,7 @@ export class MongoPlatformCatalogRepository implements PlatformCatalogRepository
       status: string;
       family: string | null;
       type: string | null;
-      thumb: string | null;
+      thumb: PlatformThumb | null;
     },
     gameCount: number,
   ): PlatformCatalogEntryWithGameCount {
